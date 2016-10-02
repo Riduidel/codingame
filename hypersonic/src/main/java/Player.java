@@ -34,8 +34,9 @@ class Player {
 
 		public static final int HORIZON = 16;
 		public static final int BOMB_DELAY = 8;
-		public static final int COUNT_ENOUGH_TRAJECTORIES = 2000;
+		public int COUNT_ENOUGH_TRAJECTORIES = 1000;
 		public static final int ITERATIVE_TIME_LIMIT = 3;
+		public static final int ADAPATION_FACTOR = 10;
 		public Integer SCORE_NO_EVASION_MALUS = -1;
 		public Integer SCORE_ON_THE_ROAD = 4;
 		public Integer SCORE_ENDANGERED = -100;
@@ -311,6 +312,7 @@ class Player {
 		public final Playground source;
 		public final Delay delay;
 		public final EvolvableConstants constants;
+		public int count;
 		public TrajectoryBuilder(Playground source, Delay delay, EvolvableConstants constants) {
 			super();
 			this.source = source;
@@ -318,7 +320,7 @@ class Player {
 			this.constants = constants;
 		}
 		public Trajectory findBest(Gamer me) {
-			int count = 0;
+			count = 0;
 			Trajectory returned = null, tested;
 			while(!delay.isElapsed(constants.DELAY_CREATE_TRAJECTORIES) 
 					&& count<=constants.COUNT_ENOUGH_TRAJECTORIES) {
@@ -363,12 +365,8 @@ class Player {
 				// Too bad, I'm dead !
 				directions = new int[] {current.x, current.y};
 			} else {
-//				if(time<constants.ITERATIVE_TIME_LIMIT) {
-//					directions = availableDirections[((count+1)*((time+1)*availableDirections.length))%availableDirections.length];
-//				} else {
-					int randomDirection = random.nextInt(availableDirections.length);
-					directions = availableDirections[randomDirection]; 
-//				}
+				int randomDirection = random.nextInt(availableDirections.length);
+				directions = availableDirections[randomDirection]; 
 			}
 			List<Action> availableActions = new ArrayList<>(2);
 			availableActions.add(Action.MOVE);
@@ -380,8 +378,7 @@ class Player {
 			}
 			int randomAction = random.nextInt(availableActions.size());
 			Action nextAction = availableActions.get(randomAction);
-			return new Step(nextAction, directions[0], directions[1], me, current)
-						.computeScore(playground, constants);
+			return playground.getStep(nextAction, directions[0], directions[1], me, current, constants);
 		}
 	}
 	public static class Trajectory {
@@ -573,7 +570,7 @@ class Player {
 
 		@Override
 		public String toString() {
-			return "Step [score=" + score + ", current=" + current + ", action=" + action + ", x=" + x + ", y=" + y
+			return "Step [score=" + score + ", current.x=" + current.x + ", current.y=" + current.y + ", action=" + action + ", x=" + x + ", y=" + y
 					+ "]";
 		}
 
@@ -702,13 +699,14 @@ class Player {
 			@Override public String visitBox(Box box) { return "0"; }
 			@Override public String visitWall(Wall box) { return "X"; }
 		}
+		private static PlaygroundDeriver playgroundDeriver = new PlaygroundDeriver();
 		public final int width;
 		public final int height;
 		/** Do not forget to exchange x and y to access that array */
 		private Content[][] positions;
 		private Map<Object, Playground> nextPlaygrounds = new TreeMap<>();
 		private Map<String, int[][]> availableDirections = new TreeMap<>();
-		private static PlaygroundDeriver playgroundDeriver = new PlaygroundDeriver();
+		private Map<String, Step> knownSteps = new TreeMap<>();
 		public Playground(int width, int height) {
 			super();
 			this.width = width;
@@ -717,6 +715,14 @@ class Player {
 			for (int y = 0; y < positions.length; y++) {
 				positions[y] = new Content[width];
 			}
+		}
+		public Step getStep(Action nextAction, int x, int y, Gamer me, Entity current, EvolvableConstants constants) {
+			String key = current.x+"; "+current.y+"=>"+nextAction.name()+"@"+x+";"+y;
+			if(!knownSteps.containsKey(key)) {
+				Step s = new Step(nextAction, x, y, me, current).computeScore(this, constants);
+				knownSteps.put(key, s);
+			}
+			return knownSteps.get(key);
 		}
 		public int[][] getAvailableDirectionsAt(Entity current) {
 			String key = current.x+";"+current.y;
@@ -1069,6 +1075,8 @@ class Player {
 		Scanner in = new Scanner(System.in);
 		int width = in.nextInt();
 		int height = in.nextInt();
+		Player.EvolvableConstants constants = new Player.EvolvableConstants();
+		int MAXIMUM_TRAJECTORIES = constants.COUNT_ENOUGH_TRAJECTORIES;
 		Playground playground = new Playground(width, height);
 		int myId = in.nextInt();
 		in.nextLine();
@@ -1108,8 +1116,21 @@ class Player {
 				}
 			}
 			in.nextLine();
-			Player.Trajectory best = new Player.TrajectoryBuilder(playground, delay, new Player.EvolvableConstants())
+			Player.TrajectoryBuilder trajectoryBuilder = new Player.TrajectoryBuilder(playground, delay, constants);
+			Player.Trajectory best = trajectoryBuilder
 					.findBest(me);
+			if(trajectoryBuilder.count<constants.COUNT_ENOUGH_TRAJECTORIES) {
+				System.err.println("There was not enough trajectories computed .. Computing even less next turn");
+				constants.COUNT_ENOUGH_TRAJECTORIES = Math.max(100, 
+						Math.min(constants.COUNT_ENOUGH_TRAJECTORIES, trajectoryBuilder.count/constants.ADAPATION_FACTOR));
+			} else {
+				if(delay.howLong()<constants.DELAY_CREATE_TRAJECTORIES/2) {
+					System.err.println("We computed that really fast. Computing more");
+					constants.COUNT_ENOUGH_TRAJECTORIES = Math.min(MAXIMUM_TRAJECTORIES, 
+							constants.COUNT_ENOUGH_TRAJECTORIES*constants.ADAPATION_FACTOR);
+					
+				}
+			}
 			
 			System.err.println("It took "+delay.howLong());
 //			System.err.println(playground.toString());

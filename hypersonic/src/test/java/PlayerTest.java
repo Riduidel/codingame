@@ -182,7 +182,7 @@ public class PlayerTest {
 			}
 			
 		}
-		private TestTrajectoryBuilder builder(Player.Playground read, Player.Delay delay, Player.EvolvableConstants evolvableConstants) {
+		public static TestTrajectoryBuilder builder(Player.Playground read, Player.Delay delay, Player.EvolvableConstants evolvableConstants) {
 			return new TestTrajectoryBuilder(read, delay, evolvableConstants);
 		}
 		@Test public void can_derive_a_move() {
