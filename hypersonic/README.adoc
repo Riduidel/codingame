@@ -55,8 +55,8 @@ enum Actions {
 class Playground
 Playground : int width
 Playground : int height
-Playground : Content[][] positions
 
+Playground "1" *-- "*" Content : [][]positions
 
 class Entity
 Entity : int x
@@ -145,17 +145,6 @@ enum Action {
     MOVE, 
     BOMB
 }
-interface ContentVisitor<Type> {
-		Type visitNothing(Nothing nothing);
-		Type visitBox(Box box);
-		Type visitWall(Wall wall);
-		Type visitGamer(Gamer gamer);
-		Type visitBomb(Bomb bomb);
-		Type visitItem(Item item);
-		Type visitFire(Fire fire);
-		Type visitFireThenItem(FireThenItem fireThenItem);
-		Type visitBombDanger(BombDanger bombDanger);
-	}
 interface Content
 Content<|--Nothing
 Content<|--BombDanger
@@ -173,18 +162,19 @@ Entity<|--Gamer
 Gamer : int id
 Gamer : int bombs
 Gamer : int range
+Entity<|--Item
 Item : int type
 Entity <|-- Step
 Step : int score
-Step : Playgroung playground
-Step : Entity current
-Step : Action action
-Step : Gamer gamer
+Step "1" *-- "1" Playground : playground
+Step "1" *-- "1" Entity : current
+Step "1" *-- "1" Action : action
+Step "1" *-- "1" Gamer : gamer
 class Playground {
     int width
     int height
-    Content[][] positions
 }
+Playground "1" *-- "*" Content : [][]positions
 interface PlaygroundVisitor<Type> {
 		void startVisit(Playground playground);
 		void startVisitRow(int y);
@@ -192,15 +182,49 @@ interface PlaygroundVisitor<Type> {
 		Type endVisit(Playground playground);
 		void visit(int x, int y, Content content);
 }
+interface ContentVisitor<Type> {
+		Type visitNothing(Nothing nothing);
+		Type visitBox(Box box);
+		Type visitWall(Wall wall);
+		Type visitGamer(Gamer gamer);
+		Type visitBomb(Bomb bomb);
+		Type visitItem(Item item);
+		Type visitFire(Fire fire);
+		Type visitFireThenItem(FireThenItem fireThenItem);
+		Type visitBombDanger(BombDanger bombDanger);
+	}
 class Trajectory {
     int score
-    List<Step> steps
 }
+Trajectory "1" *-- "*" Step : steps
 --
 
 Qu'est-ce qu'on fait avec tout ça ?
 
+==== Une vision à jour du terrain
+
 Eh bien c'est assez simple : on visite le `Playground` pour construire sa version suivante, ce qui permet facilement, pour chaque action possible, d'obtenir un état fiable du `Playground` après cette action. Ca, je l'ai testé et re-testé, et ça marche très bien.
+
+Autrement dit, j'ai créé une classe `PlaygroundDeriver` qui, visite le `Playground` à l'instant n (je l'appelle `current`) pour générer celui de l'instant n+1 (je l'appelle `derived`). Pour chaque position `(x,y)`, ce `PlaygroundDeriver` visite le contenu et effectue les opérations suivantes
+
+===== Les cas simples
+* Si `current(x,y)` contient `Nothing` , et que `derived(x,y)` ne contient ni ` Fire`, ni `FireThenItem`, je met `Nothing` dans `derived(x,y)`.
+* Si `current(x,y)` contient `BombDanger` , et que `derived(x,y)` ne contient pas ` Fire`, je met `BombDanger` dans `derived(x,y)`.
+* Si `current(x,y)` contient `Box` , et que `derived(x,y)` ne contient ni ` Fire`, ni `FireThenItem`, je met `Box` dans `derived(x,y)`. Dans le cas contraire, je mets `FireThenItem`
+* Si `current(x,y)` contient `Wall` , je mets `Wall` dans `derived(x,y)`.
+* Si `current(x,y)` contient `Gamer` , je mets `Gamer` dans `derived(x,y)`. Autrement dit, les ennemis ne bougent pas, et ne meurent pas.
+* Si `current(x,y)` contient `Item` , et que `derived(x,y)` ne contient ni ` Fire`, ni `FireThenItem`, je met `Item` dans `derived(x,y)`. Dans le cas contraire, je mets `Fire`, ce qui aura pour effet de supprimer le bonus au tour suivant.
+* Si `current(x,y)` contient `Fire` , je mets `Nothing` dans `derived(x,y)`.
+* Si `current(x,y)` contient `FireThenItem` , je mets `Item` dans `derived(x,y)`.
+* Si `current(x,y)` contient `Bomb` , c'est chaud
+
+===== Ca fait quoi une bombe ?
+Avant l'explosion, je place ` BombDanger` autour de l'explosion, et une nouvelle bombe avec un `delay` réduit de 1. Evidement, si il y a `Fire` à l'emplacement de la bombe, j'y mets le feu en appelant la méthode `fireBomb`. De la même manière, quand le délai passe à 0, je remplace la bombe et tous les `BombDanger` par des `Fire`.
+
+===== Et ça marche ?
+Suffisement pour que les tests de `PlayerTest` soient toujours au vert.
+
+==== Des trajectoires
 
 Une fois qu'on a ça, on peut construire facilement des trajectoires ... Et malheureusement, c'est là que ça se corse.
 
