@@ -35,7 +35,15 @@
 			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
+				<scope>test</scope>
 				<version>3.5.2</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/pl.pragmatists/JUnitParams -->
+			<dependency>
+				<groupId>pl.pragmatists</groupId>
+				<artifactId>JUnitParams</artifactId>
+				<scope>test</scope>
+				<version>1.0.5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -49,14 +57,30 @@
 		</resources>
 		<pluginManagement>
 			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.19</version>
+					<version>2.19.1</version>
 				</plugin>
-	
+
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.2</version>
+					<version>3.5.1</version>
 					<configuration>
 						<source>${java.version}</source>   <!-- It's 2k15 ! -->
 						<target>${java.version}</target>
@@ -110,5 +134,7 @@
 	</build>
 	<modules>
 		<module>hypersonic</module>
+		<module>libs</module>
+		<module>the_accountant</module>
 	</modules>
 </project>
