@@ -162,6 +162,9 @@ public class Assembler extends AbstractMojo {
 		String playerClassName = getPublicClassFullName(playerUnit);
 		// Before all, remove package declaration
 		playerUnit.setPackage(null);
+		// And mark the class as non public, otherwise Codingame won't accept it
+		ClassOrInterfaceDeclaration playerClass = getPublicClassIn(playerUnit);
+		playerClass.setModifiers(0);
 		output.getParentFile().mkdirs();
 		if(output.exists())
 			output.delete();
@@ -173,24 +176,31 @@ public class Assembler extends AbstractMojo {
 				}
 			}
 		}
+		Collection<ImportDeclaration> importsToRemove = new ArrayList<>();
 		// And now, for each compilation unit that is not the input file, add class as static class
 		// and not yet imported imports
 		for(Map.Entry<String, CompilationUnit> entry : classes.entrySet()) {
 			if(!playerClassName.equals(entry.getKey()))
-				extendPlayerClassUsing(playerUnit, player, entry.getKey(), entry.getValue());
+				importsToRemove.addAll(extendPlayerClassUsing(playerUnit, player, entry.getKey(), entry.getValue()));
 		}
+		playerUnit.getImports().removeAll(importsToRemove);
 		FileUtils.write(output, playerUnit.toString());
 	}
 
 	private String getPublicClassFullName(CompilationUnit playerUnit) {
-		ClassOrInterfaceDeclaration playerClass = (ClassOrInterfaceDeclaration) playerUnit.getTypes().stream()
-				.findFirst()
-				.filter(t -> Modifier.isPublic(t.getModifiers()))
-				.get();
+		ClassOrInterfaceDeclaration playerClass = getPublicClassIn(playerUnit);
 		String playerClassName  = playerUnit.getPackage().getPackageName()+"."+playerClass.getName();
 		return playerClassName;
 	}
-	private void extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
+
+	private ClassOrInterfaceDeclaration getPublicClassIn(CompilationUnit playerUnit) {
+		ClassOrInterfaceDeclaration playerClass = (ClassOrInterfaceDeclaration) playerUnit.getTypes().stream()
+				.findFirst()
+				.filter(t -> Modifier.isPublic(t.getModifiers()))
+				.orElseThrow(() -> new RuntimeException("Each java source should contain a public class, or else it's impossible for me to assemble them"));
+		return playerClass;
+	}
+	private Collection<ImportDeclaration> extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
 		// Now remove import of that class and its inner classes
 		List<ImportDeclaration> toRemove = new ArrayList<>();
 		for(ImportDeclaration declaration : playerCompilationUnit.getImports()) {
@@ -198,7 +208,6 @@ public class Assembler extends AbstractMojo {
 				toRemove.add(declaration);
 			}
 		}
-		playerCompilationUnit.getImports().removeAll(toRemove);
 		// Then added required import declaration
 		for(ImportDeclaration declaration : addedClass.getImports()) {
 			if(!playerCompilationUnit.getImports().contains(declaration)) {
@@ -211,5 +220,6 @@ public class Assembler extends AbstractMojo {
 			declaration.setModifiers(0);
 			playerCompilationUnit.getTypes().add(declaration);
 		}
+		return toRemove;
 	}
 }
