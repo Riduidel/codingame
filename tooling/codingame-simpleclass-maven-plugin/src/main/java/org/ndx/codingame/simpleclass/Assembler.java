@@ -222,7 +222,10 @@ public class Assembler extends AbstractMojo {
 		
 		
 		for(TypeDeclaration declaration : addedClass.getTypes()) {
+			boolean abstractClass = Modifier.isAbstract(declaration.getModifiers());
 			declaration.setModifiers(0);
+			if(abstractClass)
+				declaration.setModifiers(Modifier.ABSTRACT);
 			playerCompilationUnit.getTypes().add(declaration);
 		}
 		return toRemove;
