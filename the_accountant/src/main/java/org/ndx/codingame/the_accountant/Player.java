@@ -1,8 +1,10 @@
 package org.ndx.codingame.the_accountant;
 
-import java.util.*;
-import java.io.*;
-import java.math.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Scanner;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Shoot enemies before they collect all the incriminating data!
@@ -27,20 +29,28 @@ public class Player {
                 data.add(new DataPoint(dataId, dataX, dataY));
             }
             int enemyCount = in.nextInt();
-            Collection<Enemy> enemies= new ArrayList<>();
+            SortedSet<Enemy> enemies = new TreeSet<>();
             for (int i = 0; i < enemyCount; i++) {
                 int enemyId = in.nextInt();
                 int enemyX = in.nextInt();
                 int enemyY = in.nextInt();
                 int enemyLife = in.nextInt();
-                enemies.add(new Enemy(enemyId, enemyX, enemyY, enemyLife));
+                Enemy current = new Enemy(enemyId, enemyX, enemyY, enemyLife);
+                if(dataCount>0) {
+                	current.findTargetIn(data);
+                } else {
+                	current.target = agent;
+                	current.distance = current.distance2To(agent);
+                }
+                enemies.add(current);
             }
+            agent.protectingDataPoints(data);
+            // Now we have our enemies, sort them by distance to their target
+            for (Enemy enemy : enemies) {
+				agent.refineStrategy(enemy);
+			}
 
-            // Write an action using System.out.println()
-            // To debug: System.err.println("Debug messages...");
-            agent.protectPointsFromEnemies(data, enemies);
-
-            System.out.println("MOVE 8000 4500"); // MOVE x y or SHOOT id
+            System.out.println(agent.executeStrategy()); // MOVE x y or SHOOT id
         }
     }
 }
