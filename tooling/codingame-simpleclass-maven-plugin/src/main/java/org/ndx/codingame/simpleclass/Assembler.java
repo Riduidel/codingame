@@ -71,8 +71,7 @@ public class Assembler extends AbstractMojo {
 			classes.putAll(parseSources(sourceFiles));
 			getLog().info("Parse all dependencies of type source");
 			classes.putAll(parseDependencies());
-			getLog().info("Found ???");
-			getLog().info("Extend local Player class (found at ???) with all local classes and classes found in sources");
+			getLog().info(String.format("Extend local Player class (found at %s) with all local classes and classes found in sources", playerClass));
 			createExtendedPlayerClassUsing(playerClass, output, classes);
 		} catch(Exception e) {
 			throw new MojoExecutionException("Unable to create compressed Player class", e);
