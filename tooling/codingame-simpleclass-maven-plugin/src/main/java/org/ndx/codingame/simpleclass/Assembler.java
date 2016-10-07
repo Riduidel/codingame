@@ -34,7 +34,14 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.comments.BlockComment;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.visitor.GenericVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 @Mojo(name = "assemble",
 		requiresDependencyResolution=ResolutionScope.RUNTIME,
@@ -105,7 +112,7 @@ public class Assembler extends AbstractMojo {
 						for(FileObject f : javaFiles) {
 							try {
 								try(InputStream s = f.getContent().getInputStream()) {
-									CompilationUnit loadedClass = JavaParser.parse(s);
+									CompilationUnit loadedClass = parse(s);
 									units.put(getPublicClassFullName(loadedClass), loadedClass);
 								}
 							} catch(Exception e) {
@@ -124,10 +131,27 @@ public class Assembler extends AbstractMojo {
 	private Map<String, CompilationUnit> parseSources(Collection<File> sourceFiles) throws ParseException, IOException {
 		Map<String, CompilationUnit> units = new HashMap<>();
 		for(File f : sourceFiles) {
-			CompilationUnit parsed = JavaParser.parse(f);
+			CompilationUnit parsed = parse(f);
 			units.put(getPublicClassFullName(parsed), parsed);
 		}
 		return units;
+	}
+
+	private CompilationUnit parse(InputStream s) throws ParseException {
+		return augment(JavaParser.parse(s));
+	}
+
+	/**
+	 * Add line number comments for easier source mapping
+	 * @param parse
+	 * @return
+	 */
+	private CompilationUnit augment(CompilationUnit parse) {
+		return parse;
+	}
+
+	private CompilationUnit parse(File f) throws ParseException, IOException {
+		return augment(JavaParser.parse(f));
 	}
 	
 	/**
@@ -158,7 +182,7 @@ public class Assembler extends AbstractMojo {
 	}
 
 	private void createExtendedPlayerClassUsing(File input, File output, Map<String, CompilationUnit> classes) throws Exception {
-		CompilationUnit playerUnit = JavaParser.parse(input);
+		CompilationUnit playerUnit = parse(input);
 		String playerClassName = getPublicClassFullName(playerUnit);
 		// Before all, remove package declaration
 		playerUnit.setPackage(null);
@@ -176,15 +200,34 @@ public class Assembler extends AbstractMojo {
 				}
 			}
 		}
-		Collection<ImportDeclaration> importsToRemove = new ArrayList<>();
+		Collection<String> importsToRemove = extendPlayerClassUsing(classes, playerUnit, playerClassName, player);
+		cleanupImports(playerUnit, importsToRemove);
+		FileUtils.write(output, playerUnit.toString());
+	}
+
+	private void cleanupImports(CompilationUnit playerUnit, Collection<String> importsToRemove) {
+		Collection<ImportDeclaration> declarationsToRemove = new ArrayList<>();
+		for(ImportDeclaration d : playerUnit.getImports()) {
+			if(importsToRemove.contains(d.getName().toString())) {
+				declarationsToRemove.add(d);
+			}
+		}
+		playerUnit.getImports().removeAll(declarationsToRemove);
+	}
+
+	private Collection<String> extendPlayerClassUsing(Map<String, CompilationUnit> classes, CompilationUnit playerUnit,
+			String playerClassName, ClassOrInterfaceDeclaration player) {
+		Collection<String> importsToRemove = new ArrayList<>();
 		// And now, for each compilation unit that is not the input file, add class as static class
 		// and not yet imported imports
 		for(Map.Entry<String, CompilationUnit> entry : classes.entrySet()) {
-			if(!playerClassName.equals(entry.getKey()))
-				importsToRemove.addAll(extendPlayerClassUsing(playerUnit, player, entry.getKey(), entry.getValue()));
+			String className = entry.getKey();
+			if(!playerClassName.equals(className)) {
+				extendPlayerClassUsing(playerUnit, player, className, entry.getValue());
+				importsToRemove.add(className);
+			}
 		}
-		playerUnit.getImports().removeAll(importsToRemove);
-		FileUtils.write(output, playerUnit.toString());
+		return importsToRemove;
 	}
 
 	private String getPublicClassFullName(CompilationUnit playerUnit) {
@@ -205,14 +248,8 @@ public class Assembler extends AbstractMojo {
 				.orElseThrow(() -> new RuntimeException("Each java source should contain a public class, or else it's impossible for me to assemble them"));
 		return playerClass;
 	}
-	private Collection<ImportDeclaration> extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
+	private void extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
 		// Now remove import of that class and its inner classes
-		List<ImportDeclaration> toRemove = new ArrayList<>();
-		for(ImportDeclaration declaration : playerCompilationUnit.getImports()) {
-			if(declaration.toString().contains(addedClassQualifiedName)) {
-				toRemove.add(declaration);
-			}
-		}
 		// Then added required import declaration
 		for(ImportDeclaration declaration : addedClass.getImports()) {
 			if(!playerCompilationUnit.getImports().contains(declaration)) {
@@ -228,6 +265,5 @@ public class Assembler extends AbstractMojo {
 				declaration.setModifiers(Modifier.ABSTRACT);
 			playerCompilationUnit.getTypes().add(declaration);
 		}
-		return toRemove;
 	}
 }
