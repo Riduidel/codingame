@@ -188,4 +188,12 @@ public class Line implements PointBuilder<Point> {
 			return second;
 		return new Point(x, y);
 	}
+
+	public <Type extends Point> Type pointAtAngle(Point center, int angle, double radius, PointBuilder<Type> builder) {
+		double combinedAngle = Math.toRadians(angle()+angle);
+		return builder.build(
+				center.x+Math.cos(combinedAngle)*radius,
+				center.y+Math.sin(combinedAngle)*radius
+				);
+	}
 }

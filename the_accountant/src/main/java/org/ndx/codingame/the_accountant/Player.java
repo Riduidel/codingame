@@ -36,21 +36,14 @@ public class Player {
                 int enemyY = in.nextInt();
                 int enemyLife = in.nextInt();
                 Enemy current = new Enemy(enemyId, enemyX, enemyY, enemyLife);
-                if(dataCount>0) {
-                	current.findTargetIn(data);
-                } else {
-                	current.target = agent;
-                	current.distance = current.distance2To(agent);
-                }
+                current.selectTargetBetween(agent, data);
                 enemies.add(current);
             }
-            agent.protectingDataPoints(data);
-            // Now we have our enemies, sort them by distance to their target
-            for (Enemy enemy : enemies) {
-				agent.refineStrategy(enemy);
-			}
+            Playground p = new Playground(data, enemies);
+            
+            System.err.println(p.toUnitTestString(agent));
 
-            System.out.println(agent.executeStrategy()); // MOVE x y or SHOOT id
+            System.out.println(p.executeStrategy(agent)); // MOVE x y or SHOOT id
         }
     }
 }

@@ -3,6 +3,7 @@ package org.ndx.codingame.lib2d;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class Circle {
 
@@ -14,6 +15,9 @@ public class Circle {
 		this.center = center;
 		this.radius = radius;
 		this.squaredRadius = radius*radius;
+	}
+	public boolean includesOrContains(Point point) {
+		return center.distance2SquaredTo(point)<=squaredRadius;
 	}
 	
 	public boolean includes(Point point) {
@@ -31,7 +35,7 @@ public class Circle {
 			return Collections.emptyList();
 		} else if(center.distance2To(other.center)==radius+other.radius) {
 			Segment segment = new Segment(center, other.center);
-			return Arrays.asList(segment.pointAtDistance(center, radius, new PointBuilder.DefaultPointBuilder()));
+			return Arrays.asList(segment.pointAtDistance(center, radius, PointBuilder.DEFAULT));
 		} else {
 			double x0 = center.x,
 					x0_2 = x0*x0,
@@ -118,5 +122,10 @@ public class Circle {
 		if (Double.doubleToLongBits(radius) != Double.doubleToLongBits(other.radius))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Circle [center=" + center + ", radius=" + radius + "]";
 	}
 }
