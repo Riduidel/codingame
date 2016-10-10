@@ -15,7 +15,7 @@ public class LineTest {
 		assertThat(tested.coeffs.b).isEqualTo(1);
 		assertThat(tested.coeffs.c).isEqualTo(1);
 		assertThat(tested.angle()).isEqualTo(0);
-		assertThat(tested.distanceTo(at(0, 0))).isEqualTo(1);
+		assertThat(tested.distance2To(at(0, 0))).isEqualTo(1);
 		assertThat(tested.project(at(0, 0))).isEqualTo(at(0, 1));
 		assertThat(tested.symetricOf(at(0, 0))).isEqualTo(at(0, 2));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(2, 1));
@@ -27,7 +27,7 @@ public class LineTest {
 		assertThat(tested.coeffs.b).isEqualTo(0);
 		assertThat(tested.coeffs.c).isEqualTo(-1);
 		assertThat(tested.angle()).isEqualTo(90);
-		assertThat(tested.distanceTo(at(3, 1))).isEqualTo(2);
+		assertThat(tested.distance2To(at(3, 1))).isEqualTo(2);
 		assertThat(tested.project(at(0, 0))).isEqualTo(at(1, 0));
 		assertThat(tested.symetricOf(at(0, 0))).isEqualTo(at(2, 0));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(1, 2));
@@ -47,7 +47,7 @@ public class LineTest {
 		assertThat(tested.coeffs.b).isEqualTo(1);
 		assertThat(tested.coeffs.c).isEqualTo(0);
 		assertThat(tested.angle()).isEqualTo(45);
-		assertThat(tested.distanceTo(at(2, 0))).isCloseTo(sqrt(2), within(Geometry.ZERO));
+		assertThat(tested.distance2To(at(2, 0))).isCloseTo(sqrt(2), within(Geometry.ZERO));
 		assertThat(tested.project(at(0, 1))).isEqualTo(at(0.5, 0.5));
 		assertThat(tested.symetricOf(at(0, 1))).isEqualTo(at(1, 0));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(2, 2));

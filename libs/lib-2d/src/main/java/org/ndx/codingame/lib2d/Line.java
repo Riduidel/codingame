@@ -1,6 +1,6 @@
 package org.ndx.codingame.lib2d;
 
-public class Line {
+public class Line implements PointBuilder<Point> {
 	public static class Coeffs {
 		public final double a;
 		public final double b;
@@ -63,7 +63,7 @@ public class Line {
 			// first, get distance between the two points of the line
 			double referenceDistance = first.distance2To(second);
 			double multiplier = length/referenceDistance;
-			return new Segment(start, pointAtNTimesOf(start, multiplier));
+			return new Segment(start, pointAtNTimesOf(start, multiplier, Line.this));
 		}
 		
 	}
@@ -77,12 +77,12 @@ public class Line {
 		this.coeffs = new Coeffs(first, second);
 	}
 
-	public double distanceTo(Point point) {
+	public double distance2To(Point point) {
 		return Math.abs(coeffs.lineEquationFor(point))/coeffs.lineNorm;
 	}
 
 	public Point project(Point point) {
-		if(distanceTo(point)<0.001)
+		if(distance2To(point)<0.001)
 			return point;
 		double projection = ((second.x-first.x)*(point.x-second.x)+(second.y-first.y)*(point.y-second.y))/coeffs.squareNorm;
 		// coordinates
@@ -92,7 +92,7 @@ public class Line {
 	}
 
 	public Point symetricOf(Point point) {
-		if(distanceTo(point)<0.001)
+		if(distance2To(point)<0.001)
 			return point;
 		Point projected = project(point);
 		Line orthogonal = new Line(point, projected);
@@ -105,14 +105,18 @@ public class Line {
 	 * @return
 	 */
 	public Point pointAtNTimes(double i) {
-		return pointAtNTimesOf(first, i);
+		return pointAtNTimesOf(first, i, this);
 	}
 
-	protected Point pointAtNTimesOf(Point p, double i) {
-		double x = 0;
-		double y = 0;
+	public <Type extends Point> Type  pointAtNTimes(double i, PointBuilder<Type> builder) {
+		return pointAtNTimesOf(first, i, builder);
+	}
+
+	protected <Type extends Point> Type pointAtNTimesOf(Point p, double i, PointBuilder<Type> builder) {
+		double x = p.x;
+		double y = p.y;
 		if(first.distance2To(second)<Geometry.ZERO)
-			return first;
+			return builder.build(x, y);
 		if(coeffs.isHorizontalLine()) {
 			y = p.y;
 			x = i*(second.x-first.x)+p.x;
@@ -123,7 +127,7 @@ public class Line {
 			x = i*(second.x-first.x)+p.x;
 			y = coeffs.computeYFromX(x);
 		}
-		return new Point(x, y);
+		return builder.build(x, y);
 	}
 
 	public double angleWith(Line aim) {
@@ -174,5 +178,14 @@ public class Line {
 		} else if (!second.equals(other.second))
 			return false;
 		return true;
+	}
+
+	@Override
+	public Point build(double x, double y) {
+		if(x==first.x && y==first.y)
+			return first;
+		else if(x==second.x && y==second.y)
+			return second;
+		return new Point(x, y);
 	}
 }

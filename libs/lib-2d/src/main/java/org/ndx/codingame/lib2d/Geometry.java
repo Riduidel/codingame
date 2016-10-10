@@ -20,13 +20,8 @@ public class Geometry {
 			return new Line(first, second);
 		}
 		
-		public Rectangle rectangleTo(Point second) {
-			return new Rectangle(
-					Math.max(first.y, second.y),
-					Math.min(first.y, first.y),
-					Math.min(first.x, second.y),
-					Math.max(first.x, second.y)
-					);
+		public Circle cirleOf(double radius) {
+			return new Circle(first, radius);
 		}
 	}
 	public static final Point at(double x, double y) {
@@ -35,6 +30,9 @@ public class Geometry {
 
 	public static final double ZERO = 0.00001;
 
+	public static GeometryBuilder from(double x, double y) {
+		return from(at(x, y));
+	}
 	public static GeometryBuilder from(Point at) {
 		return new GeometryBuilder(at);
 	}
