@@ -1,5 +1,7 @@
 package org.ndx.codingame.lib2d;
 
+import static java.lang.Math.pow;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,7 +16,7 @@ public class Circle {
 	public Circle(Point center, double radius) {
 		this.center = center;
 		this.radius = radius;
-		this.squaredRadius = radius*radius;
+		this.squaredRadius = pow(radius, 2);
 	}
 	public boolean includesOrContains(Point point) {
 		return center.distance2SquaredTo(point)<=squaredRadius;
@@ -38,15 +40,15 @@ public class Circle {
 			return Arrays.asList(segment.pointAtDistance(center, radius, PointBuilder.DEFAULT));
 		} else {
 			double x0 = center.x,
-					x0_2 = x0*x0,
+					x0_2 = pow(x0, 2),
 					y0 = center.y,
-					y0_2 = y0*y0,
+					y0_2 = pow(y0, 2),
 					r0 = radius,
 					r0_2 = squaredRadius,
 					x1 = other.center.x,
-					x1_2 = x1*x1,
+					x1_2 = pow(x1, 2),
 					y1 = other.center.y,
-					y1_2 = y1*y1,
+					y1_2 = pow(y1, 2),
 					r1 = other.radius,
 					r1_2 = other.squaredRadius,
 					A,
@@ -91,6 +93,34 @@ public class Circle {
 			return Arrays.asList(
 					new Point(result_x_0, result_y_0),
 					new Point(result_x_1, result_y_1));
+		}
+	}
+	
+	public Collection<Point> intersectionWith(Line line) {
+		if(Math.abs(line.coeffs.b)<Geometry.ZERO) {
+			double a = line.coeffs.b/line.coeffs.a,
+					b = line.coeffs.c/line.coeffs.a;
+			double A = 1+pow(a, 2);
+			double B = 2*(a*(b-center.y)-center.y);
+			double C = pow(center.y, 2) + pow(b-center.x, 2) - squaredRadius;
+			double[] solutions = Algebra.solutionsOf(A, B, C);
+			Collection<Point> returned = new HashSet<>();
+			for(double y : solutions) {
+				returned.add(new Point(line.coeffs.computeXFromY(y), y));
+			}
+			return returned;
+		} else {
+			double a = line.coeffs.a/line.coeffs.b,
+					b = line.coeffs.c/line.coeffs.b;
+			double A = 1+pow(a, 2);
+			double B = 2*(a*(b-center.y)-center.x);
+			double C = pow(center.x, 2) + pow(b-center.y, 2) - squaredRadius;
+			double[] solutions = Algebra.solutionsOf(A, B, C);
+			Collection<Point> returned = new HashSet<>();
+			for(double x : solutions) {
+				returned.add(new Point(x, line.coeffs.computeYFromX(x)));
+			}
+			return returned;
 		}
 	}
 

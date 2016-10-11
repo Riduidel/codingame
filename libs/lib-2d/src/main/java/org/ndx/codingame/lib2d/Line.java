@@ -19,13 +19,13 @@ public class Line implements PointBuilder<Point> {
 		}
 
 		protected double computeXFromY(double y) {
-			if(isHorizontalLine()||isVerticalLine())
+			if(isHorizontalLine())
 				throw new UnsupportedOperationException("can't compute x from y on vertical or horizontal line");
 			return (b*y+c)/a;
 		}
 
 		protected double computeYFromX(double x) {
-			if(isHorizontalLine()||isVerticalLine())
+			if(isVerticalLine())
 				throw new UnsupportedOperationException("can't compute y from x on vertical or horizontal line");
 			return (a*x+c)/b;
 		}

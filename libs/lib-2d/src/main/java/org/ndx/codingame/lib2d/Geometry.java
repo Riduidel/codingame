@@ -16,6 +16,9 @@ public class Geometry {
 			this.first = at;
 		}
 
+		public Line lineTo(double x, double y) {
+			return lineTo(at(x, y));
+		}
 		public Line lineTo(Point second) {
 			return new Line(first, second);
 		}

@@ -4,8 +4,12 @@ public class Algebra {
 
 	public static double[] solutionsOf(double A, double B, double C) {
 		double delta = Math.sqrt(B*B-4*A*C);
-		
-		return new double[] {(-B+delta)/(2*A), (-B-delta)/(2*A)};
+		if(delta>0)
+			return new double[] {(-B+delta)/(2*A), (-B-delta)/(2*A)};
+		else if(delta==0)
+			return new double[] {(-B)/(2*A)};
+		else
+			return new double[] {};
 	}
 
 }

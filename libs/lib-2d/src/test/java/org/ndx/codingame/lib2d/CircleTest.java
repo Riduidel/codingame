@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.ndx.codingame.lib2d.Geometry.at;
 import static org.ndx.codingame.lib2d.Geometry.from;
 
+import java.util.Collection;
+
 import org.junit.Test;
 
 public class CircleTest {
@@ -12,11 +14,11 @@ public class CircleTest {
 
 	@Test
 	public void a_circle_contains_a_point() {
-		assertThat(from(0, 0).cirleOf(2).contains(at(0, 1))).isTrue();
+		assertThat(from(0, 0).cirleOf(2).includes(at(0, 1))).isTrue();
 	}
 	}
 
-	public static class IntersectionTest {
+	public static class IntersectionWithCircleTest {
 		@Test
 		public void circle_intersects_with_himself_producing_nothing() {
 			Circle first = from(0, 0).cirleOf(2);
@@ -35,6 +37,28 @@ public class CircleTest {
 			Circle second = from(2, 0).cirleOf(1);
 			assertThat(first.intersectionWith(second))
 				.containsExactly(at(1, 0));
+		}
+	}
+
+	public static class IntersectionWithLineTest {
+		@Test
+		public void circle_intersects_with_horizontal() {
+			Circle first = from(0, 0).cirleOf(2);
+			assertThat(first.intersectionWith(from(0, 0).lineTo(1, 0)))
+				.containsExactly(at(2, 0), at(-2, 0));
+		}
+		@Test
+		public void circle_intersects_with_vertical() {
+			Circle first = from(0, 0).cirleOf(2);
+			assertThat(first.intersectionWith(from(0, 0).lineTo(0, 1)))
+				.containsExactly(at(0, 2), at(0, -2));
+		}
+		@Test
+		public void circle_intersects_with_diagonal() {
+			Circle first = from(0, 0).cirleOf(2);
+			double sqrt_2 = sqrt(2);
+			assertThat(first.intersectionWith(from(0, 0).lineTo(1, 1)))
+				.containsExactly(at(sqrt_2, sqrt_2), at(-sqrt_2, -sqrt_2));
 		}
 	}
 }
