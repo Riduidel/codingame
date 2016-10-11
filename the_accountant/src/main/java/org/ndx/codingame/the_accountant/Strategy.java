@@ -32,7 +32,7 @@ public class Strategy implements Comparable<Strategy> {
 				Collection<Enemy> enemies = new ArrayList<>(playground.enemies.size()*2);
 //				enemies.addAll(playground.enemies);
 				enemies.addAll(nextOne.enemies);
-				Agent nextAgent = strategy.agent.computeLocation(nextEnemy, enemies);
+				Agent nextAgent = strategy.agent.computeLocation(playground, nextEnemy, enemies);
 				Strategy returned = new Strategy(
 						nextAgent, 
 						nextEnemy,
@@ -57,7 +57,7 @@ public class Strategy implements Comparable<Strategy> {
 					Collection<Enemy> enemies = new ArrayList<>(strategy.playground.enemies.size()*2);
 //					enemies.addAll(strategy.playground.enemies);
 					enemies.addAll(nextOne.enemies);
-					destination = strategy.agent.computeLocation(nextEnemy, nextOne.enemies);
+					destination = strategy.agent.computeLocation(nextOne, nextEnemy, nextOne.enemies);
 				}
 				// Move directly in enemy direction
 				return String.format("MOVE %d %d", (int) destination.x, (int) destination.y);

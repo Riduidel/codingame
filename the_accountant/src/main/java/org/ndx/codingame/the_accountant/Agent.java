@@ -38,16 +38,34 @@ public class Agent extends Point implements PointBuilder<Agent> {
 		return distance2To(enemy)<=DEAD_ZONE+MAXIMUM_MOVE;
 	}
 
-	public Agent computeLocation(final Point target, Collection<Enemy> enemies) {
+	/**
+	 * 
+	 * @param playground used <b>only</b> for size computation and evasion tactics
+	 * @param target
+	 * @param enemies
+	 * @return
+	 */
+	public Agent computeLocation(Playground playground, final Point target, Collection<Enemy> enemies) {
 		Segment optimalDirection = new Segment(this, target);
 		Collection<Enemy> dangerous = enemies.stream()
-				.filter((e)->distance2To(e)<DANGER_ZONE+Enemy.ENEMY_SPEED)
+				.filter((e)->distance2To(e)<DANGER_ZONE)
 				.collect(Collectors.toList());
 		Agent initialAgent = optimalDirection.pointAtDistance(this, MAXIMUM_MOVE, this);
 		if(dangerous.size()>0) {
 			Point barycenter = Geometry.barycenterOf(dangerous);
 			Segment runAway = new Segment(barycenter, this);
 			Agent finalAgent = runAway.pointAtDistance(barycenter, Enemy.ENEMY_SPEED+DEAD_ZONE, this);
+			double nearest = 16000;
+			for (Enemy enemy : dangerous) {
+				if(enemy.distance2To(finalAgent)<nearest)
+					nearest = enemy.distance2To(finalAgent);
+			}
+			if(finalAgent.x<0||finalAgent.x>=16000 ||
+					finalAgent.y<0 || finalAgent.y>=9000) {
+				double finalX,
+					finalY;
+				System.err.println("damn, can't go any further");
+			}
 			return finalAgent;
 		} else {
 			return initialAgent;
