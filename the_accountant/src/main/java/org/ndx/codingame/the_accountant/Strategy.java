@@ -32,7 +32,7 @@ public class Strategy implements Comparable<Strategy> {
 				Collection<Enemy> enemies = new ArrayList<>(playground.enemies.size()*2);
 //				enemies.addAll(playground.enemies);
 				enemies.addAll(nextOne.enemies);
-				Agent nextAgent = strategy.agent.computeLocation(playground, nextEnemy, enemies);
+				Agent nextAgent = strategy.agent.computeLocation(nextOne, nextEnemy, enemies);
 				Strategy returned = new Strategy(
 						nextAgent, 
 						nextEnemy,
@@ -113,7 +113,7 @@ public class Strategy implements Comparable<Strategy> {
 	Enemy enemy;
 	public final int depth;
 	public final SortedMap<Strategy, Action> strategies = new TreeMap<>();
-	private int score;
+	public int score;
 	public final Playground playground;
 
 	public Strategy(Agent agent, Enemy enemy, Playground playground, int depth) {
@@ -121,10 +121,6 @@ public class Strategy implements Comparable<Strategy> {
 		this.enemy = enemy;
 		this.playground = playground;
 		this.depth = depth;
-	}
-
-	public boolean isAppliable() {
-		return score>0;
 	}
 
 	public String getStep() {

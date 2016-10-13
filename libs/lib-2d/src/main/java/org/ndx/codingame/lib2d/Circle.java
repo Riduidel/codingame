@@ -60,7 +60,7 @@ public class Circle {
 					result_y_1;
 			// Now come the hard part : solve the point equation
 			// using as reference http://math.15873.pagespro-orange.fr/IntCercl.html
-			if(Math.abs(y0-y1)<Geometry.ZERO) {
+			if(Algebra.isEquals(y0, y1)) {
 				result_x_0 = result_x_1 = 
 						(r1_2-r0_2-x1_2+x0_2)/(2*(x0-x1));
 
@@ -96,10 +96,14 @@ public class Circle {
 		}
 	}
 	
+	public Collection<Point> intersectionWith(Segment segment) {
+		return segment.intersectionWith(this);
+	}
+	
 	public Collection<Point> intersectionWith(Line line) {
-		if(Math.abs(line.coeffs.b)<Geometry.ZERO) {
-			double a = line.coeffs.b/line.coeffs.a,
-					b = line.coeffs.c/line.coeffs.a;
+		if(Algebra.isZero(line.coeffs.b)) {
+			double a = -line.coeffs.b/line.coeffs.a,
+					b = -line.coeffs.c/line.coeffs.a;
 			double A = 1+pow(a, 2);
 			double B = 2*(a*(b-center.y)-center.y);
 			double C = pow(center.y, 2) + pow(b-center.x, 2) - squaredRadius;
@@ -110,8 +114,8 @@ public class Circle {
 			}
 			return returned;
 		} else {
-			double a = line.coeffs.a/line.coeffs.b,
-					b = line.coeffs.c/line.coeffs.b;
+			double a = -line.coeffs.a/line.coeffs.b,
+					b = -line.coeffs.c/line.coeffs.b;
 			double A = 1+pow(a, 2);
 			double B = 2*(a*(b-center.y)-center.x);
 			double C = pow(center.x, 2) + pow(b-center.y, 2) - squaredRadius;
@@ -149,7 +153,7 @@ public class Circle {
 				return false;
 		} else if (!center.equals(other.center))
 			return false;
-		if (Double.doubleToLongBits(radius) != Double.doubleToLongBits(other.radius))
+		if (Algebra.isEquals(radius, other.radius))
 			return false;
 		return true;
 	}

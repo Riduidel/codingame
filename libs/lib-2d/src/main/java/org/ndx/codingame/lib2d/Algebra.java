@@ -12,4 +12,12 @@ public class Algebra {
 			return new double[] {};
 	}
 
+	public static boolean isZero(double b) {
+		return Math.abs(b)<Geometry.ZERO;
+	}
+
+	public static boolean isEquals(double y0, double y1) {
+		return isZero(y0-y1);
+	}
+
 }

@@ -1,17 +1,19 @@
+package org.ndx.codingame.hypersonic;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.ndx.codingame.gaming.Delay;
 
 public class PlayerPerformanceTest {
-	public static Player.Playground read(Collection<String> rows) {
-		Player.Playground returned = null;
+	public static Playground read(Collection<String> rows) {
+		Playground returned = null;
 		int rowIndex = 0;
 		for (String string : rows) {
 			if(returned==null) {
-				returned = new Player.Playground(string.length(), rows.size());
+				returned = new Playground(string.length(), rows.size());
 			}
 			returned.readRow(string, rowIndex++);
 		}
@@ -19,9 +21,9 @@ public class PlayerPerformanceTest {
 	}
 	public static class InGameTests {
 		@Test public void can_find_move_1475247342954() {
-			Player.Delay delay = new PlayerTest.TestDelay(1000000);
-//			Player.Delay delay = new Player.Delay();
-			Player.Playground tested = read(Arrays.asList(
+			Delay delay = new TestDelay(1000000);
+//			Delay delay = new Delay();
+			Playground tested = read(Arrays.asList(
 				"....00.00....",
 				".X.X0X0X0X.X.",
 				"000000.000000",
@@ -34,19 +36,19 @@ public class PlayerPerformanceTest {
 				".X.X0X0X0X.X.",
 				"....00.00...."
 				));
-			Player.Gamer me = new Player.Gamer(0, 0, 0, 1, 3);
+			Gamer me = new Gamer(0, 0, 0, 1, 3);
 			tested.readGameEntities(
-				new Player.Gamer(1, 12, 10, 1, 3),
-				new Player.Bomb(0, 2, 0, 4, 3)
+				new Gamer(1, 12, 10, 1, 3),
+				new Bomb(0, 2, 0, 4, 3)
 				);
 			int turn = 0;
 			while(turn<100) {
-				Player.Trajectory best = new Player.TrajectoryBuilder(tested, delay, new Player.EvolvableConstants())
+				Trajectory best = new TrajectoryBuilder(tested, delay, new EvolvableConstants())
 						.findBest(me);
-				Player.Step step = best.steps.get(0);
+				Step step = best.steps.get(0);
 				assertThat(best.score).isGreaterThan(0);
 				tested = tested.next();
-				me = new Player.Gamer(0, step.x, step.y, 1, 3);
+				me = new Gamer(0, step.x, step.y, 1, 3);
 			}
 		}
 	}

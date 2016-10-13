@@ -1,5 +1,8 @@
 package org.ndx.codingame.lib2d;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 public class Segment extends Line {
 
 	public Segment(Point first, Point second) {
@@ -32,5 +35,10 @@ public class Segment extends Line {
 					point.y<=Math.max(first.y, second.y) && point.y>=Math.min(first.y, second.y);
 		}
 		return false;
+	}
+	
+	@Override
+	public Collection<Point> intersectionWith(Circle circle) {
+		return super.intersectionWith(circle).stream().filter(this::contains).collect(Collectors.toSet());
 	}
 }

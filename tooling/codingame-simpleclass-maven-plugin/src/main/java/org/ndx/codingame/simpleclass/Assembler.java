@@ -208,7 +208,11 @@ public class Assembler extends AbstractMojo {
 	private void cleanupImports(CompilationUnit playerUnit, Collection<String> importsToRemove) {
 		Collection<ImportDeclaration> declarationsToRemove = new ArrayList<>();
 		for(ImportDeclaration d : playerUnit.getImports()) {
-			if(importsToRemove.contains(d.getName().toString())) {
+			String importName = d.getName().toString();
+			if(d.isStatic()) {
+				importName = importName.substring(0, importName.lastIndexOf('.'));
+			}
+			if(importsToRemove.contains(importName)) {
 				declarationsToRemove.add(d);
 			}
 		}

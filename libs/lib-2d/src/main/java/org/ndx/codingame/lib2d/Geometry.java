@@ -1,6 +1,8 @@
 package org.ndx.codingame.lib2d;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Helper class containing builder patterns
@@ -9,6 +11,23 @@ import java.util.Collection;
  */
 public class Geometry {
 	public static class GeometryBuilder {
+		public static class PolygonBuilder {
+			private List<Point> points = new ArrayList<Point>();
+			public PolygonBuilder through(Point p) {
+				points.add(p);
+				return this;
+			}
+			public Polygon build() {
+				switch(points.size()) {
+				case 3:
+					return Triangle.from(points.get(0), points.get(1), points.get(2));
+//				case 4:
+//					return Quadrilater.from(points.get(0), points.get(1), points.get(2), points.get(3));
+				default:
+					throw new UnsupportedOperationException("there is no polygon with %d points");
+				}
+			}
+		}
 
 		private Point first;
 
@@ -25,6 +44,18 @@ public class Geometry {
 		
 		public Circle cirleOf(double radius) {
 			return new Circle(first, radius);
+		}
+
+		public Segment segmentTo(double x, double y) {
+			return segmentTo(at(x, y));
+		}
+
+		public Segment segmentTo(Point p) {
+			return new Segment(first, p);
+		}
+		
+		public PolygonBuilder through(Point p) {
+			return new PolygonBuilder().through(first).through(p);
 		}
 	}
 	public static final Point at(double x, double y) {

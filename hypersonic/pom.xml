@@ -21,6 +21,28 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>${groupId}</groupId>
+			<artifactId>lib-2d</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${groupId}</groupId>
+			<artifactId>lib-2d</artifactId>
+			<version>${project.version}</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${groupId}</groupId>
+			<artifactId>lib-gaming</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${groupId}</groupId>
+			<artifactId>lib-gaming</artifactId>
+			<version>${project.version}</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
@@ -39,6 +61,18 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
-		</plugins>
+<!-- 			<plugin>
+				<groupId>${groupId}</groupId>
+				<artifactId>codingame-simpleclass-maven-plugin</artifactId>
+				<version>${project.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+ -->		</plugins>
 	</build>
 </project>

@@ -42,9 +42,9 @@ public class Point {
 		if (getClass() != obj.getClass())
 			return false;
 		Point other = (Point) obj;
-		if (Double.doubleToLongBits(x) != Double.doubleToLongBits(other.x))
+		if (!Algebra.isEquals(x, other.x))
 			return false;
-		if (Double.doubleToLongBits(y) != Double.doubleToLongBits(other.y))
+		if (!Algebra.isEquals(y, other.y))
 			return false;
 		return true;
 	}

@@ -1,3 +1,4 @@
+package org.ndx.codingame.hypersonic;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -6,6 +7,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import org.ndx.codingame.gaming.Delay;
+import org.ndx.codingame.hypersonic.EvolvableConstants;
+import org.ndx.codingame.hypersonic.Gamer;
+import org.ndx.codingame.hypersonic.Playground;
+import org.ndx.codingame.hypersonic.Trajectory;
 
 public class Evolver {
 	public static final int WIDTH = 13;
@@ -21,13 +28,13 @@ public class Evolver {
 	}
 
 	private static class EvolvableConstantsInfos implements Comparable<EvolvableConstantsInfos> {
-		public final Player.EvolvableConstants constants;
+		public final EvolvableConstants constants;
 		/**
 		 * Number of turns survived
 		 */
 		public long score;
 
-		public EvolvableConstantsInfos(Player.EvolvableConstants constants) {
+		public EvolvableConstantsInfos(EvolvableConstants constants) {
 			super();
 			this.constants = constants;
 		}
@@ -59,7 +66,7 @@ public class Evolver {
 		}
 
 		public EvolvableConstantsInfos hybridate(EvolvableConstantsInfos second) throws Throwable {
-			Player.EvolvableConstants c = new Player.EvolvableConstants();
+			EvolvableConstants c = new EvolvableConstants();
 			for(Field f : c.getClass().getFields()) {
 				if(!Modifier.isStatic(f.getModifiers())) {
 					if(Integer.class.equals(f.getType())) {
@@ -82,7 +89,7 @@ public class Evolver {
 		}
 	}
 	private static EvolvableConstantsInfos createRandomSolution() throws Throwable{
-		Player.EvolvableConstants solution =new Player.EvolvableConstants();
+		EvolvableConstants solution =new EvolvableConstants();
 		for(Field f : solution.getClass().getFields()) {
 			if(!Modifier.isStatic(f.getModifiers())) {
 				if(Integer.class.equals(f.getType())) {
@@ -96,8 +103,8 @@ public class Evolver {
 			EvolvableConstantsInfos second) throws Throwable {
 		return areConvergent(first.constants, second.constants);
 	}
-	private static boolean areConvergent(Player.EvolvableConstants first,
-			Player.EvolvableConstants second) throws Throwable {
+	private static boolean areConvergent(EvolvableConstants first,
+			EvolvableConstants second) throws Throwable {
 		int difference = getConvergenceLevel(first, second);
 		return difference<CONVERGENCE_LIMIT;
 	}
@@ -105,10 +112,10 @@ public class Evolver {
 			EvolvableConstantsInfos second) throws Throwable {
 		return getConvergenceLevel(first.constants, second.constants);
 	}
-	private static int getConvergenceLevel(Player.EvolvableConstants first, Player.EvolvableConstants second)
+	private static int getConvergenceLevel(EvolvableConstants first, EvolvableConstants second)
 			throws IllegalAccessException {
 		int difference = 0;
-		for(Field f : Player.EvolvableConstants.class.getFields()) {
+		for(Field f : EvolvableConstants.class.getFields()) {
 			if(!Modifier.isStatic(f.getModifiers())) {
 				if(Integer.class.equals(f.getType())) {
 					difference+=Math.abs(((Integer)f.get(first))-((Integer)f.get(second))); 
@@ -120,7 +127,7 @@ public class Evolver {
 	public static void main(String[] args) throws Throwable {
 		int count = 0;
 		// make all fields accessible, then generate solutions at random
-		open(Player.EvolvableConstants.class);
+		open(EvolvableConstants.class);
 		List<EvolvableConstantsInfos> constants = new ArrayList<>(NUMBER_OF_SOLUTIONS);
 		for(int index = 0; index<NUMBER_OF_SOLUTIONS; index++) {
 			constants.add(createRandomSolution());
@@ -158,7 +165,7 @@ public class Evolver {
 	}
 	private static void showBestSolutions(List<EvolvableConstantsInfos> infos) throws Throwable {
 		StringBuilder returned = new StringBuilder();
-		for(Field f : Player.EvolvableConstants.class.getFields()) {
+		for(Field f : EvolvableConstants.class.getFields()) {
 			if(!Modifier.isStatic(f.getModifiers())) {
 				if(Integer.class.equals(f.getType())) {
 					for (int index = 0; index < 1; index++) {
@@ -197,9 +204,9 @@ public class Evolver {
 	}
 	
 	public static int score(EvolvableConstantsInfos infos) {
-		Player.Delay delay = new PlayerTest.TestDelay(1000000);
-//		Player.Delay delay = new Player.Delay();
-		Player.Playground tested = PlayerTest.read(Arrays.asList(
+		Delay delay = new TestDelay(1000000);
+//		Delay delay = new Delay();
+		Playground tested = PlayerTest.read(Arrays.asList(
 			"....00.0.....",
 			".X.X0X0X.X.X.",
 			"000000.0.0000",
@@ -212,14 +219,14 @@ public class Evolver {
 			".X.X0X0X.X.X.",
 			"....00.0....."
 			));
-		Player.Gamer me = new Player.Gamer(0, 0, 0, 1, 3);
+		Gamer me = new Gamer(0, 0, 0, 1, 3);
 		tested.readGameEntities(
-			new Player.Gamer(1, 12, 10, 1, 3)
+			new Gamer(1, 12, 10, 1, 3)
 			);
-		Player.Trajectory stupidOne = createStupidTrajectory(infos, delay, tested, me);
-		Player.Trajectory dumbOne = createDumbTrajectory(infos, delay, tested, me);
-		Player.Trajectory suicideOne = createSuicideTrajectory(infos, delay, tested, me);
-		Player.Trajectory smart = createSmartTrajectory(infos, delay, tested, me);
+		Trajectory stupidOne = createStupidTrajectory(infos, delay, tested, me);
+		Trajectory dumbOne = createDumbTrajectory(infos, delay, tested, me);
+		Trajectory suicideOne = createSuicideTrajectory(infos, delay, tested, me);
+		Trajectory smart = createSmartTrajectory(infos, delay, tested, me);
 		return smart.score*10+dumbOne.score-stupidOne.score*10-suicideOne.score*1000;
 	}
 	
@@ -228,8 +235,8 @@ public class Evolver {
 		SMART, DUMB, STUPID, SUICIDE
 	}
 	
-	private static Player.Trajectory createSuicideTrajectory(EvolvableConstantsInfos infos, Player.Delay delay,
-			Player.Playground tested, Player.Gamer me) {
+	private static Trajectory createSuicideTrajectory(EvolvableConstantsInfos infos, Delay delay,
+			Playground tested, Gamer me) {
 		return PlayerTest.TrajectoryTest.builder(tested, delay, infos.constants)
 				.move(1, 0)
 				.bomb(0, 0)
@@ -244,8 +251,8 @@ public class Evolver {
 				.move(0, 0)
 				.build(me, 0);
 	}
-	private static Player.Trajectory createSmartTrajectory(EvolvableConstantsInfos infos, Player.Delay delay,
-			Player.Playground tested, Player.Gamer me) {
+	private static Trajectory createSmartTrajectory(EvolvableConstantsInfos infos, Delay delay,
+			Playground tested, Gamer me) {
 		return PlayerTest.TrajectoryTest.builder(tested, delay, infos.constants)
 				.move(1, 0)
 				.bomb(0, 0)
@@ -259,8 +266,8 @@ public class Evolver {
 				.move(0, 1)
 				.build(me, 0);
 	}
-	private static Player.Trajectory createStupidTrajectory(EvolvableConstantsInfos infos, Player.Delay delay,
-			Player.Playground tested, Player.Gamer me) {
+	private static Trajectory createStupidTrajectory(EvolvableConstantsInfos infos, Delay delay,
+			Playground tested, Gamer me) {
 		return PlayerTest.TrajectoryTest.builder(tested, delay, infos.constants)
 				.bomb(0, 0)
 				.move(0, 0)
@@ -274,8 +281,8 @@ public class Evolver {
 				.move(0, 0)
 				.build(me, 0);
 	}
-	private static Player.Trajectory createDumbTrajectory(EvolvableConstantsInfos infos, Player.Delay delay,
-			Player.Playground tested, Player.Gamer me) {
+	private static Trajectory createDumbTrajectory(EvolvableConstantsInfos infos, Delay delay,
+			Playground tested, Gamer me) {
 		return PlayerTest.TrajectoryTest.builder(tested, delay, infos.constants)
 				.move(0, 0)
 				.move(0, 0)

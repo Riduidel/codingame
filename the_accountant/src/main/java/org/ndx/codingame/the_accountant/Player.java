@@ -6,6 +6,8 @@ import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.ndx.codingame.gaming.Delay;
+
 /**
  * Shoot enemies before they collect all the incriminating data!
  * The closer you are to an enemy, the more damage you do but don't get too close or you'll get killed.
@@ -43,7 +45,7 @@ public class Player {
             
             System.err.println(p.toUnitTestString(agent));
 
-            System.out.println(p.executeStrategy(agent)); // MOVE x y or SHOOT id
+            System.out.println(p.executeStrategy(agent, new Delay())); // MOVE x y or SHOOT id
         }
     }
 }

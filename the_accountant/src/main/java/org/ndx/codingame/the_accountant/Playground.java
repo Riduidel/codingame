@@ -7,11 +7,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.Segment;
 
 public class Playground {
 
+	private static final String DEFAULT_ACTION = "MOVE "+Agent.MAX_X/2+" "+Agent.MAX_Y/2;
 	public final Collection<DataPoint> data;
 	public final SortedSet<Enemy> enemies;
 	private Playground derived;
@@ -43,8 +45,8 @@ public class Playground {
 				.append("\t\t\t.findTargetIn(data));\n");
 		}
 		returned.append("\t\tPlayground tested = new Playground(data, enemies);\n");
-		returned.append("\t\t//TODO implement test\n");
-		returned.append("\t\ttested.executeStrategy(agent);\n");
+		returned.append("\t\tString strategy = tested.executeStrategy(agent, new Delay());\n");
+		returned.append("\t\tensureValidityOf(agent, tested, strategy);\n");
 		returned.append("\t}\n");
 		return returned.toString();
 	}
@@ -92,22 +94,30 @@ public class Playground {
 		return new Playground(remainingData, new TreeSet<>(nextEnemies));
 	}
 
-	public String executeStrategy(Agent agent) {
+	public String executeStrategy(Agent agent, Delay delay) {
 		// maybe reorder enemies by putting first the ones we can one-shot
 		List<Enemy> sortedEnemies = new ArrayList<>(enemies.size());
+		List<Enemy> dangerous = new ArrayList<>();
 		for (Enemy enemy : enemies) {
 			if(agent.computeDamageTo(enemy)>=enemy.life) {
-				sortedEnemies.add(0, enemy);
+				dangerous.add(enemy);
 			} else {
 				sortedEnemies.add(enemy);
 			}
 		}
-		for (Enemy enemy : enemies) {
+		sortedEnemies.addAll(0, dangerous);
+		int score = Integer.MIN_VALUE;
+		String action = DEFAULT_ACTION;
+		for (Enemy enemy : sortedEnemies) {
 			Strategy strategy = createStrategyFor(agent, enemy, this);
-			if(strategy.isAppliable())
-				return strategy.getStep();
+			if(strategy.score>score) {
+				score = strategy.score;
+				action = strategy.getStep();
+			}
+			if(delay.isElapsed(50))
+				break;
 		}
-		return "MOVE 0 0";
+		return action;
 	}
 
 	private Strategy createStrategyFor(Agent agent, Enemy enemy, Playground playground) {
