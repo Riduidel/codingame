@@ -16,6 +16,10 @@ public class Agent extends Point implements PointBuilder<Agent> {
 	public static final double DEAD_ZONE = 2000;
 	
 	private static final double DANGER_ZONE = MAXIMUM_MOVE+DEAD_ZONE;
+	public static final int MIN_Y = 0;
+	public static final int MIN_X = 0;
+	public static final int MAX_Y = 9000;
+	public static final int MAX_X = 16000;
 
 	public Agent(double x, double y) {
 		super(x, y);
@@ -52,23 +56,27 @@ public class Agent extends Point implements PointBuilder<Agent> {
 				.collect(Collectors.toList());
 		Agent initialAgent = optimalDirection.pointAtDistance(this, MAXIMUM_MOVE, this);
 		if(dangerous.size()>0) {
-			Point barycenter = Geometry.barycenterOf(dangerous);
-			Segment runAway = new Segment(barycenter, this);
-			Agent finalAgent = runAway.pointAtDistance(barycenter, Enemy.ENEMY_SPEED+DEAD_ZONE, this);
-			double nearest = 16000;
-			for (Enemy enemy : dangerous) {
-				if(enemy.distance2To(finalAgent)<nearest)
-					nearest = enemy.distance2To(finalAgent);
-			}
-			if(finalAgent.x<0||finalAgent.x>=16000 ||
-					finalAgent.y<0 || finalAgent.y>=9000) {
-				double finalX,
-					finalY;
-				System.err.println("damn, can't go any further");
-			}
-			return finalAgent;
+			return computeLocationInDangerousSituation(dangerous);
 		} else {
 			return initialAgent;
 		}
+	}
+
+	private Agent computeLocationInDangerousSituation(Collection<Enemy> dangerous) {
+		Point barycenter = Geometry.barycenterOf(dangerous);
+		Segment runAway = new Segment(barycenter, this);
+		Agent finalAgent = runAway.pointAtDistance(barycenter, Enemy.ENEMY_SPEED+DEAD_ZONE, this);
+		double nearest = 16000;
+		for (Enemy enemy : dangerous) {
+			if(enemy.distance2To(finalAgent)<nearest)
+				nearest = enemy.distance2To(finalAgent);
+		}
+		if(finalAgent.x<0||finalAgent.x>=16000 ||
+				finalAgent.y<0 || finalAgent.y>=9000) {
+			double finalX,
+				finalY;
+			System.err.println("damn, can't go any further");
+		}
+		return finalAgent;
 	}
 }
