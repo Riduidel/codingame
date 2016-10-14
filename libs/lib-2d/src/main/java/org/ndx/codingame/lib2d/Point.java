@@ -1,5 +1,7 @@
 package org.ndx.codingame.lib2d;
 
+import java.util.Collection;
+
 public class Point {
 	public final double x;
 	public final double y;
@@ -47,5 +49,8 @@ public class Point {
 		if (!Algebra.isEquals(y, other.y))
 			return false;
 		return true;
+	}
+	public double minDistance2To(Collection<? extends Point> dangerous) {
+		return dangerous.stream().mapToDouble((p)->p.distance2To(this)).min().orElseGet(()->(double) Integer.MAX_VALUE);
 	}
 }
