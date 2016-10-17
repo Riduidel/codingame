@@ -47,16 +47,6 @@ import com.github.javaparser.ast.comments.Comment;
 		defaultPhase=LifecyclePhase.PREPARE_PACKAGE)
 public class Assembler extends AbstractMojo {
 
-	private FileSystemManager fsManager = null;
-	
-	{
-		try {
-			fsManager = VFS.getManager();
-		} catch (FileSystemException e) {
-			throw new RuntimeException("VFS didn't start !", e);
-		}
-	}
-
 	@Parameter(defaultValue="${project.build.directory}/codingame/Player.java", property="codingame.path")
 	private File output;
 
@@ -74,83 +64,13 @@ public class Assembler extends AbstractMojo {
 				getLog().warn("There is no player class to extend. Ending");
 			}
 			getLog().info(String.format("Source files are %s", sourceFiles));
-			Map<String, CompilationUnit> classes = new HashMap<>();
-			classes.putAll(parseSources(sourceFiles));
-			getLog().info("Parse all dependencies of type source");
-			classes.putAll(parseDependencies());
+			Map<String, CompilationUnit> classes = new ClassesFinder(getLog())
+					.findAll(sourceFiles, project.getArtifacts()); 
 			getLog().info(String.format("Extend local Player class (found at %s) with all local classes and classes found in sources", playerClass));
 			createExtendedPlayerClassUsing(playerClass, output, classes);
 		} catch(Exception e) {
 			throw new MojoExecutionException("Unable to create compressed Player class", e);
 		}
-	}
-	
-	private Map<String, CompilationUnit> parseDependencies() {
-		Map<String, CompilationUnit> units = new HashMap<>();
-		for (Artifact	artifact : project.getArtifacts()) {
-			if("sources".equals(artifact.getClassifier())) {
-				File artifactFile = artifact.getFile();
-				String name = artifactFile.getName();
-				String path = artifactFile.getAbsolutePath();
-				if(name.endsWith("jar")) {
-					try {
-						FileObject artifactObject = fsManager.resolveFile(String.format("jar:%s", path));
-						FileObject[] javaFiles = artifactObject.findFiles(new FileSelector() {
-							
-							@Override
-							public boolean traverseDescendents(FileSelectInfo fileInfo) throws Exception {
-								return true;
-							}
-							
-							@Override
-							public boolean includeFile(FileSelectInfo fileInfo) throws Exception {
-								return fileInfo.getFile().getName().getExtension().equals("java");
-							}
-						});
-						getLog().debug(String.format("Found %s java files in %s", javaFiles.length, artifact));
-						for(FileObject f : javaFiles) {
-							try {
-								try(InputStream s = f.getContent().getInputStream()) {
-									CompilationUnit loadedClass = parse(s);
-									units.put(getPublicClassFullName(loadedClass), loadedClass);
-								}
-							} catch(Exception e) {
-								getLog().debug(String.format("Unable to read class from %s", f.getURL().toString()), e);
-							}
-						}
-					} catch (FileSystemException e) {
-						getLog().warn("Unable to open JAR "+path, e);
-					}
-				}
-			}
-		}
-		return units;
-	}
-
-	private Map<String, CompilationUnit> parseSources(Collection<File> sourceFiles) throws ParseException, IOException {
-		Map<String, CompilationUnit> units = new HashMap<>();
-		for(File f : sourceFiles) {
-			CompilationUnit parsed = parse(f);
-			units.put(getPublicClassFullName(parsed), parsed);
-		}
-		return units;
-	}
-
-	private CompilationUnit parse(InputStream s) throws ParseException {
-		return augment(JavaParser.parse(s));
-	}
-
-	/**
-	 * Add line number comments for easier source mapping
-	 * @param parse
-	 * @return
-	 */
-	private CompilationUnit augment(CompilationUnit parse) {
-		return parse;
-	}
-
-	private CompilationUnit parse(File f) throws ParseException, IOException {
-		return augment(JavaParser.parse(f));
 	}
 	
 	/**
@@ -167,11 +87,17 @@ public class Assembler extends AbstractMojo {
 						FileFilterUtils.suffixFileFilter(".java"), 
 						FileFilterUtils.trueFileFilter());
 				if(playerClass==null) {
-					Collection<File> playerClasses = FileUtils.listFiles(file, 
-							FileFilterUtils.nameFileFilter("Player.java"), 
+					Collection<File> playerClasses = FileUtils.listFiles(file,
+							FileFilterUtils.or(FileFilterUtils.nameFileFilter("Player.java"),
+									FileFilterUtils.nameFileFilter("Solution.java")), 
 							FileFilterUtils.trueFileFilter());
 					if(playerClasses.size()==1) {
 						playerClass = playerClasses.iterator().next();
+					} else if(playerClasses.size()>1){
+						throw new UnsupportedOperationException(
+								String.format("Seems like there is more than one candidate class for embedding all the content. "
+								+ "\nWhich one to choose between %s ?"
+								+ "\nYou'll have to choose by setting the <playerClass>???</playerClass> configuration property", playerClasses));
 					}
 				}
 				returned.addAll(classes);
@@ -181,12 +107,12 @@ public class Assembler extends AbstractMojo {
 	}
 
 	private void createExtendedPlayerClassUsing(File input, File output, Map<String, CompilationUnit> classes) throws Exception {
-		CompilationUnit playerUnit = parse(input);
-		String playerClassName = getPublicClassFullName(playerUnit);
+		CompilationUnit playerUnit = ParserUtils.parse(input);
+		String playerClassName = ParserUtils.getPublicClassFullName(playerUnit);
 		// Before all, remove package declaration
 		playerUnit.setPackage(null);
 		// And mark the class as non public, otherwise Codingame won't accept it
-		ClassOrInterfaceDeclaration playerClass = getPublicClassIn(playerUnit);
+		TypeDeclaration playerClass = ParserUtils.getPublicClassIn(playerUnit);
 		playerClass.setModifiers(0);
 		output.getParentFile().mkdirs();
 		if(output.exists())
@@ -244,25 +170,6 @@ public class Assembler extends AbstractMojo {
 			}
 		}
 		return importsToRemove;
-	}
-
-	private String getPublicClassFullName(CompilationUnit playerUnit) {
-		ClassOrInterfaceDeclaration playerClass = getPublicClassIn(playerUnit);
-		PackageDeclaration packageObject = playerUnit.getPackage();
-		if(packageObject==null) {
-			return playerClass.getName();
-		} else {
-			String playerClassName  = packageObject.getPackageName()+"."+playerClass.getName();
-			return playerClassName;
-		}
-	}
-
-	private ClassOrInterfaceDeclaration getPublicClassIn(CompilationUnit playerUnit) {
-		ClassOrInterfaceDeclaration playerClass = (ClassOrInterfaceDeclaration) playerUnit.getTypes().stream()
-				.findFirst()
-				.filter(t -> Modifier.isPublic(t.getModifiers()))
-				.orElseThrow(() -> new RuntimeException("Each java source should contain a public class, or else it's impossible for me to assemble them"));
-		return playerClass;
 	}
 	private void extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
 		// Now remove import of that class and its inner classes
