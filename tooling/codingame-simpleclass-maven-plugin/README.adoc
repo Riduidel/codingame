@@ -1,0 +1,43 @@
+Vous trouvez que la solution d'intégration Java pour CodinGame est foireuse ? Moi aussi.
+
+Vous vous dites que les javaistes peuvent faire mieux ? Moi aussi.
+
+Alors je l'ai fait.
+
+= codingame-simpleclass-maven-plugin
+
+Avec ce plugin, vous pouvez
+
+* Ecrire autant de classes que vous le voulez et ne générer qu'une unique classe Player
+* Ecrire des bibliothèques réutilisables et les intégrer au besoin pour les solutions qui les nécessitent
+* Faire mieux, plus simple, plus réutilisable, plus moderne
+
+== Comment ça marche ?
+
+1. Créez un projet maven
+1. Ajoutez le plugin
+
+			<plugin>
+				<groupId>${groupId}</groupId>
+				<artifactId>codingame-simpleclass-maven-plugin</artifactId>
+				<version>${project.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+1. Ajoutez dans vos dépendances les sources des librairies que vous utilisez (ce sont des dépendances avec le classifier sources)
+1. Vous avez maintenant dans le dossier target/codingame un fichier Player.java qui contient tout votre code utile
+
+== D'accord, mais comment ça marche ?
+
+Le plugin utilise deux librairies vraiment chouettes :
+
+1. http://javaparser.org/[JavaParser] lit le code source Java, en construit un AST facilement éditable et modifiable
+1. https://commons.apache.org/proper/commons-vfs/[Commons-VFS] ouvre les jars comme des systèmes de fichier en lecture seule
+
+En combinant les deux, il est assez facile d'écrire un plugin lisant tous les sources, reconstruisant l'arbre des dépendances et rassemblant toutes les casses en une seule.

@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,14 +38,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.visitor.GenericVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.ast.comments.Comment;
 
 @Mojo(name = "assemble",
 		requiresDependencyResolution=ResolutionScope.RUNTIME,
@@ -202,7 +201,20 @@ public class Assembler extends AbstractMojo {
 		}
 		Collection<String> importsToRemove = extendPlayerClassUsing(classes, playerUnit, playerClassName, player);
 		cleanupImports(playerUnit, importsToRemove);
+		addBuildDateTo(playerUnit);
 		FileUtils.write(output, playerUnit.toString());
+	}
+
+	private void addBuildDateTo(CompilationUnit playerUnit) {
+		Instant instant = Instant.now().truncatedTo( ChronoUnit.MILLIS );
+		ZoneId zoneId = ZoneId.systemDefault();
+		ZonedDateTime zdt = instant.atZone( zoneId );
+		String output = zdt.toString();
+		playerUnit.setComment(new BlockComment(
+						String.format("\nProudly built by %s on %s"
+								+ "\n@see https://github.com/Riduidel/codingame/tree/master/tooling/codingame-simpleclass-maven-plugin\n", 
+								getClass().getName(), 
+								output)));
 	}
 
 	private void cleanupImports(CompilationUnit playerUnit, Collection<String> importsToRemove) {
