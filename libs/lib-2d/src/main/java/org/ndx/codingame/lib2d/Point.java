@@ -1,8 +1,11 @@
 package org.ndx.codingame.lib2d;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class Point {
+	private final Map<Object, Double> distanceCache = new WeakHashMap<>();
 	public final double x;
 	public final double y;
 	public Point(double x, double y) {
@@ -17,6 +20,11 @@ public class Point {
 		return (x-other.x)*(x-other.x)+(y-other.y)*(y-other.y);
 	}
 	public double distance2To(Point other) {
+		if(!distanceCache.containsKey(other))
+			distanceCache.put(other, computeDistance2To(other));
+		return distanceCache.get(other);
+	}
+	private double computeDistance2To(Point other) {
 		return Math.sqrt(distance2SquaredTo(other));
 	}
 
@@ -51,6 +59,18 @@ public class Point {
 		return true;
 	}
 	public double minDistance2To(Collection<? extends Point> dangerous) {
-		return dangerous.stream().mapToDouble((p)->p.distance2To(this)).min().orElseGet(()->(double) Integer.MAX_VALUE);
+		if(!distanceCache.containsKey(dangerous)) {
+			distanceCache.put(dangerous, computeMinDistanceTo(dangerous));
+		}
+		return distanceCache.get(dangerous);
+	}
+	private double computeMinDistanceTo(Collection<? extends Point> dangerous) {
+		double minDistance = Integer.MAX_VALUE;
+		for (Point p : dangerous) {
+			double distance = distance2To(p);
+			if(distance<minDistance)
+				minDistance = distance;
+		}
+		return minDistance;
 	}
 }
