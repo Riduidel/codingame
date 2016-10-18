@@ -61,7 +61,7 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
-<!-- 			<plugin>
+ 			<plugin>
 				<groupId>${groupId}</groupId>
 				<artifactId>codingame-simpleclass-maven-plugin</artifactId>
 				<version>${project.version}</version>
@@ -73,6 +73,6 @@
 					</execution>
 				</executions>
 			</plugin>
- -->		</plugins>
+		</plugins>
 	</build>
 </project>
