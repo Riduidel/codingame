@@ -137,5 +137,7 @@
 		<module>tooling</module>
 		<module>multiplayer/hypersonic</module>
 		<module>multiplayer/the_accountant</module>
+		<module>multiplayer/coders_strike_back</module>
+		
 	</modules>
 </project>
