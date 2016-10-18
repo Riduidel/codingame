@@ -2,6 +2,7 @@ package org.ndx.codingame.simpleclass;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -146,6 +147,12 @@ public class PlayerBuilder {
 		}
 		
 		@Override
+		public void visit(NameExpr n, Void arg) {
+			add(n.getName());
+			super.visit(n, arg);
+		}
+		
+		@Override
 		public void visit(MethodCallExpr n, Void arg) {
 			String key = "#"+n.getName();
 			add(key);
@@ -191,11 +198,11 @@ public class PlayerBuilder {
 		Collection<String> dependencies = findDependenciesIn(addedClassUnit);
 		// please do not depend on ourselves !
 		dependencies.removeAll(processed);
-		for (String d : dependencies) {
-			if(classes.containsKey(d)) {
-				contributeClasses(classes, d, generated, processed);
+		for (String dependency : dependencies) {
+			if(classes.containsKey(dependency)) {
+				contributeClasses(classes, dependency, generated, processed);
 			} else {
-				addImport(d, generated);
+				addImport(addedClassUnit.getImports(), dependency, generated);
 			}
 		}
 		// Now all classes are contributed, add file inner code
@@ -215,6 +222,22 @@ public class PlayerBuilder {
 
 	private Collection<String> findDependenciesIn(CompilationUnit addedClassUnit) {
 		return new DepdendenciesExtractor().from(addedClassUnit);
+	}
+
+	private void addImport(List<ImportDeclaration> imports, String dependency, CompilationUnit generated) {
+		for (ImportDeclaration importDeclaration : imports) {
+			String imported = importDeclaration.getName().toString();
+			if(imported.startsWith(dependency)) {
+				addImport(importDeclaration, generated);
+			}
+		}
+		addImport(dependency, generated);
+	}
+
+	private void addImport(ImportDeclaration importDeclaration, CompilationUnit generated) {
+		if(!generated.getImports().contains(importDeclaration)) {
+			generated.getImports().add(importDeclaration);
+		}
 	}
 
 	private void addImport(String d, CompilationUnit generated) {
