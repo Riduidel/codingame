@@ -82,21 +82,29 @@ public class Line implements PointBuilder<Point> {
 	}
 
 	public Point project(Point point) {
+		return project(point, PointBuilder.DEFAULT);
+	}
+
+	public <Type extends Point> Type project(Type point, PointBuilder<Type> builder) {
 		if(distance2To(point)<0.001)
 			return point;
 		double projection = ((second.x-first.x)*(point.x-second.x)+(second.y-first.y)*(point.y-second.y))/coeffs.squareNorm;
 		// coordinates
 		double mx = second.x+(second.x-first.x)*projection;
 		double my = second.y+(second.y-first.y)*projection;
-		return new Point(mx, my);
+		return builder.build(mx, my);
 	}
 
 	public Point symetricOf(Point point) {
+		return symetricOf(point, PointBuilder.DEFAULT);
+	}
+		
+	public <Type extends Point> Type symetricOf(Type point, PointBuilder<Type> builder) {
 		if(distance2To(point)<0.001)
 			return point;
 		Point projected = project(point);
 		Line orthogonal = new Line(point, projected);
-		return orthogonal.pointAtNTimes(2);
+		return orthogonal.pointAtNTimes(2, builder);
 	}
 
 	/**
