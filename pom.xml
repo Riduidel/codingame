@@ -133,9 +133,9 @@
 		</extensions>
 	</build>
 	<modules>
-		<module>hypersonic</module>
 		<module>libs</module>
-		<module>the_accountant</module>
 		<module>tooling</module>
+		<module>multiplayer/hypersonic</module>
+		<module>multiplayer/the_accountant</module>
 	</modules>
 </project>
