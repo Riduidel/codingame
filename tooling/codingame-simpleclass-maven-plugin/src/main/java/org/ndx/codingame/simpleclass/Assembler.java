@@ -67,7 +67,9 @@ public class Assembler extends AbstractMojo {
 			Map<String, CompilationUnit> classes = new ClassesFinder(getLog())
 					.findAll(sourceFiles, project.getArtifacts()); 
 			getLog().info(String.format("Extend local Player class (found at %s) with all local classes and classes found in sources", playerClass));
-			createExtendedPlayerClassUsing(playerClass, output, classes);
+			CompilationUnit generated = new PlayerBuilder(classes.keySet()).build(classes, ParserUtils.getPublicClassFullName(playerClass));
+			addBuildDateTo(generated);
+			FileUtils.write(output, generated.toString());
 		} catch(Exception e) {
 			throw new MojoExecutionException("Unable to create compressed Player class", e);
 		}
@@ -106,31 +108,6 @@ public class Assembler extends AbstractMojo {
 		return returned;
 	}
 
-	private void createExtendedPlayerClassUsing(File input, File output, Map<String, CompilationUnit> classes) throws Exception {
-		CompilationUnit playerUnit = ParserUtils.parse(input);
-		String playerClassName = ParserUtils.getPublicClassFullName(playerUnit);
-		// Before all, remove package declaration
-		playerUnit.setPackage(null);
-		// And mark the class as non public, otherwise Codingame won't accept it
-		TypeDeclaration playerClass = ParserUtils.getPublicClassIn(playerUnit);
-		playerClass.setModifiers(0);
-		output.getParentFile().mkdirs();
-		if(output.exists())
-			output.delete();
-		ClassOrInterfaceDeclaration player = null;
-		for(TypeDeclaration declaration : playerUnit.getTypes()) {
-			if(declaration.getName().endsWith("Player")) {
-				if (declaration instanceof ClassOrInterfaceDeclaration) {
-					player = (ClassOrInterfaceDeclaration) declaration;
-				}
-			}
-		}
-		Collection<String> importsToRemove = extendPlayerClassUsing(classes, playerUnit, playerClassName, player);
-		cleanupImports(playerUnit, importsToRemove);
-		addBuildDateTo(playerUnit);
-		FileUtils.write(output, playerUnit.toString());
-	}
-
 	private void addBuildDateTo(CompilationUnit playerUnit) {
 		Instant instant = Instant.now().truncatedTo( ChronoUnit.MILLIS );
 		ZoneId zoneId = ZoneId.systemDefault();
@@ -143,50 +120,4 @@ public class Assembler extends AbstractMojo {
 								output)));
 	}
 
-	private void cleanupImports(CompilationUnit playerUnit, Collection<String> importsToRemove) {
-		Collection<ImportDeclaration> declarationsToRemove = new ArrayList<>();
-		for(ImportDeclaration d : playerUnit.getImports()) {
-			String importName = d.getName().toString();
-			if(d.isStatic()) {
-				importName = importName.substring(0, importName.lastIndexOf('.'));
-			}
-			if(importsToRemove.contains(importName)) {
-				declarationsToRemove.add(d);
-			}
-		}
-		playerUnit.getImports().removeAll(declarationsToRemove);
-	}
-
-	private Collection<String> extendPlayerClassUsing(Map<String, CompilationUnit> classes, CompilationUnit playerUnit,
-			String playerClassName, ClassOrInterfaceDeclaration player) {
-		Collection<String> importsToRemove = new ArrayList<>();
-		// And now, for each compilation unit that is not the input file, add class as static class
-		// and not yet imported imports
-		for(Map.Entry<String, CompilationUnit> entry : classes.entrySet()) {
-			String className = entry.getKey();
-			if(!playerClassName.equals(className)) {
-				extendPlayerClassUsing(playerUnit, player, className, entry.getValue());
-				importsToRemove.add(className);
-			}
-		}
-		return importsToRemove;
-	}
-	private void extendPlayerClassUsing(CompilationUnit playerCompilationUnit, ClassOrInterfaceDeclaration player, String addedClassQualifiedName, CompilationUnit addedClass) {
-		// Now remove import of that class and its inner classes
-		// Then added required import declaration
-		for(ImportDeclaration declaration : addedClass.getImports()) {
-			if(!playerCompilationUnit.getImports().contains(declaration)) {
-				playerCompilationUnit.getImports().add(declaration);
-			}
-		}
-		
-		
-		for(TypeDeclaration declaration : addedClass.getTypes()) {
-			boolean abstractClass = Modifier.isAbstract(declaration.getModifiers());
-			declaration.setModifiers(0);
-			if(abstractClass)
-				declaration.setModifiers(Modifier.ABSTRACT);
-			playerCompilationUnit.getTypes().add(declaration);
-		}
-	}
 }

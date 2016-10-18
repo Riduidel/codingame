@@ -46,4 +46,8 @@ public class ParserUtils {
 		return parse;
 	}
 
+	public static String getPublicClassFullName(File playerClass) throws ParseException, IOException {
+		return getPublicClassFullName(parse(playerClass));
+	}
+
 }
