@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
+import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
 public class Agent {
 	public static final int RANGE = 5;
@@ -124,8 +125,11 @@ public class Agent {
 
 	private boolean isInteresting(PlayField playground, MoveTo previous) {
 		for(Direction d : Direction.DIRECTIONS) {
-			if(playground.get(d.move(previous.destination))=='?') {
-				return true;
+			ScoredDirection move = d.move(previous.destination);
+			if(playground.contains(move)) {
+				if(playground.get(move)=='?') {
+					return true;
+				}
 			}
 		}
 		return false;
