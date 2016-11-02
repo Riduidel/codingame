@@ -16,7 +16,6 @@ public class Player {
         Agent kirk = new Agent(A);
         Direction move = null;
         // game loop
-        int turn = 0;
         while (true) {
             int KR = in.nextInt(); // row where Kirk is located.
             int KC = in.nextInt(); // column where Kirk is located.
@@ -30,12 +29,8 @@ public class Player {
             System.err.println("agent status is "+kirk);
             kirk.scan(playground, move);
 
-            if(turn>300) {
-            	throw new RuntimeException("don't be evil");
-            }
             move = kirk.moveOn(playground);
             System.out.println(move.name); // Kirk's next move (UP DOWN LEFT or RIGHT).
-            turn++;
         }
     }
 }

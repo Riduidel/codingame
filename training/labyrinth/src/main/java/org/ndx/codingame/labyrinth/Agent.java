@@ -47,6 +47,8 @@ public class Agent {
 
 	public void scan(final PlayField playground, final Direction move) {
 		if(move==null) {
+			/* add fallback strategy for each undiscoevred reachable point in RANGE */
+			handleFallbackPoints(playground, position);
 			System.err.println("Instanciated a back to home strategy");
 			backHome = new MoveTo(playground, position);
 		} else {
@@ -99,7 +101,7 @@ public class Agent {
 		}
 		return null;
 	}
-	private void handleFallbackPoints(final PlayField playground, final Direction move) {
+	private void handleFallbackPoints(final PlayField playground, final DiscretePoint move) {
 		fallbacks = filterValid(playground);
 		System.err.println(String.format("We have %s fallback locations", fallbacks.size()));
 		Collection<DiscretePoint> fallbackPoints = allStrategies().stream()
@@ -136,7 +138,7 @@ public class Agent {
 	}
 	public Collection<DiscretePoint> findFallbackPointsIn(PlayField playfield, DiscretePoint point,
 			Collection<DiscretePoint> excluding, Deque<DiscretePoint> knownPoints, int deepness) {
-		if(deepness>RANGE+1) {
+		if(deepness>RANGE*2) {
 			return Collections.emptyList();
 		} else if(excluding.contains(point)) {
 			return Collections.emptyList();
@@ -168,7 +170,8 @@ public class Agent {
 
 	public Collection<MoveTo> allStrategies() {
 		Collection<MoveTo> strategies = new ArrayList<>();
-		strategies.add(backHome);
+		if(backHome!=null)
+			strategies.add(backHome);
 		if(toControlCenter!=null)
 			strategies.add(toControlCenter);
 		strategies.addAll(fallbacks);

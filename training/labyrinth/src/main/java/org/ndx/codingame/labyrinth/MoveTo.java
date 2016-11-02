@@ -31,7 +31,7 @@ public class MoveTo extends Strategy {
 	 */
 	public void extend(PlayField playground) {
 		heatmap.extend(playground);
-		System.err.println(String.format("Frontier of %s are points %s", this, heatmap.frontier));
+		System.err.println(String.format("Frontier of %s are points %s", this, heatmap.frontier.size()));
 	}
 
 	@Override
