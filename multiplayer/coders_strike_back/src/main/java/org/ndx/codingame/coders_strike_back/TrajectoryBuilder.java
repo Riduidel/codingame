@@ -2,7 +2,7 @@ package org.ndx.codingame.coders_strike_back;
 
 import java.util.Deque;
 
-import org.ndx.codingame.lib2d.Point;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class TrajectoryBuilder {
 

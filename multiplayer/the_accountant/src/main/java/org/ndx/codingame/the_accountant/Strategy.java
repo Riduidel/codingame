@@ -11,8 +11,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.ndx.codingame.lib2d.Circle;
-import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Strategy implements Comparable<Strategy> {
 	private static final int HORIZON = 100;
@@ -48,7 +48,7 @@ public class Strategy implements Comparable<Strategy> {
 
 			@Override
 			public String getStep(Strategy strategy) {
-				Point destination = null;
+				ContinuousPoint destination = null;
 				Playground nextOne = strategy.playground.derive();
 				Enemy nextEnemy = nextOne.findEnemyById(strategy.enemy);
 				if(nextEnemy==null) {

@@ -2,17 +2,17 @@ package org.ndx.codingame.the_accountant;
 
 import java.util.Collection;
 
-import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
-public class Enemy extends Point implements Comparable<Enemy>, PointBuilder<Enemy> {
+public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBuilder<Enemy> {
 
 	public static final int ENEMY_SPEED = 500;
 	public final int id;
 	public final int life;
 	public double distance = Integer.MAX_VALUE;
-	public Point target;
+	public ContinuousPoint target;
 
 	public Enemy(int enemyId, double enemyX, double enemyY, int enemyLife) {
 		super(enemyX, enemyY);

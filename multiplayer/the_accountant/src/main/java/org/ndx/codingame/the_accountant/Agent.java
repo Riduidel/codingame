@@ -9,11 +9,12 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.lib2d.Circle;
 import org.ndx.codingame.lib2d.Geometry;
-import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
-public class Agent extends Point implements PointBuilder<Agent> {
+public class Agent extends ContinuousPoint implements PointBuilder<Agent> {
 	public static final double MAXIMUM_MOVE = 1000;
 	public static final double DEAD_ZONE = 2000;
 	
@@ -72,7 +73,7 @@ public class Agent extends Point implements PointBuilder<Agent> {
 	}
 
 	private Agent computeLocationInDangerousSituation(Collection<Enemy> dangerous) {
-		Point barycenter = Geometry.barycenterOf(dangerous);
+		ContinuousPoint barycenter = Geometry.barycenterOf(dangerous);
 		Segment runAway = new Segment(barycenter, this);
 		Agent finalAgent = runAway.pointAtDistance(barycenter, Enemy.ENEMY_SPEED+DEAD_ZONE, this);
 		if(finalAgent.x<MIN_X||finalAgent.x>=MAX_X ||
@@ -82,14 +83,14 @@ public class Agent extends Point implements PointBuilder<Agent> {
 		return finalAgent;
 	}
 
-	private Agent computeLocationOnBorder(Point barycenter, Collection<Enemy> dangerous, Agent finalAgent) {
+	private Agent computeLocationOnBorder(AbstractPoint barycenter, Collection<Enemy> dangerous, Agent finalAgent) {
 		Circle possible = new Circle(this, MAXIMUM_MOVE);
-		Collection<Point> intersection = new ArrayList<Point>();
+		Collection<ContinuousPoint> intersection = new ArrayList<ContinuousPoint>();
 		for(Segment s : BORDERS) {
 			intersection.addAll(possible.intersectionWith(s));
 		}
-		Point best = finalAgent;
-		for (Point point : intersection) {
+		ContinuousPoint best = finalAgent;
+		for (ContinuousPoint point : intersection) {
 			if(best.minDistance2To(dangerous)<point.minDistance2To(dangerous)) {
 				best = point;
 			}

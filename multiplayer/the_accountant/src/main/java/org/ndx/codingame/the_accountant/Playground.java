@@ -8,8 +8,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.Delay;
-import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Playground {
 
@@ -62,7 +62,7 @@ public class Playground {
 	 * @return
 	 */
 	public static Playground derive(Collection<DataPoint> data, SortedSet<Enemy> enemies) {
-		Collection<Point> eliminated = new ArrayList<>();
+		Collection<ContinuousPoint> eliminated = new ArrayList<>();
 		Collection<Enemy> nextEnemies = new ArrayList<>();
 		Collection<Enemy> toRefocus = new ArrayList<>();
 		for (Enemy enemy : enemies) {

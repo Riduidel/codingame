@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -19,7 +21,7 @@ import junitparams.Parameters;
 	}
 	@Test
 	@Parameters(method = "distance1_test_parameters")
-	public void distance_1_is_valid_for(Point first, Point second, double expected) {
+	public void distance_1_is_valid_for(AbstractPoint first, AbstractPoint second, double expected) {
 		assertThat(first.distance1To(second)).isEqualTo(expected);
 	}
 
@@ -33,7 +35,7 @@ import junitparams.Parameters;
 	}
 	@Test
 	@Parameters(method = "distance2_test_parameters")
-	public void distance_2_is_valid_for(Point first, Point second, double expected) {
+	public void distance_2_is_valid_for(AbstractPoint first, AbstractPoint second, double expected) {
 		assertThat(first.distance2To(second)).isEqualTo(expected);
 	}
 }

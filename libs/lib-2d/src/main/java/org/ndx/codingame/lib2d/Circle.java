@@ -7,30 +7,33 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+
 public class Circle {
 
-	public final Point center;
+	public final ContinuousPoint center;
 	public final double radius;
 	private final double squaredRadius;
 
-	public Circle(Point center, double radius) {
+	public Circle(ContinuousPoint center, double radius) {
 		this.center = center;
 		this.radius = radius;
 		this.squaredRadius = pow(radius, 2);
 	}
-	public boolean includesOrContains(Point point) {
+	public boolean includesOrContains(AbstractPoint point) {
 		return center.distance2SquaredTo(point)<=squaredRadius;
 	}
 	
-	public boolean includes(Point point) {
+	public boolean includes(AbstractPoint point) {
 		return center.distance2SquaredTo(point)<squaredRadius;
 	}
 
-	public boolean contains(Point point) {
+	public boolean contains(AbstractPoint point) {
 		return center.distance2SquaredTo(point)==squaredRadius;
 	}
 
-	public Collection<Point> intersectionWith(Circle other) {
+	public Collection<ContinuousPoint> intersectionWith(Circle other) {
 		if(equals(other)) {
 			return Collections.emptyList();
 		} else if(center.distance2To(other.center)>radius+other.radius) {
@@ -91,16 +94,16 @@ public class Circle {
 			}
 			
 			return Arrays.asList(
-					new Point(result_x_0, result_y_0),
-					new Point(result_x_1, result_y_1));
+					new ContinuousPoint(result_x_0, result_y_0),
+					new ContinuousPoint(result_x_1, result_y_1));
 		}
 	}
 	
-	public Collection<Point> intersectionWith(Segment segment) {
+	public Collection<ContinuousPoint> intersectionWith(Segment segment) {
 		return segment.intersectionWith(this);
 	}
 	
-	public Collection<Point> intersectionWith(Line line) {
+	public Collection<ContinuousPoint> intersectionWith(Line line) {
 		if(Algebra.isZero(line.coeffs.b)) {
 			double a = -line.coeffs.b/line.coeffs.a,
 					b = -line.coeffs.c/line.coeffs.a;
@@ -108,9 +111,9 @@ public class Circle {
 			double B = 2*(a*(b-center.y)-center.y);
 			double C = pow(center.y, 2) + pow(b-center.x, 2) - squaredRadius;
 			double[] solutions = Algebra.solutionsOf(A, B, C);
-			Collection<Point> returned = new HashSet<>();
+			Collection<ContinuousPoint> returned = new HashSet<>();
 			for(double y : solutions) {
-				returned.add(new Point(line.coeffs.computeXFromY(y), y));
+				returned.add(new ContinuousPoint(line.coeffs.computeXFromY(y), y));
 			}
 			return returned;
 		} else {
@@ -120,9 +123,9 @@ public class Circle {
 			double B = 2*(a*(b-center.y)-center.x);
 			double C = pow(center.x, 2) + pow(b-center.y, 2) - squaredRadius;
 			double[] solutions = Algebra.solutionsOf(A, B, C);
-			Collection<Point> returned = new HashSet<>();
+			Collection<ContinuousPoint> returned = new HashSet<>();
 			for(double x : solutions) {
-				returned.add(new Point(x, line.coeffs.computeYFromX(x)));
+				returned.add(new ContinuousPoint(x, line.coeffs.computeYFromX(x)));
 			}
 			return returned;
 		}

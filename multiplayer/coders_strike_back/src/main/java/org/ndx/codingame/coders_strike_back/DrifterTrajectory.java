@@ -3,7 +3,7 @@ package org.ndx.codingame.coders_strike_back;
 import java.util.Deque;
 
 import org.ndx.codingame.lib2d.Line;
-import org.ndx.codingame.lib2d.Point;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class DrifterTrajectory extends AbstractTrajectory implements Trajectory {
 	public DrifterTrajectory(Position currentPosition, Position previousPosition,
@@ -36,7 +36,7 @@ public class DrifterTrajectory extends AbstractTrajectory implements Trajectory 
 			Position projected = direction.project(targetPosition, targetPosition);
 			// Then symetric of that point through line going to target
 			Line axis = new Line(currentPosition, targetPosition);
-			Point symetric = axis.symetricOf(projected);
+			ContinuousPoint symetric = axis.symetricOf(projected);
 			Line perpendicular = new Line(projected, symetric);
 			aimed = perpendicular.pointAtNTimes(0.75, projected);
 			System.err.println(String.format("Aiming at corrected destination %s", aimed));

@@ -2,22 +2,25 @@ package org.ndx.codingame.lib2d;
 
 import java.util.Collection;
 
-public class Line implements PointBuilder<Point> {
+import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+
+public class Line implements PointBuilder<ContinuousPoint> {
 	public static class Coeffs {
 		public final double a;
 		public final double b;
 		public final double c;
 		public final double lineNorm;
 		public final double squareNorm;
-		public Coeffs(Point first, Point second) {
+		public Coeffs(ContinuousPoint first, ContinuousPoint second) {
 			this.a = second.y-first.y;
 			this.b = first.x-second.x; 
 			this.c = (first.y-second.y)*first.x + (second.x-first.x)*first.y;
 			this.squareNorm = first.distance2SquaredTo(second);
 			this.lineNorm = first.distance2To(second);
 		}
-		public double lineEquationFor(Point point) {
-			return a*point.x+b*point.y+c;
+		public double lineEquationFor(AbstractPoint point) {
+			return a*point.getX()+b*point.getY()+c;
 		}
 
 		protected double computeXFromY(double y) {
@@ -37,15 +40,15 @@ public class Line implements PointBuilder<Point> {
 		public boolean isHorizontalLine() {
 			return Algebra.isZero(a);
 		}
-		public boolean matches(Point point) {
+		public boolean matches(ContinuousPoint point) {
 			return Algebra.isZero(a*point.x+b*point.y+c);
 		}
 	}
 	public class SegmentBuilder {
 
-		private Point start;
+		private ContinuousPoint start;
 
-		public SegmentBuilder startingAt(Point second) {
+		public SegmentBuilder startingAt(ContinuousPoint second) {
 			start = second;
 			return this;
 		}
@@ -63,29 +66,29 @@ public class Line implements PointBuilder<Point> {
 		}
 		
 	}
-	public final Point first;
-	public final Point second;
+	public final ContinuousPoint first;
+	public final ContinuousPoint second;
 	public final Coeffs coeffs;
-	public Line(Point first, Point second) {
+	public Line(ContinuousPoint first, ContinuousPoint second) {
 		super();
 		this.first = first;
 		this.second = second;
 		this.coeffs = new Coeffs(first, second);
 	}
 
-	public double distance2To(Point point) {
+	public double distance2To(AbstractPoint point) {
 		return Math.abs(coeffs.lineEquationFor(point))/coeffs.lineNorm;
 	}
 	
-	public boolean contains(Point point) {
+	public boolean contains(ContinuousPoint point) {
 		return coeffs.matches(point);
 	}
 
-	public Point project(Point point) {
+	public ContinuousPoint project(ContinuousPoint point) {
 		return project(point, PointBuilder.DEFAULT);
 	}
 
-	public <Type extends Point> Type project(Type point, PointBuilder<Type> builder) {
+	public <Type extends ContinuousPoint> Type project(Type point, PointBuilder<Type> builder) {
 		if(distance2To(point)<0.001)
 			return point;
 		double projection = ((second.x-first.x)*(point.x-second.x)+(second.y-first.y)*(point.y-second.y))/coeffs.squareNorm;
@@ -95,14 +98,14 @@ public class Line implements PointBuilder<Point> {
 		return builder.build(mx, my);
 	}
 
-	public Point symetricOf(Point point) {
+	public ContinuousPoint symetricOf(ContinuousPoint point) {
 		return symetricOf(point, PointBuilder.DEFAULT);
 	}
 		
-	public <Type extends Point> Type symetricOf(Type point, PointBuilder<Type> builder) {
+	public <Type extends ContinuousPoint> Type symetricOf(Type point, PointBuilder<Type> builder) {
 		if(distance2To(point)<0.001)
 			return point;
-		Point projected = project(point);
+		ContinuousPoint projected = project(point);
 		Line orthogonal = new Line(point, projected);
 		return orthogonal.pointAtNTimes(2, builder);
 	}
@@ -112,15 +115,15 @@ public class Line implements PointBuilder<Point> {
 	 * @param i
 	 * @return
 	 */
-	public Point pointAtNTimes(double i) {
+	public ContinuousPoint pointAtNTimes(double i) {
 		return pointAtNTimesOf(first, i, this);
 	}
 
-	public <Type extends Point> Type  pointAtNTimes(double i, PointBuilder<Type> builder) {
+	public <Type extends ContinuousPoint> Type  pointAtNTimes(double i, PointBuilder<Type> builder) {
 		return pointAtNTimesOf(first, i, builder);
 	}
 
-	protected <Type extends Point> Type pointAtNTimesOf(Point p, double i, PointBuilder<Type> builder) {
+	protected <Type extends ContinuousPoint> Type pointAtNTimesOf(ContinuousPoint p, double i, PointBuilder<Type> builder) {
 		double x = p.x;
 		double y = p.y;
 		if(Algebra.isZero(first.distance2To(second)))
@@ -189,15 +192,15 @@ public class Line implements PointBuilder<Point> {
 	}
 
 	@Override
-	public Point build(double x, double y) {
+	public ContinuousPoint build(double x, double y) {
 		if(x==first.x && y==first.y)
 			return first;
 		else if(x==second.x && y==second.y)
 			return second;
-		return new Point(x, y);
+		return new ContinuousPoint(x, y);
 	}
 
-	public <Type extends Point> Type pointAtAngle(Point center, int angle, double radius, PointBuilder<Type> builder) {
+	public <Type extends ContinuousPoint> Type pointAtAngle(ContinuousPoint center, int angle, double radius, PointBuilder<Type> builder) {
 		double combinedAngle = Math.toRadians(angle()+angle);
 		return builder.build(
 				center.x+Math.cos(combinedAngle)*radius,
@@ -205,7 +208,7 @@ public class Line implements PointBuilder<Point> {
 				);
 	}
 	
-	public Collection<Point> intersectionWith(Circle circle) {
+	public Collection<ContinuousPoint> intersectionWith(Circle circle) {
 		return circle.intersectionWith(this);
 	}
 }

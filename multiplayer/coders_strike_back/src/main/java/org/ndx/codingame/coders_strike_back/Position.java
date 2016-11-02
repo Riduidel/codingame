@@ -1,9 +1,9 @@
 package org.ndx.codingame.coders_strike_back;
 
-import org.ndx.codingame.lib2d.Point;
 import org.ndx.codingame.lib2d.PointBuilder;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
-public class Position extends Point implements PointBuilder<Position> {
+public class Position extends ContinuousPoint implements PointBuilder<Position> {
 
 	public Position(double x, double y) {
 		super(x, y);

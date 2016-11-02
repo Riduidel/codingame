@@ -36,7 +36,7 @@ public class CircleTest {
 		public void circle_intersects_with_tangeant_circles() {
 			Circle first = from(0, 0).cirleOf(1);
 			Circle second = from(2, 0).cirleOf(1);
-			assertThat(first.intersectionWith(second)).containsExactly(at(1, 0));
+			assertThat(first.intersectionWith(second)).containsExactly(at(1.0, 0));
 		}
 	}
 
@@ -44,13 +44,13 @@ public class CircleTest {
 		@Test
 		public void circle_intersects_with_horizontal() {
 			Circle first = from(0, 0).cirleOf(2);
-			assertThat(first.intersectionWith(from(0, 0).lineTo(1, 0))).containsExactly(at(2, 0), at(-2, 0));
+			assertThat(first.intersectionWith(from(0, 0).lineTo(1, 0))).containsExactly(at(2.0, 0), at(-2.0, 0));
 		}
 
 		@Test
 		public void circle_intersects_with_vertical() {
 			Circle first = from(0, 0).cirleOf(2);
-			assertThat(first.intersectionWith(from(0, 0).lineTo(0, 1))).containsExactly(at(0, 2), at(0, -2));
+			assertThat(first.intersectionWith(from(0, 0).lineTo(0, 1))).containsExactly(at(0.0, 2), at(0.0, -2));
 		}
 
 		@Test

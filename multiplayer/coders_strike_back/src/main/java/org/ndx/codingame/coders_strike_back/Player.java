@@ -6,7 +6,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Scanner;
 
-import org.ndx.codingame.lib2d.Point;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 /**
  * Auto-generated code below aims at helping you parse the standard input
@@ -41,7 +42,7 @@ public class Player {
 			int nextCheckpointDist = in.nextInt();
 			int nextCheckpointAngle = in.nextInt();
 			// unused for now
-			Point opponent = new Point(in.nextInt(), in.nextInt());
+			AbstractPoint opponent = new ContinuousPoint(in.nextInt(), in.nextInt());
 
 			Trajectory builder = using().position(position)
 									.previous(previousPosition)

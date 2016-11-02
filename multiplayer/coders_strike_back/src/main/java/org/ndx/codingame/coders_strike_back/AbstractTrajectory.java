@@ -3,7 +3,7 @@ package org.ndx.codingame.coders_strike_back;
 import java.util.Deque;
 
 import org.ndx.codingame.lib2d.Line;
-import org.ndx.codingame.lib2d.Point;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
 
 public abstract class AbstractTrajectory implements Trajectory {
 
@@ -26,7 +26,7 @@ public abstract class AbstractTrajectory implements Trajectory {
 		this.targetPosition = path.pop();
 	}
 	
-	protected int computeThrust(Line direction, Point target) {
+	protected int computeThrust(Line direction, AbstractPoint target) {
 		double angularThrust = Math.abs(angle)<60 ? 1 : 0;
 		double distanceThrust = distance>1000 ? 1 : distance/1000f;
 		return (int) (angularThrust*distanceThrust*Player.MAXIMUM_THRUST);

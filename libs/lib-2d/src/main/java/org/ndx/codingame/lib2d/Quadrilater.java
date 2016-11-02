@@ -1,9 +1,11 @@
 package org.ndx.codingame.lib2d;
 
-public class Quadrilater implements Polygon {
-	private final Point a, b, c, d;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
 
-	public Quadrilater(Point a, Point b, Point c, Point d) {
+public class Quadrilater implements Polygon {
+	private final AbstractPoint a, b, c, d;
+
+	public Quadrilater(AbstractPoint a, AbstractPoint b, AbstractPoint c, AbstractPoint d) {
 		super();
 		this.a = a;
 		this.b = b;
