@@ -7,7 +7,7 @@ public class StartTrajectory implements Trajectory {
 		this.target = target;
 	}
 	@Override
-	public String build(Configuration config) {
+	public String build() {
 		return target.goTo("BOOST");
 	}
 }

@@ -27,24 +27,32 @@ public abstract class AbstractTrajectory implements Trajectory {
 	}
 	
 	protected int computeThrust(Line direction, AbstractPoint target) {
-		double angularThrust = Math.abs(angle)<60 ? 1 : 0;
-		double distanceThrust = distance>1000 ? 1 : distance/1000f;
+		double angularThrust = computeAngularThrust();
+		double distanceThrust = computeDistanceThrust();
+		System.err.println(String.format("Angular thrust is %f, distance thrust is %f", angularThrust, distanceThrust));
 		return (int) (angularThrust*distanceThrust*Player.MAXIMUM_THRUST);
 	}
 
-	@Override
-	public String build(Configuration config) {
-		Line direction = new Line(previousPosition, currentPosition);
-		int thrust = computeThrust(direction, targetPosition);
-		double distanceTo = direction.distance2To(targetPosition);
-		System.err.println(String.format("angle to target is %s distance to target is %s orthogonal distance is %s", angle, distance, distanceTo));
-		return build(config, direction, thrust, distanceTo);
+	protected float computeDistanceThrust() {
+		return distance>1000 ? 1 : distance/1000f;
 	}
 
-	protected abstract String build(Configuration config, Line direction, int thrust,
-			double distanceTo);
+	protected int computeAngularThrust() {
+		return Math.abs(angle)<60 ? 1 : 0;
+	}
 
-	protected String buildAiming(Configuration config, Line direction, int thrust) {
+	@Override
+	public String build() {
+		Line mypodDirection = new Line(previousPosition, currentPosition);
+		int thrust = computeThrust(mypodDirection, targetPosition);
+		double distanceTo = mypodDirection.distance2To(targetPosition);
+		System.err.println(String.format("angle to target is %s distance to target is %s orthogonal distance is %s", angle, distance, distanceTo));
+		return build(mypodDirection, thrust, distanceTo);
+	}
+
+	protected abstract String build(Line mypodDirection, int thrust, double distanceTo);
+
+	protected String buildAiming(Line direction, int thrust) {
 		System.err.println("Aiming directly at target !");
 		return targetPosition.goTo(thrust);
 	}

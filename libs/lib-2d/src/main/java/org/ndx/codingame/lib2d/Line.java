@@ -142,7 +142,7 @@ public class Line implements PointBuilder<ContinuousPoint> {
 	}
 
 	public double angleWith(Line aim) {
-		return Math.toDegrees(aim.angle()-angle());
+		return aim.angle()-angle();
 	}
 
 	public double angle() {

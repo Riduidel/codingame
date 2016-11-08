@@ -1,12 +1,11 @@
 package org.ndx.codingame.hypersonic;
 
-public abstract class Entity implements Content {
-	public final int x;
-	public final int y;
+import org.ndx.codingame.lib2d.discrete.DiscretePoint;
+
+public abstract class Entity extends DiscretePoint implements Content {
+
 	public Entity(int x, int y) {
-		super();
-		this.x = x;
-		this.y = y;
+		super(x, y);
 	}
 
 	@Override public CanFire canFire() { return CanFire.YES; }

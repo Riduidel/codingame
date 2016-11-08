@@ -42,7 +42,6 @@ public class TrajectoryBuilder {
 				return new StartTrajectory(targetPosition.peek());
 			} else {
 				return new DrifterTrajectory(currentPosition, previousPosition, targetPosition, distance, angle);
-//				return new TriangularTrajectory(currentPosition, previousPosition, targetPosition, distance, angle);
 			}
 		}
 		

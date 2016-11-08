@@ -6,7 +6,6 @@ public class ContentAdapter<Type> implements ContentVisitor<Type> {
 	public ContentAdapter() { }
 	public ContentAdapter(Type returned) { this.returned = returned; }
 	@Override public Type visitNothing(Nothing nothing) { return returned; }
-	@Override public Type visitBombDanger(BombDanger nothing) { return returned; }
 	@Override public Type visitBox(Box box) { return returned; }
 	@Override public Type visitWall(Wall wall) { return returned; }
 	@Override public Type visitGamer(Gamer bomber) { return returned; }

@@ -33,7 +33,11 @@ public class Playground<Content> {
 	}
 
 	public void set(DiscretePoint p, Content c) {
-		this.content[p.y][p.x] = c;
+		set(p.x, p.y, c);
+	}
+
+	public void set(int x, int y, Content c) {
+		this.content[y][x] = c;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -41,6 +45,7 @@ public class Playground<Content> {
 		return (Content) this.content[p.y][p.x];
 	}
 
+	@SuppressWarnings("unchecked")
 	public Content get(int x, int y) {
 		return (Content) this.content[y][x];
 	}

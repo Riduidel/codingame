@@ -8,31 +8,13 @@ import org.ndx.codingame.gaming.Delay;
  * according to the problem statement.
  **/
 public class Player {
-	private static final int[] HOLD = {0, 0}; 
-	private static final int[] LEFT = {-1, 0}; 
-	private static final int[] RIGHT = {1, 0}; 
-	private static final int[] TOP = {0, -1}; 
-	private static final int[] DOWN = {0, 1}; 
-	public static final int[][] DIRECTIONS = new int[][] {
-		LEFT,
-		RIGHT,
-		TOP,
-		DOWN
-	};
-	public static final int[][] POSSIBLE_DIRECTIONS = new int[][] {
-//		HOLD,
-		LEFT,
-		RIGHT,
-		TOP,
-		DOWN
-	};
 	public static void main(String args[]) {
 		Scanner in = new Scanner(System.in);
 		int width = in.nextInt();
 		int height = in.nextInt();
 		EvolvableConstants constants = new EvolvableConstants();
 		int MAXIMUM_TRAJECTORIES = constants.COUNT_ENOUGH_TRAJECTORIES;
-		Playground playground = new Playground(width, height);
+		Playfield playground = new Playfield(width, height);
 		int myId = in.nextInt();
 		in.nextLine();
 		// game loop
@@ -71,26 +53,8 @@ public class Player {
 				}
 			}
 			in.nextLine();
-			TrajectoryBuilder trajectoryBuilder = new TrajectoryBuilder(playground, delay, constants);
-			Trajectory best = trajectoryBuilder
-					.findBest(me);
-			if(trajectoryBuilder.count<constants.COUNT_ENOUGH_TRAJECTORIES) {
-				System.err.println("There was not enough trajectories computed .. Computing even less next turn");
-				constants.COUNT_ENOUGH_TRAJECTORIES = Math.max(100, 
-						Math.min(constants.COUNT_ENOUGH_TRAJECTORIES, trajectoryBuilder.count/constants.ADAPATION_FACTOR));
-			} else {
-				if(delay.howLong()<constants.DELAY_CREATE_TRAJECTORIES/2) {
-					System.err.println("We computed that really fast. Computing more");
-					constants.COUNT_ENOUGH_TRAJECTORIES = Math.min(MAXIMUM_TRAJECTORIES, 
-							constants.COUNT_ENOUGH_TRAJECTORIES*constants.ADAPATION_FACTOR);
-					
-				}
-			}
-			
-			System.err.println("It took "+delay.howLong());
-//			System.err.println(playground.toString());
 
-			System.out.println(best.toCommandString());
+			System.out.println(me.compute(playground));
 		}
 	}
 }
