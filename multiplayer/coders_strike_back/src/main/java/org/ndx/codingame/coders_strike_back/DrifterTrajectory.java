@@ -16,7 +16,7 @@ public class DrifterTrajectory extends AbstractTrajectory implements Trajectory 
 		}
 	}
 
-	protected String build(Line mypodDirection, int thrust,
+	protected String build(Line mypodDirection, String thrust,
 			double orthogonalDistanceToTarget) {
 		if(orthogonalDistanceToTarget<=1000) {
 			return buildAiming(mypodDirection, thrust);
@@ -25,12 +25,12 @@ public class DrifterTrajectory extends AbstractTrajectory implements Trajectory 
 		}
 	}
 
-	protected String buildTurning(Line mypodDirection, int thrust) {
+	protected String buildTurning(Line mypodDirection, String thrust) {
 		Position aimed = targetPosition;
-		System.err.println(String.format("aiming to %s", aimed));
+//		System.err.println(String.format("aiming to %s", aimed));
 		int absAngle = Math.abs(angle);
 		if(absAngle<45) {
-			System.err.println(String.format("Not aiming at target (%s)", targetPosition));
+//			System.err.println(String.format("Not aiming at target (%s)", targetPosition));
 			// target is not aligned with current line ...
 			// Find projection of target on line
 			Position projected = mypodDirection.project(targetPosition, targetPosition);
@@ -39,7 +39,7 @@ public class DrifterTrajectory extends AbstractTrajectory implements Trajectory 
 			ContinuousPoint symetric = axis.symetricOf(projected);
 			Line perpendicular = new Line(projected, symetric);
 			aimed = perpendicular.pointAtNTimes(trajectoryCorrector(mypodDirection, axis, distance), projected);
-			System.err.println(String.format("Aiming at corrected destination %s", aimed));
+//			System.err.println(String.format("Aiming at corrected destination %s", aimed));
 		}
 		return aimed.goTo(thrust);
 	}

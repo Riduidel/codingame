@@ -1,8 +1,9 @@
 package org.ndx.codingame.coders_strike_back;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,50 +15,6 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
  * according to the problem statement.
  **/
 public class Player {
-	public static class Pod {
-
-		private Position position;
-		private ContinuousPoint speed;
-		private int podAngle;
-		private int nextCheckpointId;
-
-		public Pod(Position continuousPoint, ContinuousPoint continuousPoint2, int angle, int nextInt) {
-			this.position = continuousPoint;
-			this.speed = continuousPoint2;
-			this.podAngle = angle;
-			this.nextCheckpointId = nextInt;
-		}
-
-		public String build(List<Position> CHECKPOINTS, Position previousPosition) {
-			System.err.println("building strategy for "+this);
-			Deque<Position> targets = new ArrayDeque<>();
-			for (int index = 0; index < CHECKPOINTS.size(); index++) {
-				targets.add(CHECKPOINTS.get((nextCheckpointId+index)%CHECKPOINTS.size()));
-			}
-			Position destination = targets.getFirst();
-			int nextCheckpointDist = (int) position.distance2To(destination);
-			int angle = 0;
-			Line direction = new Line(position, destination);
-			angle = (int) (podAngle-direction.angle());
-			if(angle>180) {
-				angle = angle-360;
-			}
-			Trajectory builder = using().position(position)
-					.previous(previousPosition)
-					.targets(targets)
-					.distance(nextCheckpointDist)
-					.angle(angle)
-					.build();
-			return builder.build();
-		}
-
-		@Override
-		public String toString() {
-			return "Pod [position=" + position + ", speed=" + speed + ", angle=" + podAngle + ", nextCheckpointId="
-					+ nextCheckpointId + "]";
-		}
-		
-	}
 	public static final int MAXIMUM_THRUST = 100;
 
 	public static TrajectoryBuilder using() {
@@ -78,7 +35,9 @@ public class Player {
 
 		System.err.println(String.format("%d laps to do around checkpoints %s", laps, CHECKPOINTS));
 		Position firstPreviousPosition = null,
-				secondPreviousPosition = null;
+				secondPreviousPosition = null,
+				firstEnemyPreviousPosition = null,
+				secondEnemyPreviousPosition = null;
 		
 		// game loop
 		while (true) {
@@ -86,11 +45,19 @@ public class Player {
 			Pod mysecond = readpod(in);
 			Pod opponentfirst = readpod(in);
 			Pod opponentsecond = readpod(in);
+			
+			Collection<Line> enemyDirections = new ArrayList<>(2);
+			if(firstEnemyPreviousPosition!=null)
+				enemyDirections.add(new Line(firstEnemyPreviousPosition, opponentfirst.position));
+			if(secondEnemyPreviousPosition!=null)
+				enemyDirections.add(new Line(secondEnemyPreviousPosition, opponentsecond.position));
 
-			System.out.println(myfirst.build(CHECKPOINTS, firstPreviousPosition));
-			System.out.println(mysecond.build(CHECKPOINTS, secondPreviousPosition));
+			System.out.println(myfirst.build(CHECKPOINTS, firstPreviousPosition, enemyDirections, true, false));
+			System.out.println(mysecond.build(CHECKPOINTS, secondPreviousPosition, enemyDirections, false, true));
 			firstPreviousPosition = myfirst.position;
 			secondPreviousPosition = mysecond.position;
+			firstEnemyPreviousPosition = opponentfirst.position;
+			secondEnemyPreviousPosition = opponentsecond.position;
 		}
 	}
 
