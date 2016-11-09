@@ -59,14 +59,21 @@ def paths_ending_with(node_matching, nodes_paths, deepness = ""):
 			returned.append(path)
 		else:
 			for node in path_ending.edges:
-				new_path = []
-				new_path.extend(path)
-				new_path.append(node)
-				next_paths.append(new_path)
+				if not node in path:
+					new_path = []
+					new_path.extend(path)
+					new_path.append(node)
+					next_paths.append(new_path)
 	if returned:
 		return returned
 	else:
 		return paths_ending_with(node_matching, next_paths, deepness+"\t")
+def measure(path):
+	returned = 0
+	for n in path:
+		returned = returned + len(n.edges)
+	return returned
+
 	
 def unplug(graph, to_unplug):
 	"""To unplug that node, we have first to find all paths to exit nodes with their length, 
@@ -77,13 +84,16 @@ def unplug(graph, to_unplug):
 	shortest = sys.maxsize
 	to_remove = None
 	for p in paths:
-		if len(p)<shortest:
-			shortest = len(p)
+		value = measure(p)
+		if value<shortest:
+			shortest = value
 			to_remove = p
 	print("Shortest path to exit from %s is\n%s"%(to_unplug, to_remove), file=sys.stderr)
 	if to_remove:
-		to_remove[-2].disconnect(to_remove[-1])
-	return "%d %d"%(to_remove[-2].id, to_remove[-1].id)
+		first, second = (to_remove[0], to_remove[1])
+		first.disconnect(second)
+		return "%d %d"%(first.id, second.id)
+	return "oo fuck"
 		
 # n: the total number of nodes in the level, including the gateways
 # l: the number of links
