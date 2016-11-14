@@ -7,7 +7,7 @@ import java.util.WeakHashMap;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public abstract class AbstractPoint {
-	private final Map<Object, Double> distanceCache = new WeakHashMap<>();
+	private Map<Object, Double> distanceCache;
 	public abstract double getX();
 	public abstract double getY();
 	public double distance1To(AbstractPoint other) {
@@ -21,15 +21,15 @@ public abstract class AbstractPoint {
 		return (getX()-other.getX())*(getX()-other.getX())+(getY()-other.getY())*(getY()-other.getY());
 	}
 	public double distance2To(AbstractPoint other) {
-		if(!distanceCache.containsKey(other))
-			distanceCache.put(other, computeDistance2To(other));
-		return distanceCache.get(other);
+		if(!getDistanceCache().containsKey(other))
+			getDistanceCache().put(other, computeDistance2To(other));
+		return getDistanceCache().get(other);
 	}
 	public double minDistance2To(Collection<? extends AbstractPoint> dangerous) {
-		if(!distanceCache.containsKey(dangerous)) {
-			distanceCache.put(dangerous, computeMinDistance2To(dangerous));
+		if(!getDistanceCache().containsKey(dangerous)) {
+			getDistanceCache().put(dangerous, computeMinDistance2To(dangerous));
 		}
-		return distanceCache.get(dangerous);
+		return getDistanceCache().get(dangerous);
 	}
 	private double computeMinDistance2To(Collection<? extends AbstractPoint> dangerous) {
 		double minDistance = Integer.MAX_VALUE;
@@ -65,5 +65,11 @@ public abstract class AbstractPoint {
 		if (Double.doubleToLongBits(getY()) != Double.doubleToLongBits(other.getY()))
 			return false;
 		return true;
+	}
+
+	private Map<Object, Double> getDistanceCache() {
+		if(distanceCache==null)
+			distanceCache = new WeakHashMap<>();
+		return distanceCache;
 	}
 }

@@ -24,8 +24,8 @@ public class LineTest {
 		assertThat(tested.symetricOf(at(0.0, 0))).isEqualTo(at(0, 2));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(2, 1));
 		ContinuousPoint at_45_degrees = tested.pointAtAngle(first, 45, 1, PointBuilder.DEFAULT);
-		assertThat(at_45_degrees.x).isEqualTo(1/sqrt(2), within(Geometry.ZERO));
-		assertThat(at_45_degrees.y).isEqualTo(1+1/sqrt(2), within(Geometry.ZERO));
+		assertThat(at_45_degrees.x).isEqualTo(1/sqrt(2), within(Algebra.ZERO));
+		assertThat(at_45_degrees.y).isEqualTo(1+1/sqrt(2), within(Algebra.ZERO));
 	}
 
 	@Test public void can_compute_infos_on_vertical_line() {
@@ -56,7 +56,7 @@ public class LineTest {
 		assertThat(tested.coeffs.c).isEqualTo(0);
 		assertThat(tested.angle()).isEqualTo(45);
 		assertThat(tested.contains(at(0.5, 0.5))).isTrue();
-		assertThat(tested.distance2To(at(2, 0))).isCloseTo(sqrt(2), within(Geometry.ZERO));
+		assertThat(tested.distance2To(at(2, 0))).isCloseTo(sqrt(2), within(Algebra.ZERO));
 		assertThat(tested.project(at(0.0, 1))).isEqualTo(at(0.5, 0.5));
 		assertThat(tested.symetricOf(at(0.0, 1))).isEqualTo(at(1, -0));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(2, 2));

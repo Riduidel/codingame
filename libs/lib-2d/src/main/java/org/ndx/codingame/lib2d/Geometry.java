@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.continuous.bezier.BezierCurve;
+import org.ndx.codingame.lib2d.continuous.bezier.CubicBezierCurve;
+import org.ndx.codingame.lib2d.continuous.bezier.QuadraticBezierCurve;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 
 /**
@@ -14,6 +17,32 @@ import org.ndx.codingame.lib2d.discrete.DiscretePoint;
  */
 public class Geometry {
 	public static class GeometryBuilder {
+		public static class BezierCurveBuilder {
+			private List<ContinuousPoint> control = new ArrayList<>();
+			private ContinuousPoint from;
+			private ContinuousPoint to;
+
+			public BezierCurveBuilder(ContinuousPoint first, ContinuousPoint end) {
+				this.from = first;
+				this.to = end;
+			}
+			
+			public BezierCurveBuilder control(ContinuousPoint cp) {
+				control.add(cp);
+				return this;
+			}
+			
+			public BezierCurve build() {
+				switch(control.size()) {
+				case 1:
+					return new QuadraticBezierCurve(from, control.get(0), to);
+				case 2:
+					return new CubicBezierCurve(from, control.get(0), control.get(1), to);
+				default:
+					throw new UnsupportedOperationException("can only use quadratic or cubic bezier curve");
+				}
+			}
+		}
 		public static class PolygonBuilder {
 			private List<ContinuousPoint> points = new ArrayList<ContinuousPoint>();
 			public PolygonBuilder through(ContinuousPoint p) {
@@ -67,6 +96,10 @@ public class Geometry {
 		public PolygonBuilder through(ContinuousPoint p) {
 			return new PolygonBuilder().through(first).through(p);
 		}
+		
+		public BezierCurveBuilder to(ContinuousPoint end) {
+			return new BezierCurveBuilder(first, end);
+		}
 	}
 	public static final ContinuousPoint at(double x, double y) {
 		return new ContinuousPoint(x, y);
@@ -76,8 +109,9 @@ public class Geometry {
 		return new DiscretePoint(x, y);
 	}
 
-	public static final double ZERO = 0.00001;
-
+	public static GeometryBuilder from(int x, int y) {
+		return from(at(x, y));
+	}
 	public static GeometryBuilder from(double x, double y) {
 		return from(at(x, y));
 	}

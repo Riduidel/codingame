@@ -3,11 +3,19 @@ package org.ndx.codingame.hypersonic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.ndx.codingame.lib2d.discrete.Direction;
+import org.ndx.codingame.hypersonic.content.Bomb;
+import org.ndx.codingame.hypersonic.content.Box;
+import org.ndx.codingame.hypersonic.content.Content;
+import org.ndx.codingame.hypersonic.content.ContentAdapter;
+import org.ndx.codingame.hypersonic.content.ContentVisitor;
+import org.ndx.codingame.hypersonic.content.Fire;
+import org.ndx.codingame.hypersonic.content.FireThenItem;
+import org.ndx.codingame.hypersonic.content.Item;
+import org.ndx.codingame.hypersonic.content.Nothing;
+import org.ndx.codingame.hypersonic.content.Wall;
 import org.ndx.codingame.lib2d.discrete.Playground;
 
 public class Playfield extends Playground<Content> {
@@ -34,6 +42,14 @@ public class Playfield extends Playground<Content> {
 
 	public Playfield(int width, int height) {
 		super(width, height);
+	}
+
+	/**
+	 * Cloning constructor
+	 * @param playground
+	 */
+	public Playfield(Playfield playground) {
+		super(playground);
 	}
 
 	public boolean allow(int p_x, int p_y) {

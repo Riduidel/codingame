@@ -1,5 +1,7 @@
 package org.ndx.codingame.hypersonic;
 
+import org.ndx.codingame.hypersonic.content.Content;
+
 public class PlaygroundAdapter<Type> implements PlaygroundVisitor<Type>{
 	public Type returned;
 	public PlaygroundAdapter() { }

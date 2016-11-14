@@ -1,7 +1,9 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.content;
+
+import org.ndx.codingame.hypersonic.CanFire;
 
 public class FireThenItem extends Fire {
-	static FireThenItem instance = new FireThenItem();
+	public static FireThenItem instance = new FireThenItem();
 
 	@Override
 	public <Type> Type accept(ContentVisitor<Type> visitor) {

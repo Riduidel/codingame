@@ -24,10 +24,23 @@ public class Playground<Content> {
 		}
 	}
 
-	public void clear() {
+	public Playground(Playground<Content> playground) {
+		this(playground.width, playground.height);
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				this.content[y][x]=null;
+				this.content[y][x]=playground.content[y][x];
+			}
+		}
+	}
+
+		
+	public void clear() {
+		clear(null);
+	}
+	public void clear(Content defaultValue) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				this.content[y][x]=defaultValue;
 			}
 		}
 	}

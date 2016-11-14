@@ -13,11 +13,13 @@ public class Algebra {
 	}
 
 	public static boolean isZero(double b) {
-		return Math.abs(b)<Geometry.ZERO;
+		return Math.abs(b)<Algebra.ZERO;
 	}
 
 	public static boolean isEquals(double y0, double y1) {
 		return isZero(y0-y1);
 	}
+
+	public static final double ZERO = 0.00001;
 
 }

@@ -2,6 +2,8 @@ package org.ndx.codingame.hypersonic;
 import java.util.Scanner;
 
 import org.ndx.codingame.gaming.Delay;
+import org.ndx.codingame.hypersonic.content.Bomb;
+import org.ndx.codingame.hypersonic.content.Item;
 
 /**
  * Auto-generated code below aims at helping you parse the standard input
@@ -13,7 +15,6 @@ public class Player {
 		int width = in.nextInt();
 		int height = in.nextInt();
 		EvolvableConstants constants = new EvolvableConstants();
-		int MAXIMUM_TRAJECTORIES = constants.COUNT_ENOUGH_TRAJECTORIES;
 		Playfield playground = new Playfield(width, height);
 		int myId = in.nextInt();
 		in.nextLine();
@@ -37,7 +38,7 @@ public class Player {
 				switch (entityType) {
 				case 0:
 					// bomber
-					if(owner==0)
+					if(owner==myId)
 						me = new Gamer(owner, x, y, param1, param2);
 					else
 						playground.readGameEntities(new Gamer(owner, x, y, param1, param2));
@@ -54,6 +55,7 @@ public class Player {
 			}
 			in.nextLine();
 
+			System.err.println(playground.toString());
 			System.out.println(me.compute(playground));
 		}
 	}
