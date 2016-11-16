@@ -11,7 +11,7 @@ import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 public abstract class Strategy {
 
 	public Direction move(Agent agent, PlayField playground) {
-		SortedSet<ScoredDirection> scores = sortDirectionsByScore(agent, playground);
+		SortedSet<ScoredDirection<Integer>> scores = sortDirectionsByScore(agent, playground);
 		return scores.first();
 	}
 	
@@ -19,10 +19,10 @@ public abstract class Strategy {
 		return this;
 	}
 
-	protected SortedSet<ScoredDirection> sortDirectionsByScore(Agent agent, PlayField playground) {
-		SortedSet<ScoredDirection> scores = new TreeSet<>(Comparator.comparing(ScoredDirection::getScore).reversed().thenComparing(ScoredDirection::getX).thenComparing(ScoredDirection::getY));
+	protected SortedSet<ScoredDirection<Integer>> sortDirectionsByScore(Agent agent, PlayField playground) {
+		SortedSet<ScoredDirection<Integer>> scores = new TreeSet<>(Comparator.comparing(ScoredDirection<Integer>::getScore).reversed().thenComparing(ScoredDirection::getX).thenComparing(ScoredDirection::getY));
 		for (Direction d : Direction.DIRECTIONS) {
-			ScoredDirection scored = d.move(agent.position);
+			ScoredDirection<Integer> scored = d.move(agent.position);
 			scored.setScore(score(scored, playground));
 			scores.add(scored);
 		}

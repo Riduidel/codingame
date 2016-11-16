@@ -55,7 +55,7 @@ public class Player {
 			}
 			in.nextLine();
 
-			System.err.println(playground.toString());
+			System.err.println(playground.toUnitTestString(me));
 			System.out.println(me.compute(playground));
 		}
 	}

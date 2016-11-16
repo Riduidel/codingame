@@ -16,7 +16,9 @@ import org.ndx.codingame.hypersonic.content.FireThenItem;
 import org.ndx.codingame.hypersonic.content.Item;
 import org.ndx.codingame.hypersonic.content.Nothing;
 import org.ndx.codingame.hypersonic.content.Wall;
+import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
+import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
 public class Playfield extends Playground<Content> {
 	public static final class ToCompleteString implements ContentVisitor<String> {
@@ -50,6 +52,10 @@ public class Playfield extends Playground<Content> {
 	 */
 	public Playfield(Playfield playground) {
 		super(playground);
+	}
+
+	public boolean allow(DiscretePoint position) {
+		return allow(position.x, position.y);
 	}
 
 	public boolean allow(int p_x, int p_y) {
@@ -145,23 +151,22 @@ public class Playfield extends Playground<Content> {
 		@Override public String visitWall(Wall wall) { return null; }
 		@Override public String visitGamer(Gamer gamer) {
 			String prefix = gamer.id==0 ? "me = " : "";
-			return String.format("%snew Player.Gamer(%d, %d, %d, %d, %d)", prefix, gamer.id, gamer.x, gamer.y, gamer.bombs, gamer.range);
+			return String.format("%snew Gamer(%d, %d, %d, %d, %d)", prefix, gamer.id, gamer.x, gamer.y, gamer.bombs, gamer.range);
 		}
 		@Override public String visitBomb(Bomb bomb) {
-			return String.format("new Player.Bomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
+			return String.format("new Bomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
 		}
 		@Override public String visitItem(Item item) {
-			return String.format("new Player.Item(%d, %d, %d, %d, %d)", 0, item.x, item.y, item.type, 0);
+			return String.format("new Item(%d, %d, %d, %d, %d)", 0, item.x, item.y, item.type, 0);
 		}
 		@Override public String visitFire(Fire fire) { return null; }
 		@Override public String visitFireThenItem(FireThenItem fireThenItem) { return null; }
 	}
-	public String toUnitTestString() {
+	public String toUnitTestString(Gamer me) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append("\t\t\t@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append("\t\t\t\tPlayer.Delay delay = new Player.Delay();\n");
-		returned.append("\t\t\t\tPlayer.Playground tested = read(Arrays.asList(\n");
+		returned.append("\t\t\t\tPlayfield tested = read(Arrays.asList(\n");
 		Collection<String> physical = toStringCollection(new ToPhysicalString());
 		Iterator<String> physicalIter = physical.iterator();
 		while (physicalIter.hasNext()) {
@@ -173,7 +178,7 @@ public class Playfield extends Playground<Content> {
 			returned.append("\n");
 		}
 		returned.append("\t\t\t\t\t));\n");
-		returned.append("\t\t\t\tPlayer.Gamer me = null;\n");
+		returned.append(String.format("\t\t\t\tGamer me = new Gamer(%d, %d, %d, %d, %d);\n", me.id, me.x, me.y, me.bombs, me.range));
 		returned.append("\t\t\t\ttested.readGameEntities(\n");
 		Collection<String> entities = accept(new ExportGameEntities());
 		Iterator<String> entitiesIter = entities.iterator();
@@ -185,11 +190,7 @@ public class Playfield extends Playground<Content> {
 			returned.append("\n");
 		}
 		returned.append("\t\t\t\t\t);\n");
-		returned.append("\t\t\t\tPlayer.Trajectory best = new Player.TrajectoryBuilder(")
-			.append("\t\t\t\t\t\ttested,\n")
-			.append("\t\t\t\t\t\tdelay,\n")
-			.append("\t\t\t\t\t\tnew Player.EvolvableConstants())\n")
-			.append("\t\t\t\t\t.findBest(me);\n");
+		returned.append("\t\t\t\tassertThat(me.compute(tested)).isNotNull();\n");
 		returned.append("\t\t\t}\n");
 		return returned.toString();
 	}
@@ -222,5 +223,44 @@ public class Playfield extends Playground<Content> {
 			i--;
 		}
 		return p;
+	}
+
+	public int findDelayBeforeBombFor(int id) {
+		return accept(new BombDelayFinder(id));
+	}
+	
+	public static class BombDelayFinder extends PlaygroundAdapter<Integer> {
+		private class BombDelayContentFinder extends ContentAdapter<Integer> {
+
+			public BombDelayContentFinder() {
+				super(0);
+			}
+			
+			@Override
+			public Integer visitBomb(Bomb bomb) {
+				if(bomb.owner==ownerId) {
+					return bomb.delay;
+				} else {
+					return super.visitBomb(bomb);
+				}
+			}
+		}
+		final int ownerId; 
+		private ContentVisitor<Integer> contentVisitor;
+		public BombDelayFinder(int ownerId) {
+			super(0);
+			this.ownerId = ownerId;
+			 contentVisitor = new BombDelayContentFinder();
+		}
+		@Override
+		public void visit(int x, int y, Content content) {
+			int cellValue = content.accept(contentVisitor);
+			if(cellValue>0) {
+				if(returned==0)
+					returned = cellValue;
+				else
+					returned = Math.min(cellValue, returned);
+			}
+		}
 	}
 }

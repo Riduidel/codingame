@@ -1,8 +1,6 @@
 package org.ndx.codingame.lib2d.discrete;
 
-import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
-
-public class Playground<Content> {
+public class Playground<Content> implements ImmutablePlayground<Content> {
 	private Object[][] content;
 	public final int height;
 	public final int width;
@@ -89,5 +87,9 @@ public class Playground<Content> {
 			returned.append('\n');
 		}
 		return returned.toString();
+	}
+
+	public ImmutablePlayground<Content> immutable() {
+		return this;
 	}
 }

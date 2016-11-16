@@ -10,8 +10,8 @@ import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
 public class Lookup extends Strategy {
 	public Direction move(Agent agent, PlayField playground) {
-		SortedSet<ScoredDirection> scores = sortDirectionsByScore(agent, playground);
-		ScoredDirection best = scores.first();
+		SortedSet<ScoredDirection<Integer>> scores = sortDirectionsByScore(agent, playground);
+		ScoredDirection<Integer> best = scores.first();
 		if(best.getScore()==0) {
 			System.err.println("We're in a dead-end, applying fallback strategy");
 			return agent.moveUsingFallback(playground);
