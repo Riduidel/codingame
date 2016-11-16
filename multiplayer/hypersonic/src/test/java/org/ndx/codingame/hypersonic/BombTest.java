@@ -1,6 +1,7 @@
 package org.ndx.codingame.hypersonic;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ndx.codingame.hypersonic.PlayerTest.read;
 
 import java.util.Arrays;
 
@@ -9,6 +10,7 @@ import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.hypersonic.content.Bomb;
 import org.ndx.codingame.hypersonic.content.Fire;
 import org.ndx.codingame.hypersonic.content.FireThenItem;
+import org.ndx.codingame.hypersonic.content.Item;
 import org.ndx.codingame.hypersonic.content.Nothing;
 import org.ndx.codingame.hypersonic.content.Wall;
 
@@ -78,5 +80,40 @@ public class BombTest {
 		assertThat(nextStep.get(2, 1)).isInstanceOf(Fire.class);
 		assertThat(nextStep.get(3, 1)).isInstanceOf(Fire.class);
 		assertThat(nextStep.get(2, 2)).isInstanceOf(Fire.class);
+	}
+	
+	@Test public void can_chain_bombs_on_wood_playground() {
+		Playfield tested = read(Arrays.asList(
+				".........0...",
+				".............",
+				".............",
+				".............",
+				"0............",
+				".............",
+				"0............",
+				".............",
+				".0...........",
+				".............",
+				"...0.0.0.0..."
+				));
+		Gamer me = new Gamer(0, 2, 6, 0, 6);
+		tested.readGameEntities(
+			new Item(0, 3, 0, 2, 0),
+			new Item(0, 1, 2, 1, 0),
+			new Item(0, 3, 2, 2, 0),
+			new Item(0, 9, 2, 2, 0),
+			new Item(0, 11, 2, 1, 0),
+			new Bomb(0, 1, 4, 4, 5),
+			new Bomb(0, 4, 4, 1, 5),
+			new Bomb(0, 1, 6, 8, 6),
+			new Item(0, 3, 8, 2, 0),
+			new Gamer(1, 4, 9, 0, 6),
+			new Bomb(1, 5, 9, 7, 6),
+			new Bomb(1, 7, 9, 3, 6)
+			);
+		Playfield nextStep = tested.next();
+		assertThat(nextStep.get(4, 4)).isInstanceOf(Fire.class);
+		assertThat(nextStep.get(3, 4)).isInstanceOf(Fire.class);
+	
 	}
 }

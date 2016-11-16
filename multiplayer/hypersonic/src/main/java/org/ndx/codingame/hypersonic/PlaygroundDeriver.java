@@ -63,24 +63,6 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield> {
 						fireBomb(bomb);
 					} else {
 						derived.set(x, y, new Bomb(bomb.owner, bomb.x, bomb.y, bomb.delay-1, bomb.range));
-						// Do not forget to extend bomb with danger
-						int dangerZone = bomb.range;
-//						int dangerZone = Math.min(bomb.delay, bomb.range);
-						for(Direction d : Direction.DIRECTIONS) {
-							for (int extension = 1; extension <= dangerZone; extension++) {
-								int p_x = bomb.x+d.x*extension;
-								int p_y = bomb.y+d.y*extension;
-								if(source.contains(p_x, p_y)) {
-									if(Nothing.instance.equals(source.get(p_x, p_y))) {
-										derived.set(p_x, p_y, Nothing.instance);
-									} else {
-										break;
-									}
-								} else {
-									break;
-								}
-							}
-						}
 					}
 				} else {
 					// Fire that bomb !
@@ -94,25 +76,28 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield> {
 			private void fireBomb(Bomb bomb) {
 				derived.set(bomb.x, bomb.y, Fire.instance);
 				for(Direction d : Direction.DIRECTIONS) {
-					for (int extension = 1; extension <= bomb.range; extension++) {
-						int p_x = bomb.x+d.x*extension;
-						int p_y = bomb.y+d.y*extension;
-						if(source.contains(p_x, p_y)) {
-							CanFire canFire = source.get(p_x, p_y).canFire();
-							if(CanFire.YES.equals(canFire)||CanFire.END_PROPAGATION.equals(canFire)) {
-								this.x = p_x;
-								this.y = p_y;
-								if(!Fire.instance.equals(derived.get(p_x, p_y))) {
-									source.get(p_x, p_y).accept(this);
-									derived.set(p_x, p_y, Fire.instance);
-								}
+					fireBombInDirection(bomb, d);
+				}
+			}
+			private void fireBombInDirection(Bomb bomb, Direction d) {
+				for (int extension = 1; extension <= bomb.range; extension++) {
+					int p_x = bomb.x+d.x*extension;
+					int p_y = bomb.y+d.y*extension;
+					if(source.contains(p_x, p_y)) {
+						CanFire canFire = source.get(p_x, p_y).canFire();
+						if(CanFire.YES.equals(canFire)||CanFire.END_PROPAGATION.equals(canFire)) {
+							this.x = p_x;
+							this.y = p_y;
+							if(!Fire.instance.equals(derived.get(p_x, p_y))) {
+								derived.set(p_x, p_y, Fire.instance);
+								source.get(p_x, p_y).accept(this);
 							}
-							if(CanFire.NOT.equals(canFire)||CanFire.END_PROPAGATION.equals(canFire)) {
-								break;
-							}
-						} else {
+						}
+						if(CanFire.NOT.equals(canFire)||CanFire.END_PROPAGATION.equals(canFire)) {
 							break;
 						}
+					} else {
+						break;
 					}
 				}
 			}

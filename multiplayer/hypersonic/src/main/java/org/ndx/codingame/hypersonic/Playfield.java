@@ -117,7 +117,10 @@ public class Playfield extends Playground<Content> {
 			}
 			@Override
 			public void visit(int x, int y, Content content) {
-				row.append(content.accept(visitor));
+				if(content==null)
+					row.append(Nothing.instance.accept(visitor));
+				else
+					row.append(content.accept(visitor));
 			}
 			@Override
 			public void endVisitRow(int y) {

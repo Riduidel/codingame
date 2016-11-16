@@ -53,4 +53,8 @@ public class Score implements Comparable<Score> {
 			fullScore = innerScore+bestChildScore;
 		}
 	}
+	@Override
+	public String toString() {
+		return String.format("(inner=%s, length=%s, full=%s)", innerScore, length, fullScore);
+	}
 }

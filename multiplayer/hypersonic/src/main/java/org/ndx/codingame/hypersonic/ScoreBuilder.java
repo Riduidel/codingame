@@ -82,16 +82,17 @@ public class ScoreBuilder {
 		}
 		
 	}
-	private Playground<ScoredDirection<Score>> cache;
 	private Playground<List<Direction>> directions;
 	private int iteration;
 	private Playfield source;
-	private ScoreBuilder next;
-
-	private DiscretePoint point;
 	private ScoreBuilderVisitor visitor;
 	boolean allowBomb;
-	private Playground<Integer> opportunities;
+	
+	ScoreBuilder next;
+	Playground<ScoredDirection<Score>> cache;
+	DiscretePoint point;
+	Playground<Integer> opportunities;
+
 	public ScoreBuilder(Playfield playground, OpportunitesLoader opportunitiesLoader) {
 		this(playground, opportunitiesLoader, 0);
 	}
@@ -131,7 +132,7 @@ public class ScoreBuilder {
 		return computed.getScore().bestChild;
 	}
 
-	private List<Direction> directions(DiscretePoint point) {
+	List<Direction> directions(DiscretePoint point) {
 		List<Direction> returned = directions.get(point);
 		if(returned==null) {
 			returned = new ArrayList<>();
