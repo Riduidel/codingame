@@ -15,7 +15,7 @@ public class Item extends Entity {
 	public <Type> Type accept(ContentVisitor<Type> visitor) {
 		return visitor.visitItem(this);
 	}
-	@Override public CanFire canFire() { return CanFire.END_PROPAGATION; }
+	@Override public CanFire canFire() { return CanFire.YES; }
 
 	@Override public boolean canBeWalkedOn() { return true; }
 }

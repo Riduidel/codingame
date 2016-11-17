@@ -153,5 +153,31 @@ public class InGameTest {
 				);
 		assertThat(me.compute(tested)).doesNotStartWith("BOMB");
 	}
+	@Test public void should_not_put_myself_in_dead_end() {
+		Playfield tested = read(Arrays.asList(
+			".......0.0...",
+			".X.X.X.X0X0X.",
+			".0.........00",
+			"0X.X0X.X0X.X0",
+			"0000.....0000",
+			".X.X0X.X0X.X.",
+			"00000...00.00",
+			"0X.X0X.X.X.X.",
+			"0............",
+			".X0X0X.X.X.X.",
+			"...0........."
+			));
+		Gamer me = new Gamer(0, 6, 10, 1, 6);
+		tested.readGameEntities(
+			new Item(0, 2, 1, 2, 0),
+			new Item(0, 4, 4, 1, 0),
+			new Item(0, 8, 4, 1, 0),
+			new Bomb(1, 8, 7, 1, 6),
+			new Item(0, 12, 7, 1, 0),
+			new Item(0, 5, 10, 2, 0),
+			new Gamer(1, 7, 10, 3, 6)
+			);
+		assertThat(me.compute(tested)).isNotEqualTo("BOMB 5 10");
+	}
 
 }
