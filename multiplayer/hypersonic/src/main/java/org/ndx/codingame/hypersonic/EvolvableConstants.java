@@ -9,12 +9,14 @@ public class EvolvableConstants {
 	public static final int SCORE_VISIT_BOX = 1;
 	public static final int SCORE_EXPLODE_BOX = 5;
 	public static final int SCORE_SUICIDE = -1000*HORIZON;
+	public static final int SCORE_POTENTIAL_SUICIDE = -1;
 	public static final int SCORE_KILL_ENEMY = 10;
 	public static final int SCORE_OUTSIDE = 0;
 	public static final int SCORE_ON_TRACK = 0;
 	public static final int SCORE_VISIT_WALL = 0;
 	public static final int SCORE_VISIT_GAMER = -1;
 	public static final int SCORE_VISIT_BOMB = -1;
-	static final int OPPORTUNITY_BOMB = 1;
-	static final int OPPORTUNITY_ITEM = 4;
+	public static final int OPPORTUNITY_BOMB = 1;
+	public static final int OPPORTUNITY_ITEM = 4;
+	public static final int OPPORTUNITY_ENEMY = 10;
 }

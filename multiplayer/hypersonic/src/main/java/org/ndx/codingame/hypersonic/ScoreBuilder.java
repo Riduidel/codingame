@@ -58,12 +58,12 @@ public class ScoreBuilder {
 
 		@Override
 		public ScoredDirection<Score> visitGamer(Gamer gamer) {
-			return buildScore(EvolvableConstants.SCORE_VISIT_GAMER, false);
+			return buildScore(EvolvableConstants.SCORE_VISIT_GAMER, !firstTurn);
 		}
 
 		@Override
 		public ScoredDirection<Score> visitBomb(Bomb bomb) {
-			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, !allowBomb);
+			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, !firstTurn);
 		}
 
 		@Override
@@ -86,7 +86,7 @@ public class ScoreBuilder {
 	private int iteration;
 	private Playfield source;
 	private ScoreBuilderVisitor visitor;
-	boolean allowBomb;
+	boolean firstTurn;
 	
 	ScoreBuilder next;
 	Playground<ScoredDirection<Score>> cache;
@@ -127,7 +127,7 @@ public class ScoreBuilder {
 
 	public ScoredDirection<Score> computeFor(DiscretePoint point) {
 		this.point = point;
-		this.allowBomb = true;
+		this.firstTurn = true;
 		ScoredDirection<Score> computed = source.get(point).accept(visitor);
 		return computed.getScore().bestChild;
 	}

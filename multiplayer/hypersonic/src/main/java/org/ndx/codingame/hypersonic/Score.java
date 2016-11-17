@@ -55,6 +55,6 @@ public class Score implements Comparable<Score> {
 	}
 	@Override
 	public String toString() {
-		return String.format("(inner=%s, length=%s, full=%s)", innerScore, length, fullScore);
+		return String.format("(inner=%s, length=%s, full=%s, best=%s)", innerScore, length, fullScore, bestChild);
 	}
 }

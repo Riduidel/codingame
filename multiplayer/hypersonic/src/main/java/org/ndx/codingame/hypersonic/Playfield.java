@@ -40,7 +40,8 @@ public class Playfield extends Playground<Content> {
 		@Override public String visitWall(Wall box) { return "X"; }
 	}
 	private static PlaygroundDeriver playgroundDeriver = new PlaygroundDeriver();
-	private Map<Object, Playfield> nextPlaygrounds = new TreeMap<>();
+	private Playfield next;
+	private Playground<Integer> opportunities;
 
 	public Playfield(int width, int height) {
 		super(width, height);
@@ -153,8 +154,7 @@ public class Playfield extends Playground<Content> {
 		@Override public String visitBox(Box box) { return null; }
 		@Override public String visitWall(Wall wall) { return null; }
 		@Override public String visitGamer(Gamer gamer) {
-			String prefix = gamer.id==0 ? "me = " : "";
-			return String.format("%snew Gamer(%d, %d, %d, %d, %d)", prefix, gamer.id, gamer.x, gamer.y, gamer.bombs, gamer.range);
+			return String.format("new Gamer(%d, %d, %d, %d, %d)", gamer.id, gamer.x, gamer.y, gamer.bombs, gamer.range);
 		}
 		@Override public String visitBomb(Bomb bomb) {
 			return String.format("new Bomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
@@ -194,7 +194,7 @@ public class Playfield extends Playground<Content> {
 		}
 		returned.append("\t\t\t\t\t);\n");
 		returned.append("\t\t\t\tassertThat(me.compute(tested)).isNotNull();\n");
-		returned.append("\t\t\t}\n");
+		returned.append("\t\t\t}\n\n");
 		return returned.toString();
 	}
 	public String toString() {
@@ -210,13 +210,13 @@ public class Playfield extends Playground<Content> {
 	 * @return
 	 */
 	public Playfield next() {
-		if(!nextPlaygrounds.containsKey("playground")) {
-			nextPlaygrounds.put("playground", accept(playgroundDeriver));
+		if(next==null) {
+			next =  accept(playgroundDeriver);
 		}
-		return nextPlaygrounds.get("playground");
+		return next;
 	}
 	public void clear() {
-		nextPlaygrounds.clear();
+		next = null;
 	}
 
 	public Playfield descendant(int i) {
@@ -227,43 +227,15 @@ public class Playfield extends Playground<Content> {
 		}
 		return p;
 	}
-
+/*
 	public int findDelayBeforeBombFor(int id) {
 		return accept(new BombDelayFinder(id));
 	}
-	
-	public static class BombDelayFinder extends PlaygroundAdapter<Integer> {
-		private class BombDelayContentFinder extends ContentAdapter<Integer> {
-
-			public BombDelayContentFinder() {
-				super(0);
-			}
-			
-			@Override
-			public Integer visitBomb(Bomb bomb) {
-				if(bomb.owner==ownerId) {
-					return bomb.delay;
-				} else {
-					return super.visitBomb(bomb);
-				}
-			}
+*/	
+	public Playground<Integer> getOpportunitiesAt(int range) {
+		if(opportunities==null) {
+			opportunities = descendant(EvolvableConstants.BOMB_DELAY).accept(new OpportunitiesFinder(range));
 		}
-		final int ownerId; 
-		private ContentVisitor<Integer> contentVisitor;
-		public BombDelayFinder(int ownerId) {
-			super(0);
-			this.ownerId = ownerId;
-			 contentVisitor = new BombDelayContentFinder();
-		}
-		@Override
-		public void visit(int x, int y, Content content) {
-			int cellValue = content.accept(contentVisitor);
-			if(cellValue>0) {
-				if(returned==0)
-					returned = cellValue;
-				else
-					returned = Math.min(cellValue, returned);
-			}
-		}
+		return opportunities;
 	}
 }

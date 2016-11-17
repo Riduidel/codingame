@@ -80,7 +80,7 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield> {
 				}
 			}
 			private void fireBombInDirection(Bomb bomb, Direction d) {
-				for (int extension = 1; extension <= bomb.range; extension++) {
+				for (int extension = 1; extension < bomb.range; extension++) {
 					int p_x = bomb.x+d.x*extension;
 					int p_y = bomb.y+d.y*extension;
 					if(source.contains(p_x, p_y)) {

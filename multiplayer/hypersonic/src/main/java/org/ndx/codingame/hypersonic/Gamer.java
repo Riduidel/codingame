@@ -43,6 +43,11 @@ public class Gamer extends Entity implements OpportunitesLoader {
 			best = findBestMoveIn(withBomb);
 			if(best.getScore().survive()) {
 				return show(Action.BOMB, best);
+			} else {
+				// mark opportunity as BAD for the visible future
+				for (int i = 0; i < EvolvableConstants.BOMB_DELAY; i++) {
+					playground.descendant(i).getOpportunitiesAt(range).set(this, EvolvableConstants.SCORE_POTENTIAL_SUICIDE);
+				}
 			}
 		}
 		if(best==null || !best.getScore().survive()) {
@@ -56,13 +61,13 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		return String.format("%s %d %d", action, best.x, best.y);
 	}
 	private ScoredDirection<Score> findBestMoveIn(Playfield playground) {
-		ScoreBuilder builder = new ScoreBuilder(playground, this);
+		ScoreBuilder builder = new ScoreBuilder(playground.next(), this);
 		return builder.computeFor(this);
 		
 	}
 
 	public Playground<Integer> findOpportunities(Playfield playground) {
 		// The descendant(8) allows to get 8-level next, where all other bombs should have detonated
-		return playground.descendant(EvolvableConstants.BOMB_DELAY).accept(new OpportunitiesFinder(range));
+		return playground.getOpportunitiesAt(range);
 	}
 }

@@ -13,13 +13,18 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 	private class OpportunitiesContentFinder extends ContentAdapter<Void> {
 		@Override
 		public Void visitBox(Box box) {
+			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_BOMB);
+			return null;
+		}
+
+		private void markOpportunitiesAround(int value) {
 			for(Direction d : Direction.DIRECTIONS) {
 				for (int index = 1; index < range; index++) {
 					int l_x = x+d.x*index;
 					int l_y = y+d.y*index;
 					if(source.contains(l_x, l_y)) {
 						if(Nothing.instance.equals(source.get(l_x, l_y))) {
-							returned.set(l_x, l_y, returned.get(l_x, l_y)+EvolvableConstants.OPPORTUNITY_BOMB);
+							returned.set(l_x, l_y, returned.get(l_x, l_y)+value);
 						} else {
 							break;
 						}
@@ -28,12 +33,11 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 					}
 				}
 			}
-			return null;
 		}
 		
 		@Override
-		public Void visitItem(Item item) {
-			returned.set(x, y, returned.get(x, y)+EvolvableConstants.OPPORTUNITY_ITEM);
+		public Void visitGamer(Gamer bomber) {
+			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_ENEMY);
 			return null;
 		}
 	}

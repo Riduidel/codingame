@@ -41,7 +41,7 @@ public class GamerTest {
 				".X...", 
 				"....."));
 		Gamer me = new Gamer(0, 1, 0, 0, 3);
-		read.readGameEntities(new Bomb(0, 2, 0, 1, 3));
+		read.readGameEntities(new Bomb(0, 2, 0, 2, 3));
 		assertThat(me.compute(read))
 			.isEqualTo("MOVE 1 1");
 	}
