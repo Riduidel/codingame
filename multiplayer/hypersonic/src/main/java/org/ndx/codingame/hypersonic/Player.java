@@ -38,10 +38,13 @@ public class Player {
 				switch (entityType) {
 				case 0:
 					// bomber
-					if(owner==myId)
+					if(owner==myId) {
+						System.err.println("I have id "+owner);
 						me = new Gamer(owner, x, y, param1, param2);
-					else
+					} else {
+						System.err.println("There is another player with id "+owner);
 						playground.readGameEntities(new Gamer(owner, x, y, param1, param2));
+					}
 					break;
 				case 1:
 					// bomb

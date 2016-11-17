@@ -129,7 +129,11 @@ public class ScoreBuilder {
 		this.point = point;
 		this.firstTurn = true;
 		ScoredDirection<Score> computed = source.get(point).accept(visitor);
-		return computed.getScore().bestChild;
+		if(!computed.getScore().survive()) {
+			return computed;
+		} else {
+			return computed.getScore().bestChild;
+		}
 	}
 
 	List<Direction> directions(DiscretePoint point) {

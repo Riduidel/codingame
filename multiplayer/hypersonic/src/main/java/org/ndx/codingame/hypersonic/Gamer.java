@@ -37,20 +37,26 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		Playground<Integer> opportunities = findOpportunities(playground);
 		// then, define an action to perform (bomb or move)
 		if(opportunities.get(this)>0 && bombs>0) {
+			System.err.println(String.format("I can plant a bomb (opportunites at %s, %s contains %s and I have %s bombs)", x, y, opportunities.get(this), bombs));
 			// what will happen if we bomb there ?
 			Playfield withBomb = new Playfield(playground);
 			withBomb.set(this, new Bomb(id, x, y, EvolvableConstants.BOMB_DELAY, range));
 			best = findBestMoveIn(withBomb);
 			if(best.getScore().survive()) {
+				System.err.println("And I will survive");
 				return show(Action.BOMB, best);
 			} else {
+				System.err.println("But it will kill me");
 				// mark opportunity as BAD for the visible future
 				for (int i = 0; i < EvolvableConstants.BOMB_DELAY; i++) {
 					playground.descendant(i).getOpportunitiesAt(range).set(this, EvolvableConstants.SCORE_POTENTIAL_SUICIDE);
 				}
 			}
+		} else {
+			System.err.println("I have no reason to throw any bomb");
 		}
 		if(best==null || !best.getScore().survive()) {
+			System.err.println("Let's try a good move");
 			// If bombing is not a good idea, evaluate best mean move
 			best = findBestMoveIn(playground);
 		}
