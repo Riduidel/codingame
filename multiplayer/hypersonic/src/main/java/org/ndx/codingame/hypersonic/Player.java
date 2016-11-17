@@ -15,11 +15,11 @@ public class Player {
 		int width = in.nextInt();
 		int height = in.nextInt();
 		EvolvableConstants constants = new EvolvableConstants();
-		Playfield playground = new Playfield(width, height);
 		int myId = in.nextInt();
 		in.nextLine();
 		// game loop
 		while (true) {
+			Playfield playground = new Playfield(width, height);
 			playground.clear();
 			Delay delay = new Delay();
 			for (int rowIndex = 0; rowIndex < height; rowIndex++) {
