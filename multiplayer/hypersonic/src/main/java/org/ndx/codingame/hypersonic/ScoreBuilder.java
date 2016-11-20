@@ -111,7 +111,7 @@ public class ScoreBuilder {
 		visitor = new ScoreBuilderVisitor();
 		cache = new Playground<>(playground.width, playground.height);
 		iteration = i;
-		factor = (EvolvableConstants.HORIZON-iteration)*(playground.width*playground.height);
+		factor = (EvolvableConstants.HORIZON-iteration); //*(playground.width*playground.height);
 		source = playground;
 		opportunities = opportunitiesLoader.findOpportunities(source);
 		if(i<=EvolvableConstants.HORIZON) {

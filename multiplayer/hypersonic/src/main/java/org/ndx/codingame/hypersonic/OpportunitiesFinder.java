@@ -36,11 +36,11 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 			return null;
 		}
 
-		@Override
-		public Void visitItem(Item item) {
-			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_ITEM);
-			return super.visitItem(item);
-		}
+//		@Override
+//		public Void visitItem(Item item) {
+//			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_ITEM);
+//			return super.visitItem(item);
+//		}
 		
 		@Override
 		public Void visitGamer(Gamer bomber) {

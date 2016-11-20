@@ -29,10 +29,11 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		return "Gamer [id=" + id + ", bombs=" + bombs + ", range=" + range + ", x=" + x + ", y=" + y + "]";
 	}
 	public String compute(Playfield playground) {
+		// Then let enemies drop bombs (otherwise opportunities will be incorrectly computed : enemies will be replaced by ininteresting bombs)
 		letEnemiesDropBombs(playground);
-		ScoredDirection<Score> best = null;
 		// First, score playfield positions according to bomb opportunities
 		Playground<Integer> opportunities = findOpportunities(playground);
+		ScoredDirection<Score> best = null;
 		// then, define an action to perform (bomb or move)
 		if(opportunities.get(this)>0 && bombs>0) {
 			System.err.println(String.format("I can plant a bomb (opportunites at %s, %s contains %s and I have %s bombs)", x, y, opportunities.get(this), bombs));

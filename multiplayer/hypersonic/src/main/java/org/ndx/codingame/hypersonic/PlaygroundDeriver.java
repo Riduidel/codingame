@@ -43,12 +43,13 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield> {
 			@Override
 			public Void visitItem(Item item) {
 				if(!Fire.instance.equals(derived.get(x, y)))
-				derived.set(x, y, item);
+					derived.set(x, y, item);
 				return null;
 			}
 			@Override
 			public Void visitFire(Fire fire) {
-				derived.set(x, y, Nothing.instance);
+				if(!Fire.instance.equals(derived.get(x, y)))
+					derived.set(x, y, Nothing.instance);
 				return null;
 			}
 			@Override
