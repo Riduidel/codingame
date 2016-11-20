@@ -16,8 +16,8 @@ public class EvolvableConstants {
 	public static final int SCORE_VISIT_WALL = 0;
 	public static final int SCORE_VISIT_GAMER = -1;
 	public static final int SCORE_VISIT_BOMB = -1;
-	public static final int OPPORTUNITY_BOMB = 1;
-	public static final int OPPORTUNITY_ITEM = -2;
+	public static final int OPPORTUNITY_BOMB = 2;
+	public static final int OPPORTUNITY_ITEM = -1;
 	public static final int OPPORTUNITY_ENEMY = 10;
 	public static final int OPPORTUNITY_FIRE_THEN_ITEM = 1;
 }
