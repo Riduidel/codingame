@@ -18,7 +18,7 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 					int l_x = x+d.x*index;
 					int l_y = y+d.y*index;
 					if(source.contains(l_x, l_y)) {
-						if(Nothing.instance.equals(source.get(l_x, l_y))) {
+						if(source.get(l_x, l_y).canFire().equals(CanFire.YES)) {
 							returned.set(l_x, l_y, returned.get(l_x, l_y)+value);
 						} else {
 							break;
