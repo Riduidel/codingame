@@ -1,12 +1,9 @@
 package org.ndx.codingame.hypersonic;
 
+import java.util.Collection;
+
 import org.ndx.codingame.hypersonic.content.Bomb;
 import org.ndx.codingame.hypersonic.content.ContentVisitor;
-import org.ndx.codingame.hypersonic.content.Fire;
-import org.ndx.codingame.hypersonic.content.FireThenItem;
-import org.ndx.codingame.hypersonic.content.Wall;
-import org.ndx.codingame.lib2d.discrete.Direction;
-import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
@@ -32,6 +29,7 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		return "Gamer [id=" + id + ", bombs=" + bombs + ", range=" + range + ", x=" + x + ", y=" + y + "]";
 	}
 	public String compute(Playfield playground) {
+		letEnemiesDropBombs(playground);
 		ScoredDirection<Score> best = null;
 		// First, score playfield positions according to bomb opportunities
 		Playground<Integer> opportunities = findOpportunities(playground);
@@ -63,6 +61,12 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		return show(Action.MOVE, best);
 	}
 	
+	private void letEnemiesDropBombs(Playfield playground) {
+		Collection<Gamer> all = playground.accept(new GamerFinder());
+		for(Gamer g : all) {
+			playground.set(g, new Bomb(g.id, g.x, g.y, EvolvableConstants.BOMB_DELAY, g.range));
+		}
+	}
 	private String show(Action action, ScoredDirection best) {
 		return String.format("%s %d %d", action, best.x, best.y);
 	}

@@ -234,8 +234,16 @@ public class Playfield extends Playground<Content> {
 */	
 	public Playground<Integer> getOpportunitiesAt(int range) {
 		if(opportunities==null) {
-			opportunities = descendant(EvolvableConstants.BOMB_DELAY).accept(new OpportunitiesFinder(range));
+			opportunities = createOpportunitiesAt(range);
 		}
 		return opportunities;
+	}
+
+	public Playground<Integer> createOpportunitiesAt(int range) {
+		return descendant(EvolvableConstants.BOMB_DELAY).accept(new OpportunitiesFinder(range));
+	}
+	
+	public void clearOpportunities() {
+		opportunities = null;
 	}
 }
