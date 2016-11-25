@@ -58,7 +58,7 @@ public class Assembler extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			getLog().info("Should generate a Player in root package from Player class declared in a package");
+			getLog().info(String.format("Should generate a Player in root package from Player class %s declared in a package", playerClass));
 			Collection<File> sourceFiles = findJavaSources();
 			if(sourceFiles.isEmpty()) {
 				getLog().warn("There is no player class to extend. Ending");
@@ -95,6 +95,8 @@ public class Assembler extends AbstractMojo {
 							FileFilterUtils.trueFileFilter());
 					if(playerClasses.size()==1) {
 						playerClass = playerClasses.iterator().next();
+					} else if(playerClasses.size()<1){
+						throw new UnsupportedOperationException("No player class was found in project ! Aborting.");
 					} else if(playerClasses.size()>1){
 						throw new UnsupportedOperationException(
 								String.format("Seems like there is more than one candidate class for embedding all the content. "

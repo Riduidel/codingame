@@ -173,8 +173,25 @@ public class PlayerBuilder {
 	 */
 	private Map<String, Set<String>> groupByPackages(Set<String> keySet) {
 		return keySet.stream()
-				.collect(Collectors.groupingBy(s->s.substring(0, s.lastIndexOf(".")),
-							Collectors.mapping(s->s.substring(s.lastIndexOf(".")+1), Collectors.toSet())));
+				.collect(Collectors.groupingBy(this::extractPackageName,
+							Collectors.mapping(this::extractClassName, Collectors.toSet())));
+	}
+	
+	private String extractClassName(String name) {
+		int dot = name.lastIndexOf('.');
+		if(dot>=0) {
+			return name.substring(dot+1);
+		} else {
+			return name;
+		}
+	}
+	private String extractPackageName(String name) {
+		int dot = name.lastIndexOf('.');
+		if(dot>=0) {
+			return name.substring(0, dot);
+		} else {
+			return "";
+		}
 	}
 
 	public CompilationUnit build(Map<String, CompilationUnit> classes, String playerClassFullName) {
