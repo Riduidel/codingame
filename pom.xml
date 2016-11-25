@@ -139,5 +139,6 @@
 		<module>multiplayer/hypersonic</module>
 		<module>multiplayer/the_accountant</module>
 		<module>multiplayer/coders_strike_back</module>
+		<module>multiplayer/fantastic-bits</module>
 	</modules>
 </project>
