@@ -1,5 +1,7 @@
 package org.ndx.codingame.lib2d.continuous;
 
+import java.util.Set;
+
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 
 public class ContinuousPoint extends AbstractPoint {

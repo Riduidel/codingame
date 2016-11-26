@@ -72,4 +72,17 @@ public abstract class AbstractPoint {
 			distanceCache = new WeakHashMap<>();
 		return distanceCache;
 	}
+	public <Type extends AbstractPoint> Type findNearestDistance2(Collection<? extends Type> keySet) {
+		Type returned = null;
+		for(Type element : keySet) {
+			if(returned==null) {
+				returned = element;
+			} else {
+				if(distance2SquaredTo(element)<distance2SquaredTo(returned)) {
+					returned = element;
+				}
+			}
+		}
+		return returned;
+	}
 }

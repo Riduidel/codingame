@@ -100,6 +100,13 @@ public class Geometry {
 		public BezierCurveBuilder to(ContinuousPoint end) {
 			return new BezierCurveBuilder(first, end);
 		}
+
+		public Vector vectorOf(ContinuousPoint point) {
+			return new Vector(first, point);
+		}
+		public Vector vectorOf(double vx, double vy) {
+			return vectorOf(new ContinuousPoint(vx, vy));
+		}
 	}
 	public static final ContinuousPoint at(double x, double y) {
 		return new ContinuousPoint(x, y);
