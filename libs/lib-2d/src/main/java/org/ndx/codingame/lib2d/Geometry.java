@@ -101,11 +101,16 @@ public class Geometry {
 			return new BezierCurveBuilder(first, end);
 		}
 
+		/**
+		 * Beware, second point must be an absolute position
+		 * @param point
+		 * @return
+		 */
 		public Vector vectorOf(ContinuousPoint point) {
 			return new Vector(first, point);
 		}
 		public Vector vectorOf(double vx, double vy) {
-			return vectorOf(new ContinuousPoint(vx, vy));
+			return vectorOf(new ContinuousPoint(first.x+vx, first.y+vy));
 		}
 	}
 	public static final ContinuousPoint at(double x, double y) {

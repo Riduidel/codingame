@@ -211,4 +211,8 @@ public class Line implements PointBuilder<ContinuousPoint> {
 	public Collection<ContinuousPoint> intersectionWith(Circle circle) {
 		return circle.intersectionWith(this);
 	}
+
+	public boolean intersectsWith(Circle circle) {
+		return circle.intersectsWith(this);
+	}
 }

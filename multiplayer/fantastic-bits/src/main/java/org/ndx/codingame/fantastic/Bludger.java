@@ -17,4 +17,9 @@ public class Bludger extends Entity {
 		return RADIUS;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("Bludger [id=%s, position=%s, direction=%s]", id, position, direction);
+	}
+
 }

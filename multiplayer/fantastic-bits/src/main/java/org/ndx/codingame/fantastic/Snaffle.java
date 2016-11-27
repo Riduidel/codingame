@@ -19,4 +19,8 @@ public class Snaffle extends Entity {
 		return RADIUS;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("Snaffle [id=%s, position=%s, direction=%s]", id, position, direction);
+	}
 }

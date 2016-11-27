@@ -102,6 +102,9 @@ public class Circle {
 	public Collection<ContinuousPoint> intersectionWith(Segment segment) {
 		return segment.intersectionWith(this);
 	}
+	public boolean intersectsWith(Line line) {
+		return !intersectionWith(line).isEmpty();
+	}
 	
 	public Collection<ContinuousPoint> intersectionWith(Line line) {
 		if(Algebra.isZero(line.coeffs.b)) {
