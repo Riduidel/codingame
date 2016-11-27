@@ -42,7 +42,7 @@ public class Playground {
 		
 		@Override
 		public String visitSnaffle(Snaffle snaffle) {
-			return String.format("new Wizard(%d, %d, %d, %d, %d)", 
+			return String.format("new Snaffle(%d, %d, %d, %d, %d)", 
 					snaffle.id,
 					(int) snaffle.direction.first.x,
 					(int) snaffle.direction.first.y,
@@ -73,11 +73,11 @@ public class Playground {
 			returned.append(CONTENT_PREFIX).append("\t").append("playing.add(").append(adding).append(");\n");
 		}
 		returned.append(CONTENT_PREFIX).append(ToUnitTest.declareCollection(myTeam, List.class, Wizard.class, "myTeam")).append("\n");
-		for (Entity entity : playing) {
+		for (Entity entity : myTeam) {
 			String adding = entity.accept(ELEMENT_WRITER);
 			returned.append(CONTENT_PREFIX).append("\t").append("myTeam.add(").append(adding).append(");\n");
 		}
-		returned.append(METHOD_PREFIX).append("// TODO Write that test !");
+		returned.append(METHOD_PREFIX).append("// TODO Write that test !\n");
 		returned.append(METHOD_PREFIX).append("}\n\n");
 		return returned.toString();
 	}

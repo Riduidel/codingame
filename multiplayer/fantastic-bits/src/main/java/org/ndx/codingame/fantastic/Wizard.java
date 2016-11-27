@@ -61,4 +61,9 @@ public class Wizard extends Entity {
 		return visitor.visitWizard(this);
 	}
 
+	@Override
+	protected double getRadius() {
+		return RADIUS;
+	}
+
 }

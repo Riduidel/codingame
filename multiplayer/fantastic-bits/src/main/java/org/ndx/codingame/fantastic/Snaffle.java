@@ -14,4 +14,9 @@ public class Snaffle extends Entity {
 		return visitor.visitSnaffle(this);
 	}
 
+	@Override
+	protected double getRadius() {
+		return RADIUS;
+	}
+
 }
