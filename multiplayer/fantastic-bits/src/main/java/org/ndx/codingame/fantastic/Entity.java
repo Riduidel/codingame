@@ -1,5 +1,6 @@
 package org.ndx.codingame.fantastic;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -7,9 +8,24 @@ import org.ndx.codingame.lib2d.Circle;
 import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.Vector;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public abstract class Entity {
+	public static class ByDistanceTo implements Comparator<Entity> {
+
+		private AbstractPoint.PositionByDistanceTo center;
+
+		public ByDistanceTo(Entity principal) {
+			this.center = new AbstractPoint.PositionByDistanceTo(principal.position);
+		}
+
+		@Override
+		public int compare(Entity o1, Entity o2) {
+			return center.compare(o1.position, o2.position);
+		}
+	}
+
 	public final ContinuousPoint position;
 	public final Vector direction;
 	public final int id;
@@ -41,5 +57,27 @@ public abstract class Entity {
 
 	public ContinuousPoint getNextPosition() {
 		return direction.second;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Entity other = (Entity) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

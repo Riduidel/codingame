@@ -1,12 +1,26 @@
 package org.ndx.codingame.lib2d.base;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public abstract class AbstractPoint {
+	public static class PositionByDistanceTo implements Comparator<AbstractPoint> {
+	
+		private AbstractPoint center;
+	
+		public PositionByDistanceTo(ContinuousPoint principal) {
+			this.center = principal;
+		}
+	
+		@Override
+		public int compare(AbstractPoint o1, AbstractPoint o2) {
+			return (int) Math.signum(o1.distance2SquaredTo(center)-o2.distance2SquaredTo(center));
+		}
+	}
 	private Map<Object, Double> distanceCache;
 	public abstract double getX();
 	public abstract double getY();

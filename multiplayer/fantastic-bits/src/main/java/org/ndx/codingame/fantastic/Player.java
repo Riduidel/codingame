@@ -16,6 +16,8 @@ public class Player {
 
         List<Entity> playing = new ArrayList<>();
         List<Wizard> myTeam = new ArrayList<>();
+        Status status = new Status();
+        status.team = myTeamId;
         // game loop
         while (true) {
         	playing.clear();
@@ -44,14 +46,21 @@ public class Player {
                 	break;
                 }
             }
-            System.err.println(Playground.toUnitTestString(playing, myTeam));
+			Wizard myCaptain = myTeam.get(0);
+			if(myCaptain.isBetween(myTeam.get(1), myCaptain.getAttackedGoal())) {
+				myCaptain.setAttacking(true);
+			} else {
+				myTeam.get(1).setAttacking(true);
+			}
+            System.err.println(Playground.toUnitTestString(status, playing, myTeam));
             for(Wizard player : myTeam) {
 
 
                 // Edit this line to indicate the action for each wizard (0 ≤ thrust ≤ 150, 0 ≤ power ≤ 500)
                 // i.e.: "MOVE x y thrust" or "THROW x y power"
-            	System.out.println(player.play(playing));
+            	System.out.println(player.play(status, playing, myTeam));
             }
+            status.increaseMagic();
         }
     }
 }

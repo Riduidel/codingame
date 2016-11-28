@@ -30,14 +30,15 @@ public class Playground {
 		
 		@Override
 		public String visitWizard(Wizard wizard) {
-			return String.format("new Wizard(%d, %d, %d, %d, %d, %d, %s)", 
+			return String.format("new Wizard(%d, %d, %d, %d, %d, %d, %s, %s)", 
 					wizard.id,
 					(int) wizard.direction.first.x,
 					(int) wizard.direction.first.y,
 					(int) wizard.direction.second.x,
 					(int) wizard.direction.second.y,
 					wizard.teamId,
-					wizard.holdingSnaffle);
+					wizard.holdingSnaffle,
+					wizard.isAttacking());
 		}
 		
 		@Override
@@ -61,12 +62,15 @@ public class Playground {
 		}
 	};
 
-	public static String toUnitTestString(List<Entity> playing, List<Wizard> myTeam) {
+	public static String toUnitTestString(Status status, List<Entity> playing, List<Wizard> myTeam) {
 		String METHOD_PREFIX = "\t\t\t"; 
 		String CONTENT_PREFIX = METHOD_PREFIX+"\t";
 		final StringBuilder returned = new StringBuilder();
 		returned.append(METHOD_PREFIX).append("@Test public void can_find_actions_in_")
 			.append(System.currentTimeMillis()).append("() {\n");
+		returned.append(CONTENT_PREFIX).append("Status status = new Status();\n");
+		returned.append(CONTENT_PREFIX).append("\t").append("status.team = ").append(status.team).append(";\n");
+		returned.append(CONTENT_PREFIX).append("\t").append("status.magic = ").append(status.magic).append(";\n");
 		returned.append(CONTENT_PREFIX).append(ToUnitTest.declareCollection(playing, List.class, Entity.class, "playing")).append("\n");
 		for (Entity entity : playing) {
 			String adding = entity.accept(ELEMENT_WRITER);
@@ -77,7 +81,10 @@ public class Playground {
 			String adding = entity.accept(ELEMENT_WRITER);
 			returned.append(CONTENT_PREFIX).append("\t").append("myTeam.add(").append(adding).append(");\n");
 		}
-		returned.append(METHOD_PREFIX).append("// TODO Write that test !\n");
+		returned.append(CONTENT_PREFIX).append("// TODO Write that test !\n");
+		returned.append(CONTENT_PREFIX).append("for(Wizard my : myTeam) {\n");
+		returned.append(CONTENT_PREFIX).append("\t").append("my.play(status, playing, myTeam);\n");
+		returned.append(CONTENT_PREFIX).append("}\n");
 		returned.append(METHOD_PREFIX).append("}\n\n");
 		return returned.toString();
 	}

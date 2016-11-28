@@ -8,23 +8,29 @@ import java.util.List;
 import org.junit.Test;
 
 public class InGameTest {
-	@Test public void do_not_shoot_on_items() {
+	@Test public void can_find_actions_in_1480336610504() {
+		Status status = new Status();
+			status.team = 0;
+			status.magic = 0;
 		List<Entity> playing=new ArrayList<>();
-			playing.add(new Wizard(2, 9819, 3394, 68, 260, 1, true));
-			playing.add(new Wizard(3, 12947, 1564, -306, -20, 1, false));
-			playing.add(new Snaffle(4, 6181, 4106, -68, -260));
-			playing.add(new Snaffle(5, 9819, 3394, 68, 260));
-			playing.add(new Snaffle(6, 6831, 1697, 0, 0));
-			playing.add(new Snaffle(7, 9169, 5803, 0, 0));
-			playing.add(new Snaffle(8, 8634, 5519, 103, -6));
-			playing.add(new Snaffle(9, 7366, 1983, -103, 6));
-			playing.add(new Snaffle(10, 8000, 3750, 0, 0));
-			playing.add(new Bludger(11, 3626, 5101, 294, 236));
-			playing.add(new Bludger(12, 12640, 2522, -280, -233));
+			playing.add(new Wizard(2, 15000, 2250, 15000, 2250, 1, false, false));
+			playing.add(new Wizard(3, 15000, 5250, 15000, 5250, 1, false, false));
+			playing.add(new Snaffle(4, 5285, 6874, 5285, 6874));
+			playing.add(new Snaffle(5, 10715, 626, 10715, 626));
+			playing.add(new Snaffle(6, 2318, 2579, 2318, 2579));
+			playing.add(new Snaffle(7, 13682, 4921, 13682, 4921));
+			playing.add(new Snaffle(8, 6898, 655, 6898, 655));
+			playing.add(new Snaffle(9, 9102, 6845, 9102, 6845));
+			playing.add(new Snaffle(10, 8000, 3750, 8000, 3750));
+			playing.add(new Bludger(11, 7450, 3750, 7450, 3750));
+			playing.add(new Bludger(12, 8550, 3750, 8550, 3750));
 		List<Wizard> myTeam=new ArrayList<>();
-			myTeam.add(new Wizard(0, 6181, 4106, -68, -260, 0, true));
-			myTeam.add(new Wizard(1, 1856, 4726, 248, -101, 0, false));
-		assertThat(myTeam.get(0).play(playing)).isNotEqualTo("THROW 16001 3750 500");
+			myTeam.add(new Wizard(0, 1000, 5250, 1000, 5250, 0, false, true));
+			myTeam.add(new Wizard(1, 1000, 2250, 1000, 2250, 0, false, false));
+		// TODO Write that test !
+		for(Wizard my : myTeam) {
+			my.play(status, playing, myTeam);
+		}
 	}
 
 }

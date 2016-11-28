@@ -2,8 +2,6 @@ package org.ndx.codingame.fantastic;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.lib2d.Line;
@@ -22,27 +20,34 @@ public class Wizard extends Entity {
 
 	public final boolean holdingSnaffle;
 
-	public Wizard(int id, double x, double y, double vx, double vy, int teamId, boolean b) {
+	private boolean attacking;
+
+	public Wizard(int id, double x, double y, double vx, double vy, int teamId, boolean holdingSnaffle) {
 		super(id, x, y, vx, vy);
 		this.teamId = teamId;
-		this.holdingSnaffle = b;
+		this.holdingSnaffle = holdingSnaffle;
+	}
+	public Wizard(int id, double x, double y, double vx, double vy, int teamId, boolean holdingSnaffle, boolean attacking) {
+		this(id, x, y, vx, vy, teamId, holdingSnaffle);
+		this.attacking = attacking;
 	}
 
-	public String play(List<Entity> entities) {
+	public String play(Status status, List<Entity> entities, List<Wizard> myTeam) {
 		// Find nearest snaffle
-		Map<ContinuousPoint, Entity> positions =  entities.stream()
-				.filter(e -> e instanceof Snaffle)
-				.map(e -> (Snaffle) e)
-				.filter(s -> !s.isATarget)
-				.collect(Collectors.toMap(s -> s.position,
-                        Function.identity()));
-		ContinuousPoint nearest = position.findNearestDistance2(positions.keySet());
-		Snaffle found = (Snaffle) positions.get(nearest);
+		Entities exploded = new Entities(entities, myTeam, getAttackedGoal(), getDefendedGoal());
+		SpellContext context;
+		for(Spell spell : Spell.values()) {
+			context = spell.shouldCast(status, this, exploded);
+			if(context.shouldCast()) {
+				return spell.cast(status, context);
+			}
+		}
+		Snaffle found = exploded.findBestSnaffleFor(this);
 		if(found!=null) {
 			found.isATarget = true;
 			if(holdingSnaffle) {
 				// Immediatly shoot to goal center at max speed
-				return throwInDirectionOf(entities, getGoal());
+				return throwInDirectionOf(entities, getAttackedGoal());
 			} else {
 				// catch that goddam snaffle by going directly to its next position
 				return moveTo(found.getNextPosition());
@@ -81,7 +86,11 @@ public class Wizard extends Entity {
 		return throwTo(target);
 	}
 
-	private Segment getGoal() {
+	public Segment getDefendedGoal() {
+		return Playground.goals.get(teamId);
+	}
+
+	public Segment getAttackedGoal() {
 		return Playground.goals.get(1-teamId);
 	}
 
@@ -107,6 +116,14 @@ public class Wizard extends Entity {
 	public String toString() {
 		return String.format("Wizard [teamId=%s, holdingSnaffle=%s, id=%s, position=%s, direction=%s]", teamId,
 				holdingSnaffle, id, position, direction);
+	}
+
+	public void setAttacking(boolean b) {
+		this.attacking= true;
+	}
+
+	public boolean isAttacking() {
+		return attacking;
 	}
 
 }
