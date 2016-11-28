@@ -1,4 +1,4 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.entities;
 
 public class EntityAdapter<Type> implements EntityVisitor<Type> {
 	protected Type returned = null;

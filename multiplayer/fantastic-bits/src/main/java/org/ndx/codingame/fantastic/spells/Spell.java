@@ -1,7 +1,14 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.spells;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.ndx.codingame.fantastic.entities.Bludger;
+import org.ndx.codingame.fantastic.entities.Entities;
+import org.ndx.codingame.fantastic.entities.Entity;
+import org.ndx.codingame.fantastic.entities.Wizard;
+import org.ndx.codingame.fantastic.status.MagicStatus;
+import org.ndx.codingame.fantastic.status.Status;
 
 public enum Spell {
 	FLIPENDO(20) {
@@ -20,7 +27,7 @@ public enum Spell {
 				List<Wizard> myTeamisNearBludger = entities.getAllWizards().stream()
 					.sorted(new Entity.ByDistanceTo(b))
 					.limit(2)
-					.filter(w -> w.teamId==status.team)
+					.filter(w -> w.teamId==status.getTeam())
 					.collect(Collectors.toList());
 				if(myTeamisNearBludger.size()==2) {
 					System.err.println(String.format("The two nearest wizards of Bludger %s are mine !", b));
@@ -41,7 +48,7 @@ public enum Spell {
 	}
 
 	public final SpellContext shouldCast(Status status, Wizard wizard, Entities entities) {
-		if(status.magic>required) {
+		if(status.get(MagicStatus.class).getMagic()>required) {
 			return shouldCastThat(status, wizard, entities);
 		}
 		return SpellContext.NO;
@@ -52,7 +59,7 @@ public enum Spell {
 	}
 
 	public String cast(Status status, SpellContext context) {
-		status.magic-=required;
+		status.get(MagicStatus.class).cast(required);
 		return String.format("%s %d", name(), context.entity.id);
 	}
 }

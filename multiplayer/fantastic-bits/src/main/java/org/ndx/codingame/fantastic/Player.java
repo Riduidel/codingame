@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.ndx.codingame.fantastic.entities.Bludger;
+import org.ndx.codingame.fantastic.entities.Entity;
+import org.ndx.codingame.fantastic.entities.Snaffle;
+import org.ndx.codingame.fantastic.entities.Wizard;
+import org.ndx.codingame.fantastic.status.Status;
+
 /**
  * Grab Snaffles and try to throw them through the opponent's goal!
  * Move towards a Snaffle and use your team id to determine where you need to throw it.
@@ -17,7 +23,7 @@ public class Player {
         List<Entity> playing = new ArrayList<>();
         List<Wizard> myTeam = new ArrayList<>();
         Status status = new Status();
-        status.team = myTeamId;
+        status.setTeam(myTeamId);
         // game loop
         while (true) {
         	playing.clear();
@@ -46,12 +52,7 @@ public class Player {
                 	break;
                 }
             }
-			Wizard myCaptain = myTeam.get(0);
-			if(myCaptain.isBetween(myTeam.get(1), myCaptain.getAttackedGoal())) {
-				myCaptain.setAttacking(true);
-			} else {
-				myTeam.get(1).setAttacking(true);
-			}
+			chooseCaptain(status, myTeam);
             System.err.println(Playground.toUnitTestString(status, playing, myTeam));
             for(Wizard player : myTeam) {
 
@@ -60,7 +61,25 @@ public class Player {
                 // i.e.: "MOVE x y thrust" or "THROW x y power"
             	System.out.println(player.play(status, playing, myTeam));
             }
-            status.increaseMagic();
+            status.advanceOneTurn();
         }
     }
+
+	private static void chooseCaptain(Status status, List<Wizard> myTeam) {
+		Wizard myCaptain = myTeam.get(0);
+		Wizard wingman = myTeam.get(1);
+		if(myCaptain.isBetween(wingman, myCaptain.getAttackedGoal())) {
+			myCaptain.setAttacking(true);
+			status.setCaptain(myCaptain.id);
+		} else {
+			if(status.getCaptain()==myCaptain.id) {
+				// we change captain only when really deserved
+				if(Math.abs(myCaptain.position.x-wingman.position.x)<Wizard.RADIUS) {
+					myCaptain.setAttacking(true);
+				}
+			}
+			wingman.setAttacking(true);
+			status.setCaptain(wingman.id);
+		}
+	}
 }

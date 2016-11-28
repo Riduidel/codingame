@@ -4,6 +4,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.ndx.codingame.fantastic.entities.Bludger;
+import org.ndx.codingame.fantastic.entities.Entity;
+import org.ndx.codingame.fantastic.entities.EntityVisitor;
+import org.ndx.codingame.fantastic.entities.Snaffle;
+import org.ndx.codingame.fantastic.entities.Wizard;
+import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.Segment;
@@ -69,8 +75,8 @@ public class Playground {
 		returned.append(METHOD_PREFIX).append("@Test public void can_find_actions_in_")
 			.append(System.currentTimeMillis()).append("() {\n");
 		returned.append(CONTENT_PREFIX).append("Status status = new Status();\n");
-		returned.append(CONTENT_PREFIX).append("\t").append("status.team = ").append(status.team).append(";\n");
-		returned.append(CONTENT_PREFIX).append("\t").append("status.magic = ").append(status.magic).append(";\n");
+		returned.append(CONTENT_PREFIX).append("\t").append("status.setTeam(").append(status.getTeam()).append(");\n");
+		returned.append(CONTENT_PREFIX).append("\t").append("status.setMagic(").append(status.getMagic()).append(");\n");
 		returned.append(CONTENT_PREFIX).append(ToUnitTest.declareCollection(playing, List.class, Entity.class, "playing")).append("\n");
 		for (Entity entity : playing) {
 			String adding = entity.accept(ELEMENT_WRITER);

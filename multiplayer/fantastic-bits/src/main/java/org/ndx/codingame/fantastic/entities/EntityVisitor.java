@@ -1,4 +1,4 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.entities;
 
 public interface EntityVisitor<Type> {
 

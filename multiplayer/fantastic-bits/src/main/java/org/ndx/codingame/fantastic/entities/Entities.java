@@ -1,4 +1,4 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.entities;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,12 +87,19 @@ public class Entities {
 			if(snaffles.size()==1) {
 				key = snaffles.firstKey();
 			} else {
-				// get the second one
+				// get the first non targetted one
 				Iterator<ContinuousPoint> iterator = snaffles.keySet().iterator();
-				iterator.next();
-				key = iterator.next();
+				Snaffle s = null;
+				do {
+					key = iterator.next();
+					s = snaffles.get(key);
+				} while(s.isATarget);
 			}
 		} else {
+			key = goodOnes.keySet().stream()
+					.sorted(new AbstractPoint.PositionByDistanceTo(wizard.position))
+					.findFirst()
+					.get();
 			key = goodOnes.lastKey();
 		}
 		return snaffles.get(key);

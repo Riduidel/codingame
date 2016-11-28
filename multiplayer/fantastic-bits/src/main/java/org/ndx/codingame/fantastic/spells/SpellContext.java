@@ -1,4 +1,6 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.spells;
+
+import org.ndx.codingame.fantastic.entities.Entity;
 
 public class SpellContext {
 	public static final SpellContext NO = new SpellContext(null);
@@ -8,7 +10,7 @@ public class SpellContext {
 		return entity!=null;
 	}
 
-	public SpellContext(Entity toPetrificate) {
-		this.entity = toPetrificate;
+	public SpellContext(Entity target) {
+		this.entity = target;
 	}
 }

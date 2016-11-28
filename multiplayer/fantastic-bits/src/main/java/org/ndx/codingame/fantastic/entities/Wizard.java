@@ -1,9 +1,13 @@
-package org.ndx.codingame.fantastic;
+package org.ndx.codingame.fantastic.entities;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.fantastic.Playground;
+import org.ndx.codingame.fantastic.spells.Spell;
+import org.ndx.codingame.fantastic.spells.SpellContext;
+import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.Segment;
@@ -75,7 +79,7 @@ public class Wizard extends Entity {
 				Iterator<Entity> entity = toAvoid.iterator();
 				while(entity.hasNext() && found) {
 					Entity tested = entity.next();
-					found = !obstacleFinder.intersectsWith(tested.getExtendedCircle(tested.getRadius()+Snaffle.RADIUS));
+					found = !obstacleFinder.intersectsWith(tested.getExtendedCircle(tested.getRadius()+Snaffle.RADIUS*2));
 				}
 			}
 			angle+=5;
