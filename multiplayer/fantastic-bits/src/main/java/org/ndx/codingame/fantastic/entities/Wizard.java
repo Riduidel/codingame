@@ -1,10 +1,15 @@
 package org.ndx.codingame.fantastic.entities;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.fantastic.Playground;
+import org.ndx.codingame.fantastic.spells.AccioSpell;
+import org.ndx.codingame.fantastic.spells.FlipendoSpell;
+import org.ndx.codingame.fantastic.spells.ObliviateSpell;
 import org.ndx.codingame.fantastic.spells.Spell;
 import org.ndx.codingame.fantastic.spells.SpellContext;
 import org.ndx.codingame.fantastic.status.Status;
@@ -14,6 +19,12 @@ import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Wizard extends Entity {
+	private static Collection<Spell> spells	 = Arrays.asList(
+			new FlipendoSpell(),
+			new AccioSpell(),
+			new ObliviateSpell()
+			);
+	
 	public static final int RADIUS = 400;
 
 	private static final int THROW_POWER = 500;
@@ -40,7 +51,7 @@ public class Wizard extends Entity {
 		// Find nearest snaffle
 		Entities exploded = new Entities(entities, myTeam, getAttackedGoal(), getDefendedGoal());
 		SpellContext context;
-		for(Spell spell : Spell.values()) {
+		for(Spell spell : spells) {
 			context = spell.shouldCast(status, this, exploded);
 			if(context.shouldCast()) {
 				return spell.cast(status, context);
