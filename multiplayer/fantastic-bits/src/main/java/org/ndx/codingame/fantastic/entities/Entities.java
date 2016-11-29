@@ -79,7 +79,9 @@ public class Entities {
 
 	public Snaffle findBestSnaffleFor(Wizard wizard) {
 		SortedMap<ContinuousPoint, Snaffle> snaffles = sortSnafflesFor(wizard);
-		SortedMap<ContinuousPoint, Snaffle> goodOnes = snaffles.headMap(wizard.position);
+		// fuzzy position to make sure item immediatly behind won't be forgotten
+		SortedMap<ContinuousPoint, Snaffle> goodOnes = snaffles.headMap(
+				new ContinuousPoint(wizard.position.x + (wizard.isAttacking() ? -Wizard.RADIUS : Wizard.RADIUS), wizard.position.y));
 		ContinuousPoint key = null;
 		if(goodOnes.isEmpty()) {
 			// We will have to get the first snaffle in the other side map, but please take care to remove the one already targetted
