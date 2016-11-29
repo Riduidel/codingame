@@ -1,5 +1,6 @@
 package org.ndx.codingame.lib2d;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.ndx.codingame.lib2d.base.AbstractPoint;
@@ -214,5 +215,74 @@ public class Line implements PointBuilder<ContinuousPoint> {
 
 	public boolean intersectsWith(Circle circle) {
 		return circle.intersectsWith(this);
+	}
+
+	
+	public Collection<ContinuousPoint> intersectionWith(Line line) {
+		Collection<ContinuousPoint> returned = new ArrayList<>();
+		double a = coeffs.a,
+				b = coeffs.b,
+				c = coeffs.c,
+				d = line.coeffs.a,
+				e = line.coeffs.b,
+				f = line.coeffs.c
+				;
+		if(e*a!=b*d) {
+			if(coeffs.isHorizontalLine()) {
+				/*
+				 * a*x+b*y+c = 0
+				 * d*x+e*y+f = 0
+				 * 
+				 * a*x = -(b*y+c)
+				 * d*x = -(e*y+f)
+				 * 
+				 * x = -(b*y+c)/a
+				 * x = -(e*y+f)/d
+				 * 
+				 * (b*y+c)/a=(e*y+f)/d
+				 * 
+				 * d*(b*y+c)=a*(e*y+f)
+				 * 
+				 * d*b*y+d*c=a*e*y+a*f
+				 * 
+				 * (d*b-a*e)*y=a*f-d*c
+				 * 
+				 * y=(a*f-d*c)/(d*b-a*e)
+				 */
+				double y = (a*f-d*c)/(d*b-a*e);
+				if(!line.coeffs.isHorizontalLine()) {
+					returned.add(new ContinuousPoint(line.coeffs.computeXFromY(y), y));
+				}
+			} else {
+				/*
+				 * a*x+b*y+c = 0
+				 * d*x+e*y+f = 0
+				 * 
+				 * b*y = -(a*x+c)
+				 * e*y = -(d*x+f)
+				 * 
+				 * y = -(a*x+c)/b
+				 * y = -(d*x+f)/e
+				 * 
+				 * (a*x+c)/b = (d*x+c)/e
+				 * e*(a*x+c) = b*(d*x+f)
+				 * 
+				 * e*a*x+e*c = b*d*x+b*c
+				 * (e*a-b*d)*x = b*f-e*c
+				 * x = (b*f-e*c)/(e*a-b*d)
+				 */
+				double x = (b*f-e*c)/(e*a-b*d);
+				if(line.coeffs.isVerticalLine()) {
+					returned.add(new ContinuousPoint(x, coeffs.computeYFromX(x)));
+				} else {
+					returned.add(new ContinuousPoint(x, line.coeffs.computeYFromX(x)));
+				}
+			}
+		}
+		return returned;
+	}
+	
+	public boolean intersectsWith(Line line) {
+		return !intersectionWith(line).isEmpty();
 	}
 }

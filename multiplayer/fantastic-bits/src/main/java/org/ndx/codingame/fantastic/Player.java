@@ -74,7 +74,7 @@ public class Player {
 		} else {
 			if(status.getCaptain()==myCaptain.id) {
 				// we change captain only when really deserved
-				if(Math.abs(myCaptain.position.x-wingman.position.x)<Wizard.RADIUS) {
+				if(Math.abs(myCaptain.position.x-wingman.position.x)<Wizard.RADIUS*2) {
 					myCaptain.setAttacking(true);
 				}
 			}

@@ -61,6 +61,10 @@ public class Entities {
 		return (Map<ContinuousPoint, Type>) positionsOf.get(type);
 	}
 
+	public Collection<Snaffle> getSnaffles() {
+		return getCollectionOf(Snaffle.class);
+	}
+
 	public Snaffle findBestSnaffleFor(ContinuousPoint position) {
 		return getPositionsOf(Snaffle.class).get(position.findNearestDistance2(getPositionsOf(Snaffle.class).keySet()));
 	}
@@ -74,12 +78,7 @@ public class Entities {
 	}
 
 	public Snaffle findBestSnaffleFor(Wizard wizard) {
-		SortedMap<ContinuousPoint, Snaffle> snaffles = null;
-		if(wizard.isAttacking()) {
-			snaffles = getSnafflesSortedByDistanceTo(wizard.getAttackedGoal().pointAtNTimes(0.5));
-		} else {
-			snaffles = getSnafflesSortedByDistanceTo(wizard.getDefendedGoal().pointAtNTimes(0.5));
-		}
+		SortedMap<ContinuousPoint, Snaffle> snaffles = sortSnafflesFor(wizard);
 		SortedMap<ContinuousPoint, Snaffle> goodOnes = snaffles.headMap(wizard.position);
 		ContinuousPoint key = null;
 		if(goodOnes.isEmpty()) {
@@ -103,6 +102,16 @@ public class Entities {
 			key = goodOnes.lastKey();
 		}
 		return snaffles.get(key);
+	}
+
+	public SortedMap<ContinuousPoint, Snaffle> sortSnafflesFor(Wizard wizard) {
+		SortedMap<ContinuousPoint, Snaffle> snaffles = null;
+		if(wizard.isAttacking()) {
+			snaffles = getSnafflesSortedByDistanceTo(wizard.getAttackedGoal().pointAtNTimes(0.5));
+		} else {
+			snaffles = getSnafflesSortedByDistanceTo(wizard.getDefendedGoal().pointAtNTimes(0.5));
+		}
+		return snaffles;
 	}
 
 	private SortedMap<ContinuousPoint, Snaffle> getSnafflesSortedByDistanceTo(ContinuousPoint goalCenter) {

@@ -27,17 +27,19 @@ public abstract class Entity {
 	}
 
 	public final ContinuousPoint position;
+	public final ContinuousPoint speed;
 	public final Vector direction;
 	public final int id;
 	private Map<Double, Circle> circles = new TreeMap<>();
 	public Entity(int id, double x, double y, double vx, double vy) {
 		this.id = id;
 		position = new ContinuousPoint(x, y);
+		speed = new ContinuousPoint(vx, vy);
 		direction = Geometry.from(position).vectorOf(vx, vy);
 	}
 	
 	public Circle getCircle() {
-		return getExtendedCircle(getRadius());
+		return getCircle(getRadius());
 	}
 
 	protected abstract double getRadius();
@@ -48,7 +50,7 @@ public abstract class Entity {
 		return (int) Math.signum(position.getX()-wizard.position.getX())!=(int) Math.signum(position.getX()-goal.first.getX());
 	}
 
-	public Circle getExtendedCircle(Double radius) {
+	public Circle getCircle(Double radius) {
 		if(!circles.containsKey(radius)) {
 			circles.put(radius, Geometry.from(position).cirleOf(radius));
 		}

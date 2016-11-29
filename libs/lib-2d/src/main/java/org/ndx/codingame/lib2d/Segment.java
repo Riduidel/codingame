@@ -44,4 +44,29 @@ public class Segment extends Line {
 	public Collection<ContinuousPoint> intersectionWith(Circle circle) {
 		return super.intersectionWith(circle).stream().filter(this::contains).collect(Collectors.toSet());
 	}
+	
+	@Override
+	public Collection<ContinuousPoint> intersectionWith(Line line) {
+		return super.intersectionWith(line).stream()
+				.filter(p -> 
+					p.x>=Math.min(first.x, second.x) && p.x<=Math.max(first.x, second.x)
+					&&
+					p.y>=Math.min(first.y, second.y) && p.y<=Math.max(first.y, second.y)
+				)
+				.collect(Collectors.toList());
+	}
+	
+	public Collection<ContinuousPoint> intersectionWith(final Segment segment) {
+		return intersectionWith((Line) segment).stream()
+				.filter(p -> 
+				p.x>=Math.min(segment.first.x, segment.second.x) && p.x<=Math.max(segment.first.x, segment.second.x)
+				&&
+				p.y>=Math.min(segment.first.y, segment.second.y) && p.y<=Math.max(segment.first.y, segment.second.y)
+			)
+			.collect(Collectors.toList());
+	}
+	
+	public boolean intersectsWith(Segment segment) {
+		return !intersectionWith(segment).isEmpty();
+	}
 }

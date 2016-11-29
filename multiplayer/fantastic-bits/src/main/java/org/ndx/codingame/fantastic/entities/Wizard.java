@@ -79,7 +79,7 @@ public class Wizard extends Entity {
 				Iterator<Entity> entity = toAvoid.iterator();
 				while(entity.hasNext() && found) {
 					Entity tested = entity.next();
-					found = !obstacleFinder.intersectsWith(tested.getExtendedCircle(tested.getRadius()+Snaffle.RADIUS*2));
+					found = !obstacleFinder.intersectsWith(tested.getCircle(tested.getRadius()+Snaffle.RADIUS*2));
 				}
 			}
 			angle+=5;

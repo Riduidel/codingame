@@ -26,6 +26,8 @@ public class LineTest {
 		ContinuousPoint at_45_degrees = tested.pointAtAngle(first, 45, 1, PointBuilder.DEFAULT);
 		assertThat(at_45_degrees.x).isEqualTo(1/sqrt(2), within(Algebra.ZERO));
 		assertThat(at_45_degrees.y).isEqualTo(1+1/sqrt(2), within(Algebra.ZERO));
+		Line intersecting = from(0, 0).lineTo(2, 2);
+		assertThat(tested.intersectionWith(intersecting)).contains(at(1.0, 1));
 	}
 
 	@Test public void can_compute_infos_on_vertical_line() {
@@ -39,6 +41,8 @@ public class LineTest {
 		assertThat(tested.project(at(0.0, 0))).isEqualTo(at(1, 0));
 		assertThat(tested.symetricOf(at(0.0, 0))).isEqualTo(at(2, 0));
 		assertThat(tested.pointAtNTimes(2)).isEqualTo(at(1, 2));
+		Line intersecting = from(0, -1).lineTo(0,  1);
+		assertThat(tested.intersectionWith(intersecting)).isEmpty();
 	}
 
 	@Test public void can_compute_infos_on_vertical_reverse_line() {
