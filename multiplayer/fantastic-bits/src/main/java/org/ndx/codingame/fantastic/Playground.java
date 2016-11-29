@@ -35,36 +35,38 @@ public class Playground {
 	private static EntityVisitor<String> ELEMENT_WRITER = new EntityVisitor<String>() {
 		
 		@Override
-		public String visitWizard(Wizard wizard) {
+		public String visitWizard(Wizard entity) {
 			return String.format("new Wizard(%d, %d, %d, %d, %d, %d, %s, %s)", 
-					wizard.id,
-					(int) wizard.direction.first.x,
-					(int) wizard.direction.first.y,
-					(int) wizard.direction.second.x,
-					(int) wizard.direction.second.y,
-					wizard.teamId,
-					wizard.holdingSnaffle,
-					wizard.isAttacking());
+					entity.id,
+					(int) entity.position.x,
+					(int) entity.position.y,
+					(int) entity.speed.x,
+					(int) entity.speed.y,
+					entity.teamId,
+					entity.holdingSnaffle,
+					entity.isAttacking());
 		}
 		
 		@Override
-		public String visitSnaffle(Snaffle snaffle) {
+		public String visitSnaffle(Snaffle entity) {
 			return String.format("new Snaffle(%d, %d, %d, %d, %d)", 
-					snaffle.id,
-					(int) snaffle.direction.first.x,
-					(int) snaffle.direction.first.y,
-					(int) snaffle.direction.second.x,
-					(int) snaffle.direction.second.y);
+					entity.id,
+					(int) entity.position.x,
+					(int) entity.position.y,
+					(int) entity.speed.x,
+					(int) entity.speed.y
+					);
 		}
 		
 		@Override
-		public String visitBludger(Bludger bludger) {
+		public String visitBludger(Bludger entity) {
 			return String.format("new Bludger(%d, %d, %d, %d, %d)", 
-					bludger.id,
-					(int) bludger.direction.first.x,
-					(int) bludger.direction.first.y,
-					(int) bludger.direction.second.x,
-					(int) bludger.direction.second.y);
+					entity.id,
+					(int) entity.position.x,
+					(int) entity.position.y,
+					(int) entity.speed.x,
+					(int) entity.speed.y
+					);
 		}
 	};
 

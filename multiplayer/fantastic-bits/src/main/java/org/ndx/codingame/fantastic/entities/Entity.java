@@ -46,8 +46,12 @@ public abstract class Entity {
 
 	public abstract <Type> Type accept(EntityVisitor<Type> visitor);
 
-	public boolean isBetween(Wizard wizard, Segment goal) {
-		return (int) Math.signum(position.getX()-wizard.position.getX())!=(int) Math.signum(position.getX()-goal.first.getX());
+	public boolean isBetween(Entity entity, Segment goal) {
+		return isBetween(position, entity.position, goal.first);
+	}
+	
+	public static boolean isBetween(ContinuousPoint tested, ContinuousPoint first, ContinuousPoint second) {
+		return (int) Math.signum(tested.getX()-first.getX())!=(int) Math.signum(tested.getX()-second.getX());
 	}
 
 	public Circle getCircle(Double radius) {
