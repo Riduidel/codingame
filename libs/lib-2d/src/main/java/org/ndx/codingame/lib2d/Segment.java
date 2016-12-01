@@ -8,7 +8,7 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Segment extends Line {
 
-	public Segment(ContinuousPoint first, ContinuousPoint second) {
+	public Segment(final ContinuousPoint first, final ContinuousPoint second) {
 		super(first, second);
 	}
 	
@@ -16,7 +16,7 @@ public class Segment extends Line {
 		return first.distance2To(second);
 	}
 
-	public <Type extends ContinuousPoint> Type pointAtDistance(ContinuousPoint start, double distance, PointBuilder<Type> builder) {
+	public <Type extends ContinuousPoint> Type pointAtDistance(final ContinuousPoint start, final double distance, final PointBuilder<Type> builder) {
 		return pointAtNTimesOf(start, distance/length(), builder);
 	}
 
@@ -26,11 +26,13 @@ public class Segment extends Line {
 				+ ", length()=" + length() + "]";
 	}
 
+	@Override
 	public Segment getDefiningSegment() {
 		return this;
 	}
 
-	public boolean contains(ContinuousPoint point) {
+	@Override
+	public boolean contains(final ContinuousPoint point) {
 		if(coeffs.matches(point)) {
 			return 
 					point.x<=Math.max(first.x, second.x) && point.x>=Math.min(first.x, second.x)
@@ -41,12 +43,12 @@ public class Segment extends Line {
 	}
 	
 	@Override
-	public Collection<ContinuousPoint> intersectionWith(Circle circle) {
+	public Collection<ContinuousPoint> intersectionWith(final Circle circle) {
 		return super.intersectionWith(circle).stream().filter(this::contains).collect(Collectors.toSet());
 	}
 	
 	@Override
-	public Collection<ContinuousPoint> intersectionWith(Line line) {
+	public Collection<ContinuousPoint> intersectionWith(final Line line) {
 		return super.intersectionWith(line).stream()
 				.filter(p -> 
 					p.x>=Math.min(first.x, second.x) && p.x<=Math.max(first.x, second.x)
@@ -66,7 +68,26 @@ public class Segment extends Line {
 			.collect(Collectors.toList());
 	}
 	
-	public boolean intersectsWith(Segment segment) {
+	public boolean intersectsWith(final Segment segment) {
 		return !intersectionWith(segment).isEmpty();
+	}
+	
+	public Segment orthogonalSegment(final ContinuousPoint point) {
+		final ContinuousPoint projected = project(point);
+		return new Segment(point, projected);
+	}
+	
+	@Override
+	public double distance2To(final AbstractPoint point) {
+		if (point instanceof ContinuousPoint) {
+			final ContinuousPoint continuous = (ContinuousPoint) point;
+			return Math.min(
+					orthogonalSegment(continuous).length(),
+					Math.min(first.distance2To(point), second.distance2To(continuous))
+					);
+			
+		} else {
+			throw new UnsupportedOperationException("Pas de calcul de distance entre un segment et un AbstractPoint");
+		}
 	}
 }

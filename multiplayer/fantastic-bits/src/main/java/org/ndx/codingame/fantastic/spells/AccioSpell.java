@@ -20,13 +20,14 @@ public class AccioSpell extends Spell {
 	}
 
 	@Override
-	public SpellContext shouldCastThat(Status status, Wizard wizard, Entities entities) {
+	public SpellContext shouldCastThat(final Status status, final Wizard wizard, final Entities entities) {
 		if(!wizard.isAttacking()) {
 			final Collection<Snaffle> snaffles = entities.sortSnafflesFor(wizard).values();
 			return snaffles.stream()
+				.filter(s -> wizard.position.distance2To(s.position)>Wizard.RADIUS)
 				.filter(s -> {
-					Segment expected = new Segment(s.position, 
-							new ContinuousPoint(s.position.x+s.speed.x*2, s.position.y+s.speed.y*2));
+					final Segment expected = new Segment(s.position, 
+							new ContinuousPoint(s.position.x+s.speed.x*3, s.position.y+s.speed.y*3));
 					return expected.intersectsWith(wizard.getDefendedGoal());
 				})
 				.findFirst()
@@ -37,7 +38,7 @@ public class AccioSpell extends Spell {
 	}
 	
 	@Override
-	public String cast(Status status, SpellContext context) {
+	public String cast(final Status status, final SpellContext context) {
 		status.get(AccioStatus.class).applyOn(context.entity);
 		return super.cast(status, context);
 	}

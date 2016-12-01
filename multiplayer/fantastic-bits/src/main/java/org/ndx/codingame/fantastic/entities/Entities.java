@@ -1,9 +1,9 @@
 package org.ndx.codingame.fantastic.entities;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -17,17 +17,17 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Entities {
 
-	private List<Entity> entities;
-	private List<Wizard> myTeam;
+	private final List<Entity> entities;
+	private final List<Wizard> myTeam;
 
-	private Map<Class<? extends Entity>, Collection<? extends Entity>> collectionssOf = new HashMap<>();
-	private Map<Class<? extends Entity>, Map<ContinuousPoint, ? extends Entity>> positionsOf = new HashMap<>();
-	private Collection<Entity> allEntities;
+	private final Map<Class<? extends Entity>, Collection<? extends Entity>> collectionssOf = new HashMap<>();
+	private final Map<Class<? extends Entity>, Map<ContinuousPoint, ? extends Entity>> positionsOf = new HashMap<>();
+	private final Collection<Entity> allEntities;
 
-	public Entities(List<Entity> entities, List<Wizard> myTeam, Segment attacking, Segment defending) {
+	public Entities(final List<Entity> entities, final List<Wizard> myTeam, final Segment attacking, final Segment defending) {
 		this.entities = entities;
 		this.myTeam = myTeam;
-		this.allEntities = new HashSet<>();
+		allEntities = new HashSet<>();
 		allEntities.addAll(entities);
 		allEntities.addAll(myTeam);
 	}
@@ -47,14 +47,14 @@ public class Entities {
                         Function.identity()));
 	}
 	
-	private <Type extends Entity> Collection<Type> getCollectionOf(Class<Type> type) {
+	private <Type extends Entity> Collection<Type> getCollectionOf(final Class<Type> type) {
 		if(!collectionssOf.containsKey(type)) {
 			collectionssOf.put(type, buildCollectionOf(type));
 		}
 		return (Collection<Type>) collectionssOf.get(type);
 	}
 	
-	private <Type extends Entity> Map<ContinuousPoint, Type> getPositionsOf(Class<Type> type) {
+	private <Type extends Entity> Map<ContinuousPoint, Type> getPositionsOf(final Class<Type> type) {
 		if(!positionsOf.containsKey(type)) {
 			positionsOf.put(type, buildPositionsOf(type));
 		}
@@ -65,10 +65,6 @@ public class Entities {
 		return getCollectionOf(Snaffle.class);
 	}
 
-	public Snaffle findBestSnaffleFor(ContinuousPoint position) {
-		return getPositionsOf(Snaffle.class).get(position.findNearestDistance2(getPositionsOf(Snaffle.class).keySet()));
-	}
-
 	public Collection<Bludger> getBludgers() {
 		return getCollectionOf(Bludger.class);
 	}
@@ -77,49 +73,21 @@ public class Entities {
 		return getCollectionOf(Wizard.class);
 	}
 
-	public Snaffle findBestSnaffleFor(Wizard wizard) {
-		SortedMap<ContinuousPoint, Snaffle> snaffles = sortSnafflesFor(wizard);
-		// fuzzy position to make sure item immediatly behind won't be forgotten
-		SortedMap<ContinuousPoint, Snaffle> goodOnes = snaffles.headMap(
-				new ContinuousPoint(wizard.position.x + (wizard.isAttacking() ? -Wizard.RADIUS : Wizard.RADIUS), wizard.position.y));
-		ContinuousPoint key = null;
-		if(goodOnes.isEmpty()) {
-			// We will have to get the first snaffle in the other side map, but please take care to remove the one already targetted
-			if(snaffles.size()==1) {
-				key = snaffles.firstKey();
-			} else {
-				// get the first non targetted one
-				Iterator<ContinuousPoint> iterator = snaffles.keySet().iterator();
-				Snaffle s = null;
-				do {
-					key = iterator.next();
-					s = snaffles.get(key);
-				} while(s.isATarget);
-			}
-		} else {
-			key = goodOnes.keySet().stream()
-					.sorted(new AbstractPoint.PositionByDistanceTo(wizard.position))
-					.findFirst()
-					.get();
-			key = goodOnes.lastKey();
-		}
-		return snaffles.get(key);
-	}
-
-	public SortedMap<ContinuousPoint, Snaffle> sortSnafflesFor(Wizard wizard) {
-		SortedMap<ContinuousPoint, Snaffle> snaffles = null;
+	public SortedMap<ContinuousPoint, Snaffle> sortSnafflesFor(final Wizard wizard) {
+		Segment target = null;
 		if(wizard.isAttacking()) {
-			snaffles = getSnafflesSortedByDistanceTo(wizard.getAttackedGoal().pointAtNTimes(0.5));
+			target = wizard.getAttackedGoal();
 		} else {
-			snaffles = getSnafflesSortedByDistanceTo(wizard.getDefendedGoal().pointAtNTimes(0.5));
+			target = wizard.getDefendedGoal();
 		}
-		return snaffles;
+		return getSnafflesSortedByDistanceTo(wizard, target);
 	}
 
-	private SortedMap<ContinuousPoint, Snaffle> getSnafflesSortedByDistanceTo(ContinuousPoint goalCenter) {
+	private SortedMap<ContinuousPoint, Snaffle> getSnafflesSortedByDistanceTo(final Entity source, final Segment goal) {
 		final Map<ContinuousPoint, Snaffle> snaffles = getPositionsOf(Snaffle.class);
-		SortedMap<ContinuousPoint, Snaffle> sorted = new TreeMap<>(new AbstractPoint.PositionByDistanceTo(goalCenter));
-		for(Map.Entry<ContinuousPoint, Snaffle> entry : snaffles.entrySet()) {
+		final Comparator<AbstractPoint> comparator = new AbstractPoint.PositionByDistance2To(goal);
+		final SortedMap<ContinuousPoint, Snaffle> sorted = new TreeMap<>(comparator);
+		for(final Map.Entry<ContinuousPoint, Snaffle> entry : snaffles.entrySet()) {
 			sorted.put(entry.getKey(), entry.getValue());
 		}
 		return sorted;

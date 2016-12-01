@@ -14,10 +14,10 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 public abstract class Entity {
 	public static class ByDistanceTo implements Comparator<Entity> {
 
-		private AbstractPoint.PositionByDistanceTo center;
+		private AbstractPoint.PositionByDistance2To center;
 
 		public ByDistanceTo(Entity principal) {
-			this.center = new AbstractPoint.PositionByDistanceTo(principal.position);
+			this.center = new AbstractPoint.PositionByDistance2To(principal.position);
 		}
 
 		@Override

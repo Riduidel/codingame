@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.fantastic.Playground;
@@ -16,6 +17,7 @@ import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Wizard extends Entity {
@@ -37,27 +39,52 @@ public class Wizard extends Entity {
 
 	private boolean attacking;
 
-	public Wizard(int id, double x, double y, double vx, double vy, int teamId, boolean holdingSnaffle) {
+	public Wizard(final int id, final double x, final double y, final double vx, final double vy, final int teamId, final boolean holdingSnaffle) {
 		super(id, x, y, vx, vy);
 		this.teamId = teamId;
 		this.holdingSnaffle = holdingSnaffle;
 	}
-	public Wizard(int id, double x, double y, double vx, double vy, int teamId, boolean holdingSnaffle, boolean attacking) {
+	public Wizard(final int id, final double x, final double y, final double vx, final double vy, final int teamId, final boolean holdingSnaffle, final boolean attacking) {
 		this(id, x, y, vx, vy, teamId, holdingSnaffle);
 		this.attacking = attacking;
 	}
 
-	public String play(Status status, List<Entity> entities, List<Wizard> myTeam) {
+	public Snaffle findBestSnaffleFor(final Entities exploded, final Wizard wizard) {
+		final SortedMap<ContinuousPoint, Snaffle> snaffles = exploded.sortSnafflesFor(wizard);
+		// fuzzy position to make sure item immediatly behind won't be forgotten
+		final ContinuousPoint point = new ContinuousPoint(wizard.position.x + (wizard.isAttacking() ? -Wizard.RADIUS : Wizard.RADIUS), wizard.position.y);
+		final SortedMap<ContinuousPoint, Snaffle> goodOnes = snaffles.headMap(point);
+		final SortedMap<ContinuousPoint, Snaffle> badOnes = snaffles.tailMap(point);
+		ContinuousPoint key = null;
+		if(!goodOnes.isEmpty()) {
+			key = findNearestPointIn(point, goodOnes);
+		}
+		if(key==null) {
+			key = findNearestPointIn(point, badOnes);
+		}
+		return snaffles.get(key);
+	}
+
+
+	private ContinuousPoint findNearestPointIn(final ContinuousPoint point, final SortedMap<ContinuousPoint, Snaffle> goodOnes) {
+		return goodOnes.keySet().stream()
+				.sorted(new AbstractPoint.PositionByDistance2To(point))
+				.filter(p -> !goodOnes.get(p).isATarget)
+				.findFirst()
+				.orElse(null);
+	}
+	
+	public String play(final Status status, final List<Entity> entities, final List<Wizard> myTeam) {
 		// Find nearest snaffle
-		Entities exploded = new Entities(entities, myTeam, getAttackedGoal(), getDefendedGoal());
+		final Entities exploded = new Entities(entities, myTeam, getAttackedGoal(), getDefendedGoal());
 		SpellContext context;
-		for(Spell spell : spells) {
+		for(final Spell spell : spells) {
 			context = spell.shouldCast(status, this, exploded);
 			if(context.shouldCast()) {
 				return spell.cast(status, context);
 			}
 		}
-		Snaffle found = exploded.findBestSnaffleFor(this);
+		final Snaffle found = findBestSnaffleFor(exploded, this);
 		if(found!=null) {
 			found.isATarget = true;
 			if(holdingSnaffle) {
@@ -72,24 +99,24 @@ public class Wizard extends Entity {
 		}
 	}
 
-	private String throwInDirectionOf(List<Entity> entities, Segment goal) {
-		List<Entity> toAvoid = entities.stream()
+	private String throwInDirectionOf(final List<Entity> entities, final Segment goal) {
+		final List<Entity> toAvoid = entities.stream()
 				.filter(e -> e.isBetween(this, goal))
 				.filter(e -> e.position.getX()!=position.getX() || e.position.getY()!=position.getY())
 				.collect(Collectors.toList());
-		ContinuousPoint goalCenter = goal.pointAtNTimes(0.5);
-		Segment direct = new Segment(position, goalCenter);
+		final ContinuousPoint goalCenter = goal.pointAtNTimes(0.5);
+		final Segment direct = new Segment(position, goalCenter);
 		ContinuousPoint target = null;
 		int angle = 0;
 		boolean found = false;
 		while(!found && angle<90) {
 			for (int multipler = -1; multipler < 2 && !found; multipler+=2) {
 				target = direct.pointAtAngle(position, angle*multipler, THROW_POWER, PointBuilder.DEFAULT);
-				Line obstacleFinder = new Line(position, target);
+				final Line obstacleFinder = new Line(position, target);
 				found = true;
-				Iterator<Entity> entity = toAvoid.iterator();
+				final Iterator<Entity> entity = toAvoid.iterator();
 				while(entity.hasNext() && found) {
-					Entity tested = entity.next();
+					final Entity tested = entity.next();
 					found = !obstacleFinder.intersectsWith(tested.getCircle(tested.getRadius()+Snaffle.RADIUS*2));
 				}
 			}
@@ -109,16 +136,16 @@ public class Wizard extends Entity {
 		return Playground.goals.get(1-teamId);
 	}
 
-	private String throwTo(ContinuousPoint goal) {
+	private String throwTo(final ContinuousPoint goal) {
 		return String.format("THROW %d %d %d", (int) goal.x, (int) goal.y, THROW_POWER);
 	}
 
-	private String moveTo(ContinuousPoint nearest) {
+	private String moveTo(final ContinuousPoint nearest) {
 		return String.format("MOVE %d %d %d", (int) nearest.x, (int) nearest.y, MAX_SPEED);
 	}
 
 	@Override
-	public <Type> Type accept(EntityVisitor<Type> visitor) {
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
 		return visitor.visitWizard(this);
 	}
 
@@ -133,8 +160,8 @@ public class Wizard extends Entity {
 				holdingSnaffle, id, position, direction);
 	}
 
-	public void setAttacking(boolean b) {
-		this.attacking= true;
+	public void setAttacking(final boolean b) {
+		attacking= true;
 	}
 
 	public boolean isAttacking() {
