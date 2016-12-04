@@ -51,6 +51,7 @@ public class Segment extends Line {
 	public Collection<ContinuousPoint> intersectionWith(final Line line) {
 		return super.intersectionWith(line).stream()
 				.filter(p -> 
+					// Intersection with line should be on this segment (that's to say between this segment extremitites 
 					p.x>=Math.min(first.x, second.x) && p.x<=Math.max(first.x, second.x)
 					&&
 					p.y>=Math.min(first.y, second.y) && p.y<=Math.max(first.y, second.y)
@@ -61,6 +62,7 @@ public class Segment extends Line {
 	public Collection<ContinuousPoint> intersectionWith(final Segment segment) {
 		return intersectionWith((Line) segment).stream()
 				.filter(p -> 
+				// Point is on other segment
 				p.x>=Math.min(segment.first.x, segment.second.x) && p.x<=Math.max(segment.first.x, segment.second.x)
 				&&
 				p.y>=Math.min(segment.first.y, segment.second.y) && p.y<=Math.max(segment.first.y, segment.second.y)
@@ -81,13 +83,21 @@ public class Segment extends Line {
 	public double distance2To(final AbstractPoint point) {
 		if (point instanceof ContinuousPoint) {
 			final ContinuousPoint continuous = (ContinuousPoint) point;
-			return Math.min(
-					orthogonalSegment(continuous).length(),
-					Math.min(first.distance2To(point), second.distance2To(continuous))
-					);
-			
+			final Segment orthogonalSegment = orthogonalSegment(continuous);
+			if(contains(orthogonalSegment.second)) {
+				return Math.min(
+						orthogonalSegment.length(),
+						Math.min(first.distance2To(point), second.distance2To(continuous))
+						);
+			} else {
+				return Math.min(first.distance2To(point), second.distance2To(continuous));
+			}
 		} else {
 			throw new UnsupportedOperationException("Pas de calcul de distance entre un segment et un AbstractPoint");
 		}
+	}
+
+	public Line toLine() {
+		return new Line(first, second);
 	}
 }

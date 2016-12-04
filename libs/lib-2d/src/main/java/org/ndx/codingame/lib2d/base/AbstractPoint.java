@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.ndx.codingame.lib2d.PointBuilder;
+
 public abstract class AbstractPoint implements Distance2 {
 	public static class PositionByDistance2To implements Comparator<AbstractPoint> {
 	
@@ -125,5 +127,11 @@ public abstract class AbstractPoint implements Distance2 {
 			}
 		}
 		return returned;
+	}
+	public <Type extends AbstractPoint> Type moveOf(final Type offset, final PointBuilder<Type> builder) {
+		return moveOf(offset.getX(), offset.getY(), builder);
+	}
+	public <Type extends AbstractPoint> Type moveOf(final double x, final double y, final PointBuilder<Type> builder) {
+		return builder.build(getX()+x, getY()+y);
 	}
 }

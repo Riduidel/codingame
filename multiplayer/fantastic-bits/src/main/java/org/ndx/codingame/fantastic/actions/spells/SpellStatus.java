@@ -1,4 +1,4 @@
-package org.ndx.codingame.fantastic.spells;
+package org.ndx.codingame.fantastic.actions.spells;
 
 import java.util.ArrayList;
 import java.util.HashMap;

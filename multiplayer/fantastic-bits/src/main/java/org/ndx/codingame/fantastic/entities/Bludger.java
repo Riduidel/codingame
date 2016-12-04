@@ -1,25 +1,25 @@
 package org.ndx.codingame.fantastic.entities;
 
-public class Bludger extends Entity {
-	public static final int RADIUS = 200;
+import org.ndx.codingame.fantastic.Constants;
 
-	public Bludger(int id, double x, double y, double vx, double vy) {
+public class Bludger extends Entity {
+	public Bludger(final int id, final double x, final double y, final double vx, final double vy) {
 		super(id, x, y, vx, vy);
 	}
 
 	@Override
-	public <Type> Type accept(EntityVisitor<Type> visitor) {
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
 		return visitor.visitBludger(this);
 	}
 
 	@Override
-	protected double getRadius() {
-		return RADIUS;
+	public double getRadius() {
+		return Constants.RADIUS_BLUDGER;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Bludger [id=%s, position=%s, direction=%s]", id, position, direction);
+		return String.format("Bludger [id=%s]", id);
 	}
 
 }

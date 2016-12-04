@@ -4,23 +4,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Status {
-	private Map<Class<? extends StatusElement>, StatusElement> elements = new HashMap<>();
+	private final Map<Class<? extends StatusElement>, StatusElement> elements = new HashMap<>();
 	
-	public void set(StatusElement s) {
+	public void set(final StatusElement s) {
 		elements.put(s.getClass(), s);
 	}
 	
-	public <Type extends StatusElement> Type get(Class<Type> type) {
+	public <Type extends StatusElement> Type get(final Class<Type> type) {
 		return type.cast(elements.get(type));
 	}
 
 	public void advanceOneTurn() {
-		for(StatusElement e : elements.values()) {
+		for(final StatusElement e : elements.values()) {
 			e.advanceOneTurn();
 		}
 	}
 
-	public void setCaptain(int id) {
+	public void setCaptain(final int id) {
 		set(new CaptainStatus(id));
 	}
 
@@ -28,7 +28,7 @@ public class Status {
 		return get(CaptainStatus.class).captain;
 	}
 
-	public void setTeam(int myTeamId) {
+	public void setTeam(final int myTeamId) {
 		set(new TeamStatus(myTeamId));
 	}
 
@@ -36,7 +36,7 @@ public class Status {
 		return get(TeamStatus.class).team;
 	}
 
-	public void setMagic(int magic) {
+	public void setMagic(final int magic) {
 		set(new MagicStatus(magic));
 	}
 
@@ -45,5 +45,11 @@ public class Status {
 			setMagic(0);
 		}
 		return get(MagicStatus.class).magic;
+	}
+
+	public void setIfNeeded(final StatusElement element) {
+		if(!elements.containsKey(element.getClass())) {
+			set(element);
+		}
 	}
 }

@@ -1,14 +1,17 @@
 package org.ndx.codingame.fantastic;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
 import org.ndx.codingame.fantastic.entities.Bludger;
+import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.TeamStatus;
 
 /**
  * Grab Snaffles and try to throw them through the opponent's goal!
@@ -55,13 +58,11 @@ public class Player {
             }
 			chooseCaptain(status, myTeam);
             System.err.println(Playground.toUnitTestString(status, playing, myTeam));
-            for(final Wizard player : myTeam) {
-
-
-                // Edit this line to indicate the action for each wizard (0 ≤ thrust ≤ 150, 0 ≤ power ≤ 500)
-                // i.e.: "MOVE x y thrust" or "THROW x y power"
-            	System.out.println(player.play(status, playing, myTeam));
-            }
+    		final Entities entitiesStore = new Entities(status, playing, myTeam, status.get(TeamStatus.class).getAttacked(), status.get(TeamStatus.class).getDefended());
+    		final Collection<String> actions = entitiesStore.computeActionsToString();
+    		for(final String s : actions) {
+    			System.out.println(s);
+    		}
             status.advanceOneTurn();
         }
     }
@@ -69,26 +70,18 @@ public class Player {
 	private static void chooseCaptain(final Status status, final List<Wizard> myTeam) {
 		final Wizard myCaptain = myTeam.get(0);
 		final Wizard wingman = myTeam.get(1);
-		if(status.getCaptain()==0) {
-			if(myCaptain.isBetween(wingman, myCaptain.getAttackedGoal())) {
-				myCaptain.setAttacking(true);
-				status.setCaptain(myCaptain.id);
-			} else {
-				if(status.getCaptain()==myCaptain.id) {
-					// we change captain only when really deserved
-					if(Math.abs(myCaptain.position.x-wingman.position.x)<Wizard.RADIUS*2) {
-						myCaptain.setAttacking(true);
-					}
-				}
-				wingman.setAttacking(true);
-				status.setCaptain(wingman.id);
-			}
+		if(myCaptain.isBetween(wingman, status.get(TeamStatus.class).getAttacked())) {
+			myCaptain.setAttacking(true);
+			status.setCaptain(myCaptain.id);
 		} else {
-			if(myCaptain.id==status.getCaptain()) {
-				myCaptain.setAttacking(true);
-			} else {
-				wingman.setAttacking(true);
+			if(status.getCaptain()==myCaptain.id) {
+				// we change captain only when really deserved
+				if(Math.abs(myCaptain.position.x-wingman.position.x)<Constants.RADIUS_WIZARD*2) {
+					myCaptain.setAttacking(true);
+				}
 			}
+			wingman.setAttacking(true);
+			status.setCaptain(wingman.id);
 		}
 	}
 }

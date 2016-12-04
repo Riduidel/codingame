@@ -14,14 +14,14 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 public abstract class Entity {
 	public static class ByDistanceTo implements Comparator<Entity> {
 
-		private AbstractPoint.PositionByDistance2To center;
+		private final AbstractPoint.PositionByDistance2To center;
 
-		public ByDistanceTo(Entity principal) {
-			this.center = new AbstractPoint.PositionByDistance2To(principal.position);
+		public ByDistanceTo(final Entity principal) {
+			center = new AbstractPoint.PositionByDistance2To(principal.position);
 		}
 
 		@Override
-		public int compare(Entity o1, Entity o2) {
+		public int compare(final Entity o1, final Entity o2) {
 			return center.compare(o1.position, o2.position);
 		}
 	}
@@ -30,8 +30,8 @@ public abstract class Entity {
 	public final ContinuousPoint speed;
 	public final Vector direction;
 	public final int id;
-	private Map<Double, Circle> circles = new TreeMap<>();
-	public Entity(int id, double x, double y, double vx, double vy) {
+	private final Map<Double, Circle> circles = new TreeMap<>();
+	public Entity(final int id, final double x, final double y, final double vx, final double vy) {
 		this.id = id;
 		position = new ContinuousPoint(x, y);
 		speed = new ContinuousPoint(vx, vy);
@@ -42,19 +42,19 @@ public abstract class Entity {
 		return getCircle(getRadius());
 	}
 
-	protected abstract double getRadius();
+	public abstract double getRadius();
 
 	public abstract <Type> Type accept(EntityVisitor<Type> visitor);
 
-	public boolean isBetween(Entity entity, Segment goal) {
+	public boolean isBetween(final Entity entity, final Segment goal) {
 		return isBetween(position, entity.position, goal.first);
 	}
 	
-	public static boolean isBetween(ContinuousPoint tested, ContinuousPoint first, ContinuousPoint second) {
+	public static boolean isBetween(final ContinuousPoint tested, final ContinuousPoint first, final ContinuousPoint second) {
 		return (int) Math.signum(tested.getX()-first.getX())!=(int) Math.signum(tested.getX()-second.getX());
 	}
 
-	public Circle getCircle(Double radius) {
+	public Circle getCircle(final Double radius) {
 		if(!circles.containsKey(radius)) {
 			circles.put(radius, Geometry.from(position).cirleOf(radius));
 		}
@@ -74,16 +74,20 @@ public abstract class Entity {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
-		Entity other = (Entity) obj;
-		if (id != other.id)
+		}
+		final Entity other = (Entity) obj;
+		if (id != other.id) {
 			return false;
+		}
 		return true;
 	}
 }

@@ -1,26 +1,26 @@
 package org.ndx.codingame.fantastic.entities;
 
+import org.ndx.codingame.fantastic.Constants;
+
 public class Snaffle extends Entity {
-	public static final int RADIUS = 150;
-	
 	public boolean isATarget;
 
-	public Snaffle(int id, double x, double y, double vx, double vy) {
+	public Snaffle(final int id, final double x, final double y, final double vx, final double vy) {
 		super(id, x, y, vx, vy);
 	}
 
 	@Override
-	public <Type> Type accept(EntityVisitor<Type> visitor) {
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
 		return visitor.visitSnaffle(this);
 	}
 
 	@Override
-	protected double getRadius() {
-		return RADIUS;
+	public double getRadius() {
+		return Constants.RADIUS_SNAFFLE;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Snaffle [id=%s, position=%s, direction=%s]", id, position, direction);
+		return String.format("Snaffle [id=%s]", id);
 	}
 }

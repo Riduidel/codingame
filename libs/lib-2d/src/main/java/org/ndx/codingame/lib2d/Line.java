@@ -94,7 +94,7 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 	}
 
 	public ContinuousPoint project(final ContinuousPoint point) {
-		return project(point, PointBuilder.DEFAULT);
+		return project(point, /* used as builder */ point);
 	}
 
 	public <Type extends ContinuousPoint> Type project(final Type point, final PointBuilder<Type> builder) {
@@ -109,7 +109,7 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 	}
 
 	public ContinuousPoint symetricOf(final ContinuousPoint point) {
-		return symetricOf(point, PointBuilder.DEFAULT);
+		return symetricOf(point, /* used as builder */ point);
 	}
 		
 	public <Type extends ContinuousPoint> Type symetricOf(final Type point, final PointBuilder<Type> builder) {
@@ -250,57 +250,12 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 				e = line.coeffs.b,
 				f = line.coeffs.c
 				;
-		if(e*a!=b*d) {
-			if(coeffs.isHorizontalLine()) {
-				/*
-				 * a*x+b*y+c = 0
-				 * d*x+e*y+f = 0
-				 * 
-				 * a*x = -(b*y+c)
-				 * d*x = -(e*y+f)
-				 * 
-				 * x = -(b*y+c)/a
-				 * x = -(e*y+f)/d
-				 * 
-				 * (b*y+c)/a=(e*y+f)/d
-				 * 
-				 * d*(b*y+c)=a*(e*y+f)
-				 * 
-				 * d*b*y+d*c=a*e*y+a*f
-				 * 
-				 * (d*b-a*e)*y=a*f-d*c
-				 * 
-				 * y=(a*f-d*c)/(d*b-a*e)
-				 */
-				final double y = (a*f-d*c)/(d*b-a*e);
-				if(!line.coeffs.isHorizontalLine()) {
-					returned.add(new ContinuousPoint(line.coeffs.computeXFromY(y), y));
-				}
-			} else {
-				/*
-				 * a*x+b*y+c = 0
-				 * d*x+e*y+f = 0
-				 * 
-				 * b*y = -(a*x+c)
-				 * e*y = -(d*x+f)
-				 * 
-				 * y = -(a*x+c)/b
-				 * y = -(d*x+f)/e
-				 * 
-				 * (a*x+c)/b = (d*x+c)/e
-				 * e*(a*x+c) = b*(d*x+f)
-				 * 
-				 * e*a*x+e*c = b*d*x+b*c
-				 * (e*a-b*d)*x = b*f-e*c
-				 * x = (b*f-e*c)/(e*a-b*d)
-				 */
-				final double x = (b*f-e*c)/(e*a-b*d);
-				if(line.coeffs.isVerticalLine()) {
-					returned.add(new ContinuousPoint(x, coeffs.computeYFromX(x)));
-				} else {
-					returned.add(new ContinuousPoint(x, line.coeffs.computeYFromX(x)));
-				}
-			}
+		// Thanks Wolfram|Alpha ! https://www.wolframalpha.com/input/?i=a*x%2Bb*y%2Bc%3D0,+d*x%2Be*y%2Bf%3D0&wal=header
+		final double denominator = b*d-a*e;
+		if(!Algebra.isZero(denominator)) {
+			final double x = (c*e-b*f)/denominator;
+			final double y = (a*f-c*d)/denominator;
+			returned.add(new ContinuousPoint(x, y));
 		}
 		return returned;
 	}
