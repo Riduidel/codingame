@@ -1,0 +1,180 @@
+== Les règles
+
+fantastic-bits, c'est comme du quidditch, mais en plus ou moins simple.
+
+=== En plus simple
+
+* Il n'y a pas de vif d'or qui va venir interrompre la partie n'importe quand
+* Il n'y a que deux sorciers par équipe
+* Il n'y a également qu'un seul but
+
+=== En plus compiqué
+
+* les sorciers peuvent lancer différents types de sorts : Accio (qui attire vers le sorcier un élément du jeu), Flipendo (qui envoie loin du sorcier un élément du jeu), Obliviate (qui fait oublier à un Bludger le sorcier qui a lancé le tour) et Petrificus (qui pétrifie un élement du jeu)
+* les bords du terrain sont durs et tout le monde rebondit
+* d'ailleurs, toutes les collisions sont élastiques
+
+== Le plan
+
+La première implémentation était très simple : mes sorciers visaient le snaffle le plus proche et l'envoyaient vers le but.
+Et puis j'ai ajouté les différents sorts quio ont compliqué le truc. tellement qu'à un moment, le code d'un wizard ressemblait à quelque chose comme ça
+
+		SpellContext context;
+		for(final Spell spell : spells) {
+			context = spell.shouldCast(status, this, exploded);
+			if(context.shouldCast()) {
+				return spell.cast(status, context);
+			}
+		}
+		final Snaffle found = findBestSnaffleFor(exploded, this);
+		if(found!=null) {
+			found.isATarget = true;
+			if(holdingSnaffle) {
+				// Immediatly shoot to goal center at max speed
+				return throwInDirectionOf(entities, getAttackedGoal());
+			} else {
+				// catch that goddam snaffle by going directly to its next position
+				return moveTo(found.getNextPosition());
+			}
+		} else {
+			return moveTo(position);
+		}
+
+Je vous passe les détails réellement sordides de la méthode `findBestSnaffleFor` c'était vraiment pas reluisant.
+Parce que comme ça marchait assez mal, j'ai ajouté un mécanisme "magique" qui faisait en sorte qu'un de mes sorciers soit attaquant, et l'autre défenseur. 
+Ca me paraissait malin, mais c'était en fait crétin. Bref, ça ne marchait pas.
+Donc Samedi, j'ai à peu près tout refait de zéro pour arriver à ce résultat
+
+== Evaluer chaque possibilité
+=== Concept
+En gros, plutôt que de prendre des décisions à priori, j'essaye de construire toutes les actions possibles et de construire le smeilleures sans conflit.
+Pourquoi ?
+Parce que j'avais bien vu dans ma version initiale que les conflits provoquaient des collisions entre mes sorciers, qui me faisaient perdre beaucoup de temps (avec les inévitables recherches de balles hors de portée).
+En bonus, je voulais maintenir deux aspects intéressants de la première version
+
+1. Un code autheniquement stateless
+1. Une évaluation de tous les mouvements possibles
+
+Et donc, avec toutes ces actions, j'enlève les conflits, et je prends le meilleur choix possible.
+
+=== Implémentation
+==== Vu de loin
+Pour réaliser ça, il me faut
+
+* Une liste claire de toutes mes entités
+* Une représentation des différentes actions
+* Une façon de détecter les conflits entre actions
+* Un score pour chaque action
+
+==== Un sorcier n'est pas un ballon
+Du coup, j'ai quelques entités assez simples
+[uml,file="fantastic-entity-classes.png"]
+--
+interface EntityVisitor<Type>
+EntityVisitor : Type visit(Snaffle)
+EntityVisitor : Type visit(Wizard)
+EntityVisitor : Type visit(Bludger)
+class Entity
+Entity : int id
+Entity : ContinuousPoint position
+Entity : ContinuousPoint speed
+Entity : Vector direction
+Entity : isBetween(ContinuousPoint, ContinuousPoint)
+Entity : Type accept(Entityvisitor<Type>)
+Entity<|--Wizard
+Entity<|--Snaffle
+Entity<|--Bludger
+--
+Notez en particulier l'inteface ` EntityVisitor` qui est en particulier implémentée par ` ActionListVisitor` , lequel va construire la liste des actions possibles pour un sorcier donné.
+
+==== Qu'est-ce qu'on peut faire ?
+En face de ces entités, il y a évidement un paquet d'actions possibles
+
+[uml,file="fantastic-actions-classes.png"]
+--
+interface ActionVisitor<Type>
+ActionVisitor : Type visit(MoveTo)
+ActionVisitor : Type visit(ThrowTo)
+ActionVisitor : Type visit(AccioSpell)
+ActionVisitor : Type visit(FlipendoSpell)
+ActionVisitor : Type visit(ObliviateSpell)
+ActionVisitor : Type visit(PetrificusSpell)
+interface Action
+Action : double getScore()
+Action : boolean conflictsWith(Status, Action)
+Action : Type accept(ActionVisitor<Type>)
+Action : toCommand()
+Action : updateStatus(Status)
+Action <|-- MoveTo
+Action <|-- ThrowTo
+Action <|-- AbstractSpell
+AbstractSpell <|-- AccioSpell
+AbstractSpell <|-- FlipendoSpell
+AbstractSpell <|-- ObliviateSpell
+AbstractSpell <|-- PetrificusSpell
+--
+Là aussi, on a un beau visiteur qui sera bien pratique dans la suite ...
+
+==== Non mais en vrai, comment ça marche ?
+D'une façon assez brutale, en vérité. Imaginez juste qu'il y a quelque part une une classe `Entities` qui est une version assez peu correcte du `Playground`  vu dans hypersonic.
+[uml,file="fantastic-sequence.png"]
+--
+Player->Entities:computeActionsToString()
+activate Entities
+Entities->Entities:computeActions()
+activate Entities
+Entities->Entities:buildAllActions()
+activate Entities
+loop pour toutes les sorciers
+    Entities->Entities:computeActionsFor(wizard)
+    loop pour toutes les entités
+        Entities->Entity:accept(ActionListBuilder)
+    end
+end
+deactivate Entities
+Entities->Entities:resolveConflictsIn()
+    note over Entities
+        La résolution des conflits est difficilement visualisable
+        Il faut en fait tester toutes les possibilités,
+        éliminier les mauvaises, et prendre la meilleure 
+        (même si il n'y a que de mauvaises possibilites)
+    end note
+deactivate Entities
+Entities<-Entities:Map<Wizard, Action> actions
+loop pour toutes les actions
+    Entities->Action:updateStatus()
+end
+loop pour toutes les actions dans l'ordre des sorciers
+    Entities->Action:toCommand
+end
+deactivate Entities
+--
+En vrai, dans ce code, il y a trois parties sophistiquées et non décrites :
+1. ActionListBuilder qui est un `EntityVisitor` et permet de tenir compte du fait que le sorcier porte un `Snaffle`, ainsi que du niveau de magie actuel
+1. `Entities#resolveConflictsIn` qui construit une liste des actions sans conflit, qui peut éventuellement vide (auquel cas on prend la liste des actions avec conflit)
+1. Le scoring, implémenté dans les différentes méthodes `Action#getScore()`. pour faire court, disons qu'il s'agit simplement de mesurer le rapprochement du `Wizard` et du `Snaffle` pour un `MoveTo`, et du `Snaffle` et du but dans les autres cas.
+
+=== Conclusion
+==== ca a plutôt bien marché, non ?
+Le score final est plutôt honorable : 296ème sur 1954 (qui ont au moins atteint le bronze), et en ligue Gold, sil vous plaît !
+
+==== Le stateless c'est la fête
+Parce qu'avec du code stateless, les tests sont facilement reproductibles, ce qui est pratique. Et en plus, tout est plus facile à comprendre.
+
+==== L'organisation du code qui tient la route commence à transparaître
+En gros, pour chaque jeu, je mets en palce à peu près la même structure, et il serait temps que j'utilise cette connaissance. Peu ou prou, on retrouve toujours le découpage suivant
+[uml,file="fantastic-packages.png"]
+--
+component Entities
+component Playground
+component Actions
+component Status
+--
+Bon, il manque là-dedans la partie scoring (quoique je pense qu'elle est portée soit par le `Playground`, soit par les actions).
+Mais je suis à peu près sûr que si je mets ça en place la prochaine fois, ça marchera bien.
+
+==== Les visiteurs, c'est vraiment ma came
+Je ne remercie jamais assez le petit Nico qui m'a fait découvrir ça alors que je n'en connaissais que le double dispatch. Parce qu'à chaque fois que je mets en place un visiteur, le code se met à tomber mieux en place. Et c'est normal, parce qu'avec cette organisation du code, on distingue bien l'acteur et le sujet.
+
+==== La simulation n'est pas toujours nécessaire
+Je suis arrivé en gold sans, et je pense qu'avec un peu de temps, j'aurais pu atteindre également la légende. Cela dit, pour en avoir discuté ce midi, il apparaît que mon superbe générateur de cas de tests pourrait facilement servir de testeur de simulation (ce qui est toujours complexe à mettre en oeuvre).
