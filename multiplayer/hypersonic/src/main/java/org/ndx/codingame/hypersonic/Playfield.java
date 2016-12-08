@@ -3,8 +3,6 @@ package org.ndx.codingame.hypersonic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.ndx.codingame.hypersonic.content.Bomb;
 import org.ndx.codingame.hypersonic.content.Box;
@@ -18,32 +16,31 @@ import org.ndx.codingame.hypersonic.content.Nothing;
 import org.ndx.codingame.hypersonic.content.Wall;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
-import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
 public class Playfield extends Playground<Content> {
 	public static final class ToCompleteString implements ContentVisitor<String> {
-		@Override public String visitBomb(Bomb bomb) { return "|B("+bomb.delay+","+bomb.range+")"; }
-		@Override public String visitNothing(Nothing nothing) { return "|  .   "; }
-		@Override public String visitBox(Box box) { return "|  0   "; }
-		@Override public String visitWall(Wall wall) { return "|  X   "; }
-		@Override public String visitGamer(Gamer gamer) { return "|G("+gamer.bombs+","+gamer.range+")"; }
-		@Override public String visitItem(Item item) { return "| I("+item.type+") "; }
-		@Override public String visitFire(Fire fire) { return "|  F   "; }
-		@Override public String visitFireThenItem(FireThenItem fire) { return "| F->I "; }
+		@Override public String visitBomb(final Bomb bomb) { return "|B("+bomb.delay+","+bomb.range+")"; }
+		@Override public String visitNothing(final Nothing nothing) { return "|  .   "; }
+		@Override public String visitBox(final Box box) { return "|  0   "; }
+		@Override public String visitWall(final Wall wall) { return "|  X   "; }
+		@Override public String visitGamer(final Gamer gamer) { return "|G("+gamer.bombs+","+gamer.range+")"; }
+		@Override public String visitItem(final Item item) { return "| I("+item.type+") "; }
+		@Override public String visitFire(final Fire fire) { return "|  F   "; }
+		@Override public String visitFireThenItem(final FireThenItem fire) { return "| F->I "; }
 	}
 	public static final class ToPhysicalString extends ContentAdapter<String> {
 		private ToPhysicalString() {
 			super(".");
 		}
 
-		@Override public String visitBox(Box box) { return "0"; }
-		@Override public String visitWall(Wall box) { return "X"; }
+		@Override public String visitBox(final Box box) { return "0"; }
+		@Override public String visitWall(final Wall box) { return "X"; }
 	}
 	private static PlaygroundDeriver playgroundDeriver = new PlaygroundDeriver();
 	private Playfield next;
 	private Playground<Integer> opportunities;
 
-	public Playfield(int width, int height) {
+	public Playfield(final int width, final int height) {
 		super(width, height);
 	}
 
@@ -51,28 +48,28 @@ public class Playfield extends Playground<Content> {
 	 * Cloning constructor
 	 * @param playground
 	 */
-	public Playfield(Playfield playground) {
+	public Playfield(final Playfield playground) {
 		super(playground);
 	}
 
-	public boolean allow(DiscretePoint position) {
+	public boolean allow(final DiscretePoint position) {
 		return allow(position.x, position.y);
 	}
 
-	public boolean allow(int p_x, int p_y) {
+	public boolean allow(final int p_x, final int p_y) {
 		if(contains(p_x, p_y)) {
 			return get(p_x, p_y).canBeWalkedOn();
 		}
 		return false;
 	}
 
-	public void readRow(String row, int rowIndex) {
-		char[] characters = row.toCharArray();
+	public void readRow(final String row, final int rowIndex) {
+		final char[] characters = row.toCharArray();
 		for (int x = 0; x < characters.length; x++) {
 			set(x, rowIndex, findContentFor(characters[x]));
 		}
 	}
-	private Content findContentFor(char c) {
+	private Content findContentFor(final char c) {
 		switch(c) {
 		case '.':
 			return Nothing.instance;
@@ -93,7 +90,7 @@ public class Playfield extends Playground<Content> {
 		return null;
 	}
 	
-	public <Type> Type accept(PlaygroundVisitor<Type> visitor) {
+	public <Type> Type accept(final PlaygroundVisitor<Type> visitor) {
 		visitor.startVisit(this);
 		for (int y = 0; y < height; y++) {
 			visitor.startVisitRow(y);
@@ -109,28 +106,29 @@ public class Playfield extends Playground<Content> {
 		return accept(new PlaygroundAdapter<Collection<String>>() {
 			private StringBuilder row;
 			@Override
-			public void startVisit(Playfield playground) {
+			public void startVisit(final Playfield playground) {
 				returned = new ArrayList<>(playground.height);
 			}
 			@Override
-			public void startVisitRow(int y) {
+			public void startVisitRow(final int y) {
 				row = new StringBuilder();
 			}
 			@Override
-			public void visit(int x, int y, Content content) {
-				if(content==null)
+			public void visit(final int x, final int y, final Content content) {
+				if(content==null) {
 					row.append(Nothing.instance.accept(visitor));
-				else
+				} else {
 					row.append(content.accept(visitor));
+				}
 			}
 			@Override
-			public void endVisitRow(int y) {
+			public void endVisitRow(final int y) {
 				returned.add(row.toString());
 			}
 		});
 	}
 	
-	public String toString(ContentVisitor<String> visitor) {
+	public String toString(final ContentVisitor<String> visitor) {
 		return toStringCollection(visitor).stream().reduce((r1, r2) -> r1+"\n"+r2).get();
 	}
 	
@@ -140,68 +138,74 @@ public class Playfield extends Playground<Content> {
 	public static class ExportGameEntities extends PlaygroundAdapter<Collection<String>> implements ContentVisitor<String> {
 		public ExportGameEntities() {}
 		@Override
-		public void startVisit(Playfield playground) {
+		public void startVisit(final Playfield playground) {
 			returned = new ArrayList<>();
 		}
 		@Override
-		public void visit(int x, int y, Content content) {
-			String text = content.accept(this);
+		public void visit(final int x, final int y, final Content content) {
+			final String text = content.accept(this);
 			if(text!=null) {
 				returned.add(text);
 			}
 		}
-		@Override public String visitNothing(Nothing nothing) { return null; }
-		@Override public String visitBox(Box box) { return null; }
-		@Override public String visitWall(Wall wall) { return null; }
-		@Override public String visitGamer(Gamer gamer) {
+		@Override public String visitNothing(final Nothing nothing) { return null; }
+		@Override public String visitBox(final Box box) { return null; }
+		@Override public String visitWall(final Wall wall) { return null; }
+		@Override public String visitGamer(final Gamer gamer) {
 			return String.format("new Gamer(%d, %d, %d, %d, %d)", gamer.id, gamer.x, gamer.y, gamer.bombs, gamer.range);
 		}
-		@Override public String visitBomb(Bomb bomb) {
+		@Override public String visitBomb(final Bomb bomb) {
 			return String.format("new Bomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
 		}
-		@Override public String visitItem(Item item) {
+		@Override public String visitItem(final Item item) {
 			return String.format("new Item(%d, %d, %d, %d, %d)", 0, item.x, item.y, item.type, 0);
 		}
-		@Override public String visitFire(Fire fire) { return null; }
-		@Override public String visitFireThenItem(FireThenItem fireThenItem) { return null; }
+		@Override public String visitFire(final Fire fire) { return null; }
+		@Override public String visitFireThenItem(final FireThenItem fireThenItem) { return null; }
 	}
-	public String toUnitTestString(Gamer me) {
+	public String toUnitTestString(final Gamer me) {
+		final String METHOD_PREFIX = "\t\t\t";
+		final String CONTENT_PREFIX = METHOD_PREFIX+"\t";
 		final StringBuilder returned = new StringBuilder();
-		returned.append("\t\t\t@Test public void can_find_move_")
+		
+		returned.append(METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
+		returned.append(METHOD_PREFIX+"@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append("\t\t\t\tPlayfield tested = read(Arrays.asList(\n");
-		Collection<String> physical = toStringCollection(new ToPhysicalString());
-		Iterator<String> physicalIter = physical.iterator();
+		returned.append(CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
+		final Collection<String> physical = toStringCollection(new ToPhysicalString());
+		final Iterator<String> physicalIter = physical.iterator();
 		while (physicalIter.hasNext()) {
-			String row = (String) physicalIter.next();
-			returned.append("\t\t\t\t\t\"").append(row).append("\"");
+			final String row = physicalIter.next();
+			returned.append(CONTENT_PREFIX+"\t\"").append(row).append("\"");
 			if(physicalIter.hasNext()) {
 				returned.append(",");
 			}
 			returned.append("\n");
 		}
-		returned.append("\t\t\t\t\t));\n");
-		returned.append(String.format("\t\t\t\tGamer me = new Gamer(%d, %d, %d, %d, %d);\n", me.id, me.x, me.y, me.bombs, me.range));
-		returned.append("\t\t\t\ttested.readGameEntities(\n");
-		Collection<String> entities = accept(new ExportGameEntities());
-		Iterator<String> entitiesIter = entities.iterator();
+		returned.append(CONTENT_PREFIX+"\t));\n");
+		returned.append(String.format(CONTENT_PREFIX+"Gamer me = new Gamer(%d, %d, %d, %d, %d);\n", me.id, me.x, me.y, me.bombs, me.range));
+		returned.append(CONTENT_PREFIX+"tested.readGameEntities(\n");
+		final Collection<String> entities = accept(new ExportGameEntities());
+		final Iterator<String> entitiesIter = entities.iterator();
 		while (entitiesIter.hasNext()) {
-			String string = entitiesIter.next();
-			returned.append("\t\t\t\t\t").append(string);
-			if(entitiesIter.hasNext())
+			final String string = entitiesIter.next();
+			returned.append(CONTENT_PREFIX+"\t").append(string);
+			if(entitiesIter.hasNext()) {
 				returned.append(",");
+			}
 			returned.append("\n");
 		}
-		returned.append("\t\t\t\t\t);\n");
-		returned.append("\t\t\t\tassertThat(me.compute(tested)).isNotNull();\n");
-		returned.append("\t\t\t}\n\n");
+		returned.append(CONTENT_PREFIX+"\t);\n");
+		returned.append(CONTENT_PREFIX+"assertThat(me.compute(tested)).isNotNull();\n");
+		returned.append(METHOD_PREFIX+"}\n\n");
 		return returned.toString();
 	}
+	@Override
 	public String toString() {
 		return toString(new ToCompleteString());
 	}
-	public void readGameEntities(Entity...entities) {
-		for (Entity entity : entities) {
+	public void readGameEntities(final Entity...entities) {
+		for (final Entity entity : entities) {
 			set(entity.x, entity.y, entity);
 		}
 	}
@@ -215,6 +219,7 @@ public class Playfield extends Playground<Content> {
 		}
 		return next;
 	}
+	@Override
 	public void clear() {
 		next = null;
 	}
@@ -232,14 +237,14 @@ public class Playfield extends Playground<Content> {
 		return accept(new BombDelayFinder(id));
 	}
 */	
-	public Playground<Integer> getOpportunitiesAt(int range) {
+	public Playground<Integer> getOpportunitiesAt(final int range) {
 		if(opportunities==null) {
 			opportunities = createOpportunitiesAt(range);
 		}
 		return opportunities;
 	}
 
-	public Playground<Integer> createOpportunitiesAt(int range) {
+	public Playground<Integer> createOpportunitiesAt(final int range) {
 		return descendant(EvolvableConstants.BOMB_DELAY).accept(new OpportunitiesFinder(range));
 	}
 	

@@ -5,14 +5,22 @@ import static org.ndx.codingame.hypersonic.PlayerTest.read;
 
 import java.util.Arrays;
 
+import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.Required;
+import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.ndx.codingame.hypersonic.content.Bomb;
 import org.ndx.codingame.hypersonic.content.Item;
 
-public class InGameTest {
+public class PerformanceTest {
+	private static final int PERCENTILE = 100;
+	private static final int THREAD_COUNT = 1;
+	private static final int INVOCATION_COUNT = 10;
+	@Rule public ContiPerfRule performance = new ContiPerfRule();
 	
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479318135242() {
 		final Playfield tested = read(Arrays.asList(
 			".........0...",
@@ -44,7 +52,7 @@ public class InGameTest {
 			);
 		assertThat(me.compute(tested)).isNotEqualTo("MOVE 3 6");
 	}
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479328110167() {
 		final Playfield tested = read(Arrays.asList(
 			"..00.000.00..",
@@ -67,7 +75,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isEqualTo("MOVE 1 0");
 	}
 	
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479329573531() {
 		final Playfield tested = read(Arrays.asList(
 			"..0.0.0.0.0..",
@@ -89,7 +97,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isNotIn("MOVE 12 10");
 	}
 	
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479372001821() {
 		final Playfield tested = read(Arrays.asList(
 			"..00.0.0.00..",
@@ -112,7 +120,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isNotEqualTo("MOVE 9 10");
 	}
 
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479376321186() {
 		final Playfield tested = read(Arrays.asList(
 			"....00000.0..",
@@ -134,7 +142,7 @@ public class InGameTest {
 			);
 		assertThat(me.compute(tested)).isNotNull();
 	}
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void should_not_drop_bomb_on_empty_ground() {
 		final Playfield tested = read(Arrays.asList(
 				"...00...0....",
@@ -163,7 +171,7 @@ public class InGameTest {
 				);
 		assertThat(me.compute(tested)).doesNotStartWith("BOMB");
 	}
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void bomb_that_spot() {
 		final Playfield tested = read(Arrays.asList(
 			".............",
@@ -192,7 +200,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).startsWith("BOMB");
 	}
 
-	
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void should_grab_item_beside() {
 		final Playfield tested = read(Arrays.asList(
 			"..........0..",
@@ -221,7 +229,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isNotNull();
 	}
 
-	 @Test public void i_should_drop_a_bomb() {
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE) @Test public void i_should_drop_a_bomb() {
 		final Playfield tested = read(Arrays.asList(
 			".............",
 			".X.X.X.X.X.X.",
@@ -246,7 +254,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isNotNull();
 	}
 	
-	 @Test public void do_not_go_in_bomb_alley() {
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE) @Test public void do_not_go_in_bomb_alley() {
 		final Playfield tested = read(Arrays.asList(
 			".............",
 			".X.X.X.X.X.X.",
@@ -275,7 +283,7 @@ public class InGameTest {
 		assertThat(me.compute(tested)).isNotEqualTo("BOMB 6 3");
 	}
 
-	 @Test @Ignore public void run_for_your_life_moron() {
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE) @Test @Ignore public void run_for_your_life_moron() {
 		final Playfield tested = read(Arrays.asList(
 			".............",
 			".X.X.X.X.X.X.",
