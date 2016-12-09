@@ -7,19 +7,18 @@ import org.ndx.codingame.hypersonic.entities.Content;
 import org.ndx.codingame.hypersonic.entities.ContentAdapter;
 import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
-import org.ndx.codingame.hypersonic.entities.Item;
-import org.ndx.codingame.hypersonic.entities.Nothing;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.Playground;
+import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 
-public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> {
+public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>, Content> {
 
 	private class OpportunitiesContentFinder extends ContentAdapter<Void> {
-		private void markOpportunitiesAround(int value) {
-			for(Direction d : Direction.DIRECTIONS) {
+		private void markOpportunitiesAround(final int value) {
+			for(final Direction d : Direction.DIRECTIONS) {
 				for (int index = 1; index < range; index++) {
-					int l_x = x+d.x*index;
-					int l_y = y+d.y*index;
+					final int l_x = x+d.x*index;
+					final int l_y = y+d.y*index;
 					if(source.contains(l_x, l_y)) {
 						if(source.get(l_x, l_y).canFire().equals(CanFire.YES)) {
 							returned.set(l_x, l_y, returned.get(l_x, l_y)+value);
@@ -34,7 +33,7 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 		}
 		
 		@Override
-		public Void visitBox(Box box) {
+		public Void visitBox(final Box box) {
 			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_BOMB);
 			return null;
 		}
@@ -46,13 +45,13 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 //		}
 		
 		@Override
-		public Void visitGamer(Gamer bomber) {
+		public Void visitGamer(final Gamer bomber) {
 			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_ENEMY);
 			return null;
 		}
 		
 		@Override
-		public Void visitFireThenItem(FireThenItem fire) {
+		public Void visitFireThenItem(final FireThenItem fire) {
 			markOpportunitiesAround(EvolvableConstants.OPPORTUNITY_FIRE_THEN_ITEM);
 			return super.visitFireThenItem(fire);
 		}
@@ -62,22 +61,22 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>> 
 	private final int range;
 	private int x;
 	private int y;
-	private Playfield source;
+	private Playground<Content> source;
 	@Override
-	public void startVisit(Playfield playground) {
-		this.source = playground;
-		this.returned = new Playground<>(playground.width, playground.height, 0);
-		this.contentVisitor = new OpportunitiesContentFinder();
+	public void startVisit(final Playground<Content> playground) {
+		source = playground;
+		returned = new Playground<>(playground.width, playground.height, 0);
+		contentVisitor = new OpportunitiesContentFinder();
 	}
 
 	@Override
-	public void visit(int x, int y, Content content) {
+	public void visit(final int x, final int y, final Content content) {
 		this.x = x;
 		this.y = y;
 		content.accept(contentVisitor);
 	}
 
-	public OpportunitiesFinder(int range) {
+	public OpportunitiesFinder(final int range) {
 		super();
 		this.range = range;
 	}

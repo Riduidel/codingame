@@ -76,8 +76,9 @@ public class Gamer extends Entity implements OpportunitesLoader {
 		return String.format("%s %d %d", action, best.x, best.y);
 	}
 	private ScoredDirection<Score> findBestMoveIn(final Playfield playground) {
-		final ScoreBuilder builder = new ScoreBuilder(playground.next(), this);
-		return builder.computeFor(this);
+		final Playfield scored = playground.next();
+		final ScoreBuilder builder = new ScoreBuilder(scored, this);
+		return builder.computeFor(scored, this);
 		
 	}
 

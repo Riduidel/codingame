@@ -31,7 +31,7 @@ public class PlaygroundTest {
 				".0", 
 				".X", 
 				"X."));
-		assertThat(read.toPhysicialString()).isEqualTo(
+		assertThat(read.toPhysicalString()).isEqualTo(
 				".0\n"
 				+ ".X\n"
 				+ "X.");

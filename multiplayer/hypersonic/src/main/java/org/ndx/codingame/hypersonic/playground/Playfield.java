@@ -19,6 +19,7 @@ import org.ndx.codingame.hypersonic.entities.Nothing;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
+import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 
 public class Playfield extends Playground<Content> {
 	public static final class ToCompleteString implements ContentVisitor<String> {
@@ -42,6 +43,7 @@ public class Playfield extends Playground<Content> {
 	private static PlaygroundDeriver playgroundDeriver = new PlaygroundDeriver();
 	private Playfield next;
 	private Playground<Integer> opportunities;
+	private String physical;
 
 	public Playfield(final int width, final int height) {
 		super(width, height);
@@ -93,23 +95,11 @@ public class Playfield extends Playground<Content> {
 		return null;
 	}
 	
-	public <Type> Type accept(final PlaygroundVisitor<Type> visitor) {
-		visitor.startVisit(this);
-		for (int y = 0; y < height; y++) {
-			visitor.startVisitRow(y);
-			for (int x = 0; x < width; x++) {
-				visitor.visit(x, y, get(x, y));
-			}
-			visitor.endVisitRow(y);
-		}
-		return visitor.endVisit(this);
-	}
-	
 	public Collection<String> toStringCollection(final ContentVisitor<String> visitor) {
-		return accept(new PlaygroundAdapter<Collection<String>>() {
+		return accept(new PlaygroundAdapter<Collection<String>, Content>() {
 			private StringBuilder row;
 			@Override
-			public void startVisit(final Playfield playground) {
+			public void startVisit(final Playground<Content> playground) {
 				returned = new ArrayList<>(playground.height);
 			}
 			@Override
@@ -135,13 +125,16 @@ public class Playfield extends Playground<Content> {
 		return toStringCollection(visitor).stream().reduce((r1, r2) -> r1+"\n"+r2).get();
 	}
 	
-	public String toPhysicialString() {
-		return toString(new ToPhysicalString());
+	public String toPhysicalString() {
+		if(physical==null) {
+			physical = toString(new ToPhysicalString()); 
+		}
+		return physical;
 	}
-	public static class ExportGameEntities extends PlaygroundAdapter<Collection<String>> implements ContentVisitor<String> {
+	public static class ExportGameEntities extends PlaygroundAdapter<Collection<String>, Content> implements ContentVisitor<String> {
 		public ExportGameEntities() {}
 		@Override
-		public void startVisit(final Playfield playground) {
+		public void startVisit(final Playground<Content> playground) {
 			returned = new ArrayList<>();
 		}
 		@Override
