@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.ndx.codingame.hypersonic.EvolvableConstants;
 import org.ndx.codingame.hypersonic.entities.ContentAdapter;
@@ -19,7 +20,8 @@ import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 public class ScoreBuilder {
 	private final Playground<List<Direction>> directions;
 	private final OpportunitesLoader opportunitiesLoader;
-	private final List<Map<List<Item>, PlaygroundScoreBuilder>> builders = new ArrayList<>();
+	private final List<Map<Integer, PlaygroundScoreBuilder>> builders = new ArrayList<>();
+//	private final List<Map<List<Item>, PlaygroundScoreBuilder>> builders = new ArrayList<>();
 
 	/**
 	 * Build the score builder graph from given playground and opportunities loader
@@ -39,7 +41,7 @@ public class ScoreBuilder {
 				builders.add(new HashMap<>());
 			}
 			final List<Item> key = current.getAll(Item.class);
-			builders.get(index).put(key, new PlaygroundScoreBuilder(this, current, index));
+			builders.get(index).put(key.size(), new PlaygroundScoreBuilder(this, current, index));
 			current = current.next();
 		}
 	}
@@ -85,7 +87,7 @@ public class ScoreBuilder {
 	}
 
 	private ScoredDirection<Score> computeFor(final int iteration, final List<Item> all, final DiscretePoint point) {
-		return builders.get(iteration).get(all).computeFor(point);
+		return builders.get(iteration).get(all.size()).computeFor(point);
 	}
 
 	public Playground<Integer> computeOpportunitiesFor(final Playfield playground) {
@@ -98,17 +100,18 @@ public class ScoreBuilder {
 			@Override
 			public List<Item> visitItem(final Item item) {
 				// key is imutable by default, so filter it out
-				return super.visitItem(item);
+				return returnedFromContent.stream().filter(i -> !item.equals(i)).collect(Collectors.toList());
 			}
 		});
-		final Map<List<Item>, PlaygroundScoreBuilder> potentialScorers = builders.get(i);
-		if(!potentialScorers.containsKey(key)) {
+		final Map<Integer, PlaygroundScoreBuilder> potentialScorers = builders.get(i);
+		final int keySize = key.size();
+		if(!potentialScorers.containsKey(keySize)) {
 			// now duplicate playground, replace item by nothing, and build its inheritence
 			final Playfield duplicate = new Playfield(next);
 			duplicate.set(move, Nothing.instance);
 			contributeToBuildersFrom(duplicate, i);
 		}
-		return potentialScorers.get(key).computeFor(move);
+		return potentialScorers.get(keySize).computeFor(move);
 	}
 
 }

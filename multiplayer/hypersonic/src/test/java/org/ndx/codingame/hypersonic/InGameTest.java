@@ -310,4 +310,40 @@ public class InGameTest {
 		assertThat(me.compute(tested)).doesNotEndWith("10 6");
 	}
 
+		// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+		@Test public void can_find_move_1481304128172() {
+			final Playfield tested = read(Arrays.asList(
+				"......0......",
+				".X.X0X.X0X.X.",
+				"...0.0.0.00..",
+				".X.X0X.X0X.X.",
+				".0.........0.",
+				"0X.X.X.X.X.X0",
+				".0.........0.",
+				"0X.X0X.X0X.X.",
+				".0.0.0.0.0...",
+				".X.X0X.X0X.X.",
+				"......0......"
+				));
+			final Gamer me = new Gamer(2, 12, 2, 1, 3);
+			tested.readGameEntities(
+				new Item(0, 3, 0, 2, 0),
+				new Bomb(2, 8, 0, 1, 3),
+				new Gamer(0, 0, 2, 1, 3),
+				new Bomb(0, 1, 2, 4, 3),
+				new Item(0, 2, 2, 1, 0),
+				new Bomb(2, 11, 2, 8, 3),
+				new Item(0, 12, 3, 2, 0),
+				new Bomb(0, 0, 4, 7, 3),
+				new Item(0, 12, 7, 2, 0),
+				new Bomb(3, 0, 8, 4, 3),
+				new Item(0, 2, 8, 1, 0),
+				new Item(0, 10, 8, 1, 0),
+				new Item(0, 11, 8, 2, 0),
+				new Gamer(3, 2, 10, 1, 3),
+				new Gamer(1, 9, 10, 2, 3)
+				);
+			assertThat(me.compute(tested)).isNotEqualTo("BOMB 12 3");
+		}
+
 }

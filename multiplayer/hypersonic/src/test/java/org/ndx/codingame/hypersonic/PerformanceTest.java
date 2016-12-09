@@ -21,7 +21,7 @@ public class PerformanceTest {
 	private static final int THREAD_COUNT = 1;
 	private static final int INVOCATION_COUNT = 10;
 	@Rule public ContiPerfRule performance = new ContiPerfRule();
-	
+	@Ignore
 	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479318135242() {
 		final Playfield tested = read(Arrays.asList(
