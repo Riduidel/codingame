@@ -1,6 +1,4 @@
-package org.ndx.codingame.hypersonic.content;
-
-import org.ndx.codingame.hypersonic.CanFire;
+package org.ndx.codingame.hypersonic.entities;
 
 public interface Content {
 	public <Type> Type accept(ContentVisitor<Type> visitor);

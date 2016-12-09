@@ -1,7 +1,4 @@
-package org.ndx.codingame.hypersonic.content;
-
-import org.ndx.codingame.hypersonic.CanFire;
-import org.ndx.codingame.hypersonic.Entity;
+package org.ndx.codingame.hypersonic.entities;
 
 public class Item extends Entity {
 	public final int type;

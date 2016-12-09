@@ -1,6 +1,6 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.playground;
 
-import org.ndx.codingame.hypersonic.content.Content;
+import org.ndx.codingame.hypersonic.entities.Content;
 
 public interface PlaygroundVisitor<Type> {
 

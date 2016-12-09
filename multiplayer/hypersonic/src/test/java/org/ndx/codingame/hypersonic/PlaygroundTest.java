@@ -5,11 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Box;
-import org.ndx.codingame.hypersonic.content.Item;
-import org.ndx.codingame.hypersonic.content.Nothing;
-import org.ndx.codingame.hypersonic.content.Wall;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Box;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.entities.Item;
+import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.Wall;
+import org.ndx.codingame.hypersonic.playground.Playfield;
 
 public class PlaygroundTest {
 	@Test public void can_read_playground() {

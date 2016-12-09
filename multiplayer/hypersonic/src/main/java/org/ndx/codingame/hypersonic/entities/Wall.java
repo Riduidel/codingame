@@ -1,6 +1,4 @@
-package org.ndx.codingame.hypersonic.content;
-
-import org.ndx.codingame.hypersonic.CanFire;
+package org.ndx.codingame.hypersonic.entities;
 
 public class Wall implements Content {
 	public static Wall instance = new Wall();

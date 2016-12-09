@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.ndx.codingame.hypersonic.content.Bomb;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.playground.Playfield;
 
 public class GamerTest {
 	@Test public void can_find_a_safe_move() {

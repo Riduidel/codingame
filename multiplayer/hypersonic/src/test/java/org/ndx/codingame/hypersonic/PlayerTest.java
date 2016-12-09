@@ -1,6 +1,8 @@
 package org.ndx.codingame.hypersonic;
 import java.util.Collection;
 
+import org.ndx.codingame.hypersonic.playground.Playfield;
+
 public class PlayerTest {
 	public static Playfield read(Collection<String> rows) {
 		Playfield returned = null;

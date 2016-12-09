@@ -1,9 +1,9 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.playground;
 
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Content;
-import org.ndx.codingame.hypersonic.content.ContentAdapter;
-import org.ndx.codingame.hypersonic.content.ContentVisitor;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Content;
+import org.ndx.codingame.hypersonic.entities.ContentAdapter;
+import org.ndx.codingame.hypersonic.entities.ContentVisitor;
 
 public class BombDelayFinder extends PlaygroundAdapter<Integer> {
 	private class BombDelayContentFinder extends ContentAdapter<Integer> {

@@ -7,12 +7,14 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.ndx.codingame.gaming.Delay;
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Fire;
-import org.ndx.codingame.hypersonic.content.FireThenItem;
-import org.ndx.codingame.hypersonic.content.Item;
-import org.ndx.codingame.hypersonic.content.Nothing;
-import org.ndx.codingame.hypersonic.content.Wall;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Fire;
+import org.ndx.codingame.hypersonic.entities.FireThenItem;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.entities.Item;
+import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.Wall;
+import org.ndx.codingame.hypersonic.playground.Playfield;
 
 public class BombTest {
 	@Test public void can_iterate_until_explosion() {

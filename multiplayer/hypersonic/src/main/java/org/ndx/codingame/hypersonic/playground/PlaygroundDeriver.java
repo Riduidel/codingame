@@ -1,14 +1,16 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.playground;
 
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Box;
-import org.ndx.codingame.hypersonic.content.Content;
-import org.ndx.codingame.hypersonic.content.ContentVisitor;
-import org.ndx.codingame.hypersonic.content.Fire;
-import org.ndx.codingame.hypersonic.content.FireThenItem;
-import org.ndx.codingame.hypersonic.content.Item;
-import org.ndx.codingame.hypersonic.content.Nothing;
-import org.ndx.codingame.hypersonic.content.Wall;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Box;
+import org.ndx.codingame.hypersonic.entities.CanFire;
+import org.ndx.codingame.hypersonic.entities.Content;
+import org.ndx.codingame.hypersonic.entities.ContentVisitor;
+import org.ndx.codingame.hypersonic.entities.Fire;
+import org.ndx.codingame.hypersonic.entities.FireThenItem;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.entities.Item;
+import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.lib2d.discrete.Direction;
 
 public class PlaygroundDeriver extends PlaygroundAdapter<Playfield> {

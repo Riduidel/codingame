@@ -2,8 +2,10 @@ package org.ndx.codingame.hypersonic;
 import java.util.Scanner;
 
 import org.ndx.codingame.gaming.Delay;
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Item;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.entities.Item;
+import org.ndx.codingame.hypersonic.playground.Playfield;
 
 /**
  * Auto-generated code below aims at helping you parse the standard input

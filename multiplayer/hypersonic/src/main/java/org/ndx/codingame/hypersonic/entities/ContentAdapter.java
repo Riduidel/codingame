@@ -1,6 +1,4 @@
-package org.ndx.codingame.hypersonic.content;
-
-import org.ndx.codingame.hypersonic.Gamer;
+package org.ndx.codingame.hypersonic.entities;
 
 public class ContentAdapter<Type> implements ContentVisitor<Type> {
 	private Type returned = null;

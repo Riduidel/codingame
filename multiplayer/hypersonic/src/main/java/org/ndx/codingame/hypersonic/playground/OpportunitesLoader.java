@@ -1,4 +1,4 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.playground;
 
 import org.ndx.codingame.lib2d.discrete.Playground;
 

@@ -1,12 +1,9 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.entities;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Content;
-import org.ndx.codingame.hypersonic.content.ContentAdapter;
-import org.ndx.codingame.hypersonic.content.ContentVisitor;
+import org.ndx.codingame.hypersonic.playground.PlaygroundAdapter;
 
 public class GamerFinder extends PlaygroundAdapter<Collection<Gamer>> {
 	public GamerFinder() {

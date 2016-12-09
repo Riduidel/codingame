@@ -11,8 +11,10 @@ import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.ndx.codingame.hypersonic.content.Bomb;
-import org.ndx.codingame.hypersonic.content.Item;
+import org.ndx.codingame.hypersonic.entities.Bomb;
+import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.hypersonic.entities.Item;
+import org.ndx.codingame.hypersonic.playground.Playfield;
 
 public class PerformanceTest {
 	private static final int PERCENTILE = 100;

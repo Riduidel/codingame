@@ -1,6 +1,5 @@
-package org.ndx.codingame.hypersonic;
+package org.ndx.codingame.hypersonic.entities;
 
-import org.ndx.codingame.hypersonic.content.Content;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 
 public abstract class Entity extends DiscretePoint implements Content {
