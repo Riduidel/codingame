@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +22,12 @@ public class PerformanceTest {
 	private static final int THREAD_COUNT = 1;
 	private static final int INVOCATION_COUNT = 10;
 	@Rule public ContiPerfRule performance = new ContiPerfRule();
+	
+	@BeforeClass
+	public static void load() {
+		// Just as a profiler handle
+		System.err.println("If you want to profile that code, put breakpoint in "+PerformanceTest.class.getName()+"#load(...)");
+	}
 	@Ignore
 	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1479318135242() {
@@ -317,5 +324,42 @@ public class PerformanceTest {
 			);
 		assertThat(me.compute(tested)).doesNotEndWith("10 6");
 	}
-
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_find_move_1481307723323() {
+		final Playfield tested = read(Arrays.asList(
+			"..........0..",
+			".X.X.X.X0X.X.",
+			".........000.",
+			".X.X.X.X.X0X0",
+			"..........0..",
+			".X0X.X.X.X0X.",
+			"..0..........",
+			"0X0X.X.X.X.X.",
+			".000.0.0.....",
+			".X.X0X.X0X.X.",
+			"..0.........."
+			));
+		final Gamer me = new Gamer(1, 4, 4, 2, 5);
+		tested.readGameEntities(
+			new Gamer(0, 7, 0, 3, 6),
+			new Item(0, 4, 1, 2, 0),
+			new Item(0, 4, 2, 2, 0),
+			new Item(0, 5, 2, 1, 0),
+			new Item(0, 7, 2, 1, 0),
+			new Item(0, 8, 2, 2, 0),
+			new Item(0, 2, 3, 2, 0),
+			new Item(0, 3, 4, 1, 0),
+			new Item(0, 9, 4, 1, 0),
+			new Item(0, 12, 4, 2, 0),
+			new Item(0, 0, 6, 2, 0),
+			new Item(0, 3, 6, 1, 0),
+			new Item(0, 9, 6, 1, 0),
+			new Bomb(1, 4, 7, 6, 5),
+			new Item(0, 10, 7, 2, 0),
+			new Bomb(1, 4, 8, 5, 5),
+			new Item(0, 8, 8, 2, 0),
+			new Item(0, 5, 10, 1, 0)
+			);
+		assertThat(me.compute(tested)).isNotNull();
+	}
 }
