@@ -345,5 +345,73 @@ public class InGameTest {
 				);
 			assertThat(me.compute(tested)).isNotEqualTo("BOMB 12 3");
 		}
+		// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+		@Test public void can_find_move_1481390148785() {
+			final Playfield tested = read(Arrays.asList(
+				".............",
+				".X.X0X.X.X.X.",
+				"....0........",
+				".X.X0X.X.X.X.",
+				".000.....0.0.",
+				".X.X.X.X.X.X.",
+				"...........0.",
+				".X.X0X.X.X.X.",
+				".............",
+				".X.X0X.X0X.X.",
+				"............."
+				));
+			final Gamer me = new Gamer(2, 10, 6, 0, 4);
+			tested.readGameEntities(
+				new Bomb(3, 4, 0, 5, 3),
+				new Gamer(0, 6, 1, 2, 6),
+				new Item(0, 8, 1, 2, 0),
+				new Gamer(3, 2, 2, 1, 3),
+				new Item(0, 2, 3, 2, 0),
+				new Item(0, 4, 4, 1, 0),
+				new Bomb(2, 10, 4, 5, 4),
+				new Item(0, 1, 6, 2, 0),
+				new Item(0, 3, 6, 1, 0),
+				new Bomb(1, 4, 6, 1, 6),
+				new Bomb(1, 8, 6, 5, 6),
+				new Gamer(1, 10, 7, 1, 7),
+				new Item(0, 11, 8, 1, 0)
+				);
+			assertThat(me.compute(tested)).isNotNull();
+		}
+		// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+		@Ignore
+		@Test public void can_find_move_1481390148667() {
+			final Playfield tested = read(Arrays.asList(
+				".............",
+				".X.X0X.X.X.X.",
+				"....0........",
+				".X.X0X.X.X.X.",
+				".000.....0.0.",
+				".X.X.X.X.X.X.",
+				"...........0.",
+				".X.X0X.X.X.X.",
+				".............",
+				".X.X0X.X0X.X.",
+				"............."
+				));
+			final Gamer me = new Gamer(2, 10, 6, 0, 4);
+			tested.readGameEntities(
+				new Bomb(3, 4, 0, 6, 3),
+				new Gamer(0, 6, 0, 2, 6),
+				new Gamer(3, 2, 1, 1, 3),
+				new Item(0, 8, 1, 2, 0),
+				new Item(0, 2, 3, 2, 0),
+				new Item(0, 4, 4, 1, 0),
+				new Bomb(2, 10, 4, 6, 4),
+				new Item(0, 1, 6, 2, 0),
+				new Item(0, 3, 6, 1, 0),
+				new Bomb(1, 4, 6, 2, 6),
+				new Bomb(1, 8, 6, 6, 6),
+				new Gamer(1, 10, 6, 0, 7),
+				new Item(0, 10, 7, 2, 0),
+				new Item(0, 11, 8, 1, 0)
+				);
+			assertThat(me.compute(tested)).isEqualTo("MOVE 10 7");
+		}
 
 }
