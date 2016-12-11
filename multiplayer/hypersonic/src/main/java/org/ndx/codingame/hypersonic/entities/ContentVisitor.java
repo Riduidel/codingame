@@ -17,4 +17,6 @@ public interface ContentVisitor<Type> {
 	Type visitFire(Fire fire);
 
 	Type visitFireThenItem(FireThenItem fireThenItem);
+
+	Type visitPotentialBomb(PotentialBomb potentialBomb);
 }

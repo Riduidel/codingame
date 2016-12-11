@@ -69,10 +69,10 @@ public class Gamer extends Entity implements OpportunitesLoader {
 	private void letEnemiesDropBombs(final Playfield playground) {
 		final Collection<Gamer> all = playground.accept(new GamerFinder());
 		for(final Gamer g : all) {
-			playground.set(g, new Bomb(g.id, g.x, g.y, EvolvableConstants.BOMB_DELAY, g.range));
+			playground.set(g, new PotentialBomb(g.id, g.x, g.y, EvolvableConstants.BOMB_DELAY, g.range));
 		}
 	}
-	private String show(final Action action, final ScoredDirection best) {
+	private String show(final Action action, final ScoredDirection<Score> best) {
 		return String.format("%s %d %d", action, best.x, best.y);
 	}
 	private ScoredDirection<Score> findBestMoveIn(final Playfield playground) {

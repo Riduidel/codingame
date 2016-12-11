@@ -10,6 +10,7 @@ import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
 import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.PotentialBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -67,11 +68,14 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield, Content> {
 			}
 			@Override
 			public Void visitBomb(final Bomb bomb) {
+				return doVisitBomb(bomb, new Bomb(bomb.owner, bomb.x, bomb.y, bomb.delay-1, bomb.range));
+			}
+			private Void doVisitBomb(final Bomb bomb, final Bomb nextBomb) {
 				if(bomb.delay>1) {
 					if(Fire.instance.equals(derived.get(x, y))) {
 						fireBomb(bomb);
 					} else {
-						derived.set(x, y, new Bomb(bomb.owner, bomb.x, bomb.y, bomb.delay-1, bomb.range));
+						derived.set(x, y, nextBomb);
 					}
 				} else {
 					// Fire that bomb !
@@ -109,6 +113,10 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield, Content> {
 						break;
 					}
 				}
+			}
+			@Override
+			public Void visitPotentialBomb(final PotentialBomb bomb) {
+				return doVisitBomb(bomb, new PotentialBomb(bomb.owner, bomb.x, bomb.y, bomb.delay-1, bomb.range));
 			}
 		}
 		private final PlaygroundCellDeriver cellDeriver = new PlaygroundCellDeriver();

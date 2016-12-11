@@ -3,7 +3,7 @@ package org.ndx.codingame.hypersonic;
 public class EvolvableConstants {
 
 	// Horizon should be long enough to cover most of the playground
-	public static final int HORIZON = 20;
+	public static final int HORIZON = 12;
 	public static final int BOMB_DELAY = 8;
 	public static final int SCORE_CATCHED_ITEM = 5;
 	public static final int SCORE_VISIT_BOX = 1;

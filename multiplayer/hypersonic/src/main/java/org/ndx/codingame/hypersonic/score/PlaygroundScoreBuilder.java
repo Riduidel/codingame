@@ -9,6 +9,7 @@ import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
 import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.PotentialBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.hypersonic.playground.Playfield;
 import org.ndx.codingame.lib2d.discrete.Direction;
@@ -30,7 +31,7 @@ public class PlaygroundScoreBuilder {
 			} else {
 				returned = new ScoredDirection<>(point.x, point.y, ""); 
 			}
-			returned.setScore(new Score(value*factor, iteration));
+			returned.setScore(new Score(value, iteration));
 			if(!stopHere) {
 				if(!reachedHorizon) {
 					// Now add children scores
@@ -69,7 +70,12 @@ public class PlaygroundScoreBuilder {
 
 		@Override
 		public ScoredDirection<Score> visitBomb(final Bomb bomb) {
-			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, !firstTurn);
+			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, true);
+		}
+
+		@Override
+		public ScoredDirection<Score> visitPotentialBomb(final PotentialBomb bomb) {
+			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, false);
 		}
 
 		@Override

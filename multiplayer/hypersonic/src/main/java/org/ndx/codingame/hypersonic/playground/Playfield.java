@@ -3,6 +3,7 @@ package org.ndx.codingame.hypersonic.playground;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.ndx.codingame.hypersonic.EvolvableConstants;
 import org.ndx.codingame.hypersonic.entities.Bomb;
@@ -16,6 +17,7 @@ import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
 import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
+import org.ndx.codingame.hypersonic.entities.PotentialBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -31,6 +33,7 @@ public class Playfield extends Playground<Content> {
 		@Override public String visitItem(final Item item) { return "| I("+item.type+") "; }
 		@Override public String visitFire(final Fire fire) { return "|  F   "; }
 		@Override public String visitFireThenItem(final FireThenItem fire) { return "| F->I "; }
+		@Override public String visitPotentialBomb(final PotentialBomb potentialBomb) { return "|V("+potentialBomb.delay+","+potentialBomb.range+")";}
 	}
 	public static final class ToPhysicalString extends ContentAdapter<String> {
 		private ToPhysicalString() {
@@ -44,6 +47,7 @@ public class Playfield extends Playground<Content> {
 	private Playfield next;
 	private Playground<Integer> opportunities;
 	private String physical;
+	private List<Item> key;
 
 	public Playfield(final int width, final int height) {
 		super(width, height);
@@ -158,6 +162,9 @@ public class Playfield extends Playground<Content> {
 		}
 		@Override public String visitFire(final Fire fire) { return null; }
 		@Override public String visitFireThenItem(final FireThenItem fireThenItem) { return null; }
+		@Override public String visitPotentialBomb(final PotentialBomb bomb) {
+			return String.format("new PotentialBomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
+		}
 	}
 	public String toUnitTestString(final Gamer me) {
 		final String METHOD_PREFIX = "\t\t\t";
@@ -246,5 +253,12 @@ public class Playfield extends Playground<Content> {
 	
 	public void clearOpportunities() {
 		opportunities = null;
+	}
+
+	public List<Item> getKey() {
+		if(key==null) {
+			key = getAll(Item.class);
+		}
+		return key;
 	}
 }
