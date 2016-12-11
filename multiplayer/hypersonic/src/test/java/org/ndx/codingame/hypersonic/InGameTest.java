@@ -413,5 +413,35 @@ public class InGameTest {
 				);
 			assertThat(me.compute(tested)).isEqualTo("MOVE 10 7");
 		}
+		// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+		@Test public void can_find_move_1481476531825() {
+			final Playfield tested = read(Arrays.asList(
+				"..........0..",
+				".X.X.X.X.X0X.",
+				"...........0.",
+				".X.X.X.X.X0X.",
+				".00........0.",
+				".X.X.X.X.X.X.",
+				".00.......00.",
+				".X0X.X.X.X.X.",
+				".0.0.0.0.....",
+				".X0X.X.X.X.X.",
+				"..0.0........"
+				));
+			final Gamer me = new Gamer(0, 4, 7, 3, 4);
+			tested.readGameEntities(
+				new Item(0, 8, 0, 2, 0),
+				new Item(0, 6, 2, 2, 0),
+				new Item(0, 9, 2, 1, 0),
+				new Item(0, 2, 3, 2, 0),
+				new Item(0, 10, 4, 1, 0),
+				new Item(0, 10, 7, 2, 0),
+				new Item(0, 6, 8, 2, 0),
+				new Bomb(1, 10, 8, 4, 5),
+				new Gamer(1, 7, 10, 1, 5),
+				new Bomb(1, 8, 10, 8, 5)
+				);
+			assertThat(me.compute(tested)).isNotEqualTo("BOMB 4 8");
+		}
 
 }
