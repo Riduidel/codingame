@@ -43,7 +43,7 @@ public class Gamer extends Entity implements OpportunitesLoader {
 			System.err.println(String.format("I can plant a bomb (opportunites at %s, %s contains %s and I have %s bombs)", x, y, opportunities.get(this), bombs));
 			// what will happen if we bomb there ?
 			final Playfield withBomb = new Playfield(playground);
-			withBomb.set(this, new Bomb(id, x, y, EvolvableConstants.BOMB_DELAY, range));
+			withBomb.set(this, new PotentialBomb(id, x, y, EvolvableConstants.BOMB_DELAY, range));
 			best = findBestMoveIn(withBomb);
 			if(best.getScore().survive()) {
 				System.err.println("And I will survive");

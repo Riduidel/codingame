@@ -70,7 +70,7 @@ public class PlaygroundScoreBuilder {
 
 		@Override
 		public ScoredDirection<Score> visitBomb(final Bomb bomb) {
-			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, !firstTurn);
+			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, true);
 		}
 
 		@Override
