@@ -5,15 +5,15 @@ package org.ndx.codingame.hypersonic.entities;
  * @author ndelsaux
  *
  */
-public class PotentialBomb extends Bomb {
+public class VirtualBomb extends Bomb {
 
-	public PotentialBomb(final int owner, final int x, final int y, final int delay, final int range) {
+	public VirtualBomb(final int owner, final int x, final int y, final int delay, final int range) {
 		super(owner, x, y, delay, range);
 	}
 
 	@Override
 	public <Type> Type accept(final ContentVisitor<Type> visitor) {
-		return visitor.visitPotentialBomb(this);
+		return visitor.visitVirtualBomb(this);
 	}
 	
 	@Override

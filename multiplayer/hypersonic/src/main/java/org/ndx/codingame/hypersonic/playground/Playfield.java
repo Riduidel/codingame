@@ -17,7 +17,7 @@ import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
 import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
-import org.ndx.codingame.hypersonic.entities.PotentialBomb;
+import org.ndx.codingame.hypersonic.entities.VirtualBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -33,7 +33,7 @@ public class Playfield extends Playground<Content> {
 		@Override public String visitItem(final Item item) { return "| I("+item.type+") "; }
 		@Override public String visitFire(final Fire fire) { return "|  F   "; }
 		@Override public String visitFireThenItem(final FireThenItem fire) { return "| F->I "; }
-		@Override public String visitPotentialBomb(final PotentialBomb potentialBomb) { return "|V("+potentialBomb.delay+","+potentialBomb.range+")";}
+		@Override public String visitVirtualBomb(final VirtualBomb potentialBomb) { return "|V("+potentialBomb.delay+","+potentialBomb.range+")";}
 	}
 	public static final class ToPhysicalString extends ContentAdapter<String> {
 		private ToPhysicalString() {
@@ -162,7 +162,7 @@ public class Playfield extends Playground<Content> {
 		}
 		@Override public String visitFire(final Fire fire) { return null; }
 		@Override public String visitFireThenItem(final FireThenItem fireThenItem) { return null; }
-		@Override public String visitPotentialBomb(final PotentialBomb bomb) {
+		@Override public String visitVirtualBomb(final VirtualBomb bomb) {
 			return String.format("new PotentialBomb(%d, %d, %d, %d, %d)", bomb.owner, bomb.x, bomb.y, bomb.delay, bomb.range);
 		}
 	}

@@ -9,7 +9,7 @@ import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
 import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
-import org.ndx.codingame.hypersonic.entities.PotentialBomb;
+import org.ndx.codingame.hypersonic.entities.VirtualBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
 import org.ndx.codingame.hypersonic.playground.Playfield;
 import org.ndx.codingame.lib2d.discrete.Direction;
@@ -74,7 +74,7 @@ public class PlaygroundScoreBuilder {
 		}
 
 		@Override
-		public ScoredDirection<Score> visitPotentialBomb(final PotentialBomb bomb) {
+		public ScoredDirection<Score> visitVirtualBomb(final VirtualBomb bomb) {
 			return buildScore(EvolvableConstants.SCORE_VISIT_BOMB, false);
 		}
 
