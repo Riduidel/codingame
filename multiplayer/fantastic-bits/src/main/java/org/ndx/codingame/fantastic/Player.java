@@ -32,6 +32,11 @@ public class Player {
         while (true) {
         	playing.clear();
         	myTeam.clear();
+        	int myScore = in.nextInt();
+        	int myMagic = in.nextInt();
+        	status.setMagic(myMagic);
+        	int opponentScore = in.nextInt();
+        	int opponentMagic = in.nextInt();
             final int entities = in.nextInt(); // number of entities still in game
 			for (int i = 0; i < entities; i++) {
                 final int entityId = in.nextInt(); // entity identifier
