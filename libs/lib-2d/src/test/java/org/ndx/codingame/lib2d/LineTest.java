@@ -8,6 +8,7 @@ import static org.ndx.codingame.lib2d.Geometry.from;
 
 import org.junit.Test;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 public class LineTest {
 

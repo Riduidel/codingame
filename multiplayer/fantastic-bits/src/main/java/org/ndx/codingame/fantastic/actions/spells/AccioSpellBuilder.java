@@ -12,8 +12,8 @@ import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.fantastic.status.TeamStatus;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class AccioSpellBuilder extends AbstractSpellBuilder<Entity>{
 

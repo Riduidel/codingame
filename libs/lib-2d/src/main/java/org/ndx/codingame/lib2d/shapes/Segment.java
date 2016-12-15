@@ -1,8 +1,9 @@
-package org.ndx.codingame.lib2d;
+package org.ndx.codingame.lib2d.shapes;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 

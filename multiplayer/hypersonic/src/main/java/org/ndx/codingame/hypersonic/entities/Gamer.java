@@ -69,8 +69,38 @@ public class Gamer extends Entity implements OpportunitesLoader {
 	private void letEnemiesDropBombs(final Playfield playground) {
 		final Collection<Gamer> all = playground.accept(new GamerFinder());
 		for(final Gamer g : all) {
-			playground.set(g, new VirtualBomb(g.id, g.x, g.y, EvolvableConstants.BOMB_DELAY, g.range));
+			if(g.survive(playground)) {
+				playground.set(g, new VirtualBomb(g.id, g.x, g.y, EvolvableConstants.BOMB_DELAY, g.range));
+			}
 		}
+	}
+	/**
+	 * Check if player survive the field until explosion of bombs
+	 * @param playground
+	 * @return
+	 */
+	private boolean survive(final Playfield playground) {
+		return survive(playground, 0);
+	}
+	private boolean survive(final Playfield playground, final int i) {
+		if(playground.get(this).accept(new ContentAdapter<Boolean>(true) {
+			@Override
+			public Boolean visitFire(final Fire fire) {
+				return false;
+			}
+			
+			@Override
+			public Boolean visitFireThenItem(final FireThenItem fire) {
+				return false;
+			}
+		})) {
+			if(i<EvolvableConstants.BOMB_DELAY) {
+				return survive(playground.next(), i+1);
+			} else {
+				return true;
+			}
+		}
+		return false;
 	}
 	private String show(final Action action, final ScoredDirection<Score> best) {
 		return String.format("%s %d %d", action, best.x, best.y);

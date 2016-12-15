@@ -8,6 +8,7 @@ import static org.ndx.codingame.lib2d.Geometry.from;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.ndx.codingame.lib2d.shapes.Circle;
 
 public class CircleTest {
 	public static class ContainsTest {

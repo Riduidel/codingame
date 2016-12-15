@@ -3,8 +3,8 @@ package org.ndx.codingame.coders_strike_back;
 import java.util.Collection;
 import java.util.Deque;
 
-import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 public abstract class AbstractTrajectory implements Trajectory {
 

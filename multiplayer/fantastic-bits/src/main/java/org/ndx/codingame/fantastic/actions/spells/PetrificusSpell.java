@@ -6,7 +6,7 @@ import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.actions.ActionVisitor;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.status.Status;
-import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class PetrificusSpell extends AbstractSpell {
 	public static final String PETRIFICUS = "PETRIFICUS";

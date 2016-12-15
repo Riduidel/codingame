@@ -5,8 +5,8 @@ import org.ndx.codingame.fantastic.Playground;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
-import org.ndx.codingame.lib2d.Vector;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Vector;
 
 public class MoveTo implements Action {
 

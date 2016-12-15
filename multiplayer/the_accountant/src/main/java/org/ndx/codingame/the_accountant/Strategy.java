@@ -10,9 +10,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.ndx.codingame.lib2d.Circle;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Circle;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class Strategy implements Comparable<Strategy> {
 	private static final int HORIZON = 100;

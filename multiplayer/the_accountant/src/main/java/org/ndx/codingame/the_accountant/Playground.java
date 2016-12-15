@@ -8,8 +8,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.Delay;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class Playground {
 

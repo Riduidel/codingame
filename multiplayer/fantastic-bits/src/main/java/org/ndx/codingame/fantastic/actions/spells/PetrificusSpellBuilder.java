@@ -10,9 +10,9 @@ import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.fantastic.status.TeamStatus;
-import org.ndx.codingame.lib2d.Segment;
-import org.ndx.codingame.lib2d.Vector;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
+import org.ndx.codingame.lib2d.shapes.Vector;
 
 public class PetrificusSpellBuilder extends AbstractSpellBuilder<Entity> {
 

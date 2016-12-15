@@ -4,12 +4,12 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.ndx.codingame.lib2d.Circle;
 import org.ndx.codingame.lib2d.Geometry;
-import org.ndx.codingame.lib2d.Segment;
-import org.ndx.codingame.lib2d.Vector;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Circle;
+import org.ndx.codingame.lib2d.shapes.Segment;
+import org.ndx.codingame.lib2d.shapes.Vector;
 
 public abstract class Entity {
 	public static class ByDistanceTo implements Comparator<Entity> {

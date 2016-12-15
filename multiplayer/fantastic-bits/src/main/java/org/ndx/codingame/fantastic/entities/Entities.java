@@ -17,9 +17,9 @@ import org.ndx.codingame.fantastic.actions.ActionListBuilder;
 import org.ndx.codingame.fantastic.actions.OrderActions;
 import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.fantastic.status.TeamStatus;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class Entities {
 	private class NearestToSnaffles implements Comparator<Wizard> {

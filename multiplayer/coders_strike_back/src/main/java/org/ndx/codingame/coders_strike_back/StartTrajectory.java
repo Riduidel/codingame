@@ -2,7 +2,7 @@ package org.ndx.codingame.coders_strike_back;
 
 import java.util.Collection;
 
-import org.ndx.codingame.lib2d.Line;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 public class StartTrajectory implements Trajectory {
 	private final Position target;

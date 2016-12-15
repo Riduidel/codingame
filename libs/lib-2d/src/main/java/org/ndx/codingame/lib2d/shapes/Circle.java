@@ -1,4 +1,4 @@
-package org.ndx.codingame.lib2d;
+package org.ndx.codingame.lib2d.shapes;
 
 import static java.lang.Math.pow;
 
@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.ndx.codingame.lib2d.Algebra;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 

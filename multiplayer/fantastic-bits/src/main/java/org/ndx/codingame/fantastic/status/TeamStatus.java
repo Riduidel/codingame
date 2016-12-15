@@ -1,7 +1,7 @@
 package org.ndx.codingame.fantastic.status;
 
 import org.ndx.codingame.fantastic.Playground;
-import org.ndx.codingame.lib2d.Segment;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class TeamStatus implements StatusElement {
 	public final int team;

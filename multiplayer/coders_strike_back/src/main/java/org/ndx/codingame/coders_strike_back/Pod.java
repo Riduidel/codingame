@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 
-import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 public class Pod {
 

@@ -2,11 +2,10 @@ package org.ndx.codingame.the_accountant;
 
 import java.util.Collection;
 
-import org.ndx.codingame.lib2d.PointBuilder;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
-public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBuilder<Enemy> {
+public class Enemy extends ContinuousPoint implements Comparable<Enemy> {
 
 	public static final int ENEMY_SPEED = 500;
 	public final int id;
@@ -14,19 +13,19 @@ public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBu
 	public double distance = Integer.MAX_VALUE;
 	public ContinuousPoint target;
 
-	public Enemy(int enemyId, double enemyX, double enemyY, int enemyLife) {
+	public Enemy(final int enemyId, final double enemyX, final double enemyY, final int enemyLife) {
 		super(enemyX, enemyY);
-		this.id = enemyId;
-		this.life = enemyLife;
+		id = enemyId;
+		life = enemyLife;
 	}
 
 	/**
 	 * Find this enemy target in avaiable datapoints
 	 * @param data
 	 */
-	public Enemy findTargetIn(Collection<DataPoint> data) {
-		for (DataPoint dataPoint : data) {
-			double distance2To = distance2To(dataPoint);
+	public Enemy findTargetIn(final Collection<DataPoint> data) {
+		for (final DataPoint dataPoint : data) {
+			final double distance2To = distance2To(dataPoint);
 			if(distance2To<distance) {
 				target = dataPoint;
 				distance = distance2To;
@@ -36,10 +35,11 @@ public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBu
 	}
 
 	@Override
-	public int compareTo(Enemy o) {
+	public int compareTo(final Enemy o) {
 		int returned = (int) (Math.signum(distance)-o.distance);
-		if(returned==0)
+		if(returned==0) {
 			returned = (int) Math.signum(id-o.id);
+		}
 		return id;
 	}
 
@@ -49,7 +49,7 @@ public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBu
 				+ ", y=" + y + "]";
 	}
 
-	public Enemy selectTargetBetween(Agent agent, Collection<DataPoint> data) {
+	public Enemy selectTargetBetween(final Agent agent, final Collection<DataPoint> data) {
         if(data.isEmpty()) {
         	target = agent;
         	distance = distance2To(agent);
@@ -68,14 +68,15 @@ public class Enemy extends ContinuousPoint implements Comparable<Enemy>, PointBu
 	 * @return
 	 */
 	public Enemy moveForward() {
-		if(target==null)
+		if(target==null) {
 			return this;
-		Segment segment = new Segment(this, target);
-		return segment.pointAtDistance(this, ENEMY_SPEED, this);
+		}
+		final Segment segment = new Segment(this, target);
+		return (Enemy) segment.pointAtDistance(this, ENEMY_SPEED, this);
 	}
 
 	@Override
-	public Enemy build(double x, double y) {
+	public Enemy build(final double x, final double y) {
 		return new Enemy(id, x, y, life);
 	}
 

@@ -11,8 +11,8 @@ import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.lib2d.Geometry;
-import org.ndx.codingame.lib2d.Segment;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class Playground {
 	public static final int WIDTH = 16001;

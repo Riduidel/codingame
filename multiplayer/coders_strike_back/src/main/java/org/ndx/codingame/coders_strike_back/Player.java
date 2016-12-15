@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 /**
  * Auto-generated code below aims at helping you parse the standard input

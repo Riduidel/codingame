@@ -1,4 +1,4 @@
-package org.ndx.codingame.lib2d;
+package org.ndx.codingame.lib2d.shapes;
 
 import java.util.Comparator;
 

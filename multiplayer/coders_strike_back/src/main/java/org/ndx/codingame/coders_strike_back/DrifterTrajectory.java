@@ -2,8 +2,8 @@ package org.ndx.codingame.coders_strike_back;
 
 import java.util.Deque;
 
-import org.ndx.codingame.lib2d.Line;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.shapes.Line;
 
 public class DrifterTrajectory extends AbstractTrajectory implements Trajectory {
 	public DrifterTrajectory(Position currentPosition, Position previousPosition,
