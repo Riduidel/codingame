@@ -9,6 +9,8 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Segment extends Line {
 
+	public static final double CENTER = 0.5;
+
 	public Segment(final ContinuousPoint first, final ContinuousPoint second) {
 		super(first, second);
 	}
@@ -17,7 +19,7 @@ public class Segment extends Line {
 		return first.distance2To(second);
 	}
 
-	public <Type extends ContinuousPoint> Type pointAtDistance(final ContinuousPoint start, final double distance, final PointBuilder<Type> builder) {
+	public <Type extends AbstractPoint> Type pointAtDistance(final AbstractPoint start, final double distance, final PointBuilder<Type> builder) {
 		return pointAtNTimesOf(start, distance/length(), builder);
 	}
 
@@ -100,5 +102,9 @@ public class Segment extends Line {
 
 	public Line toLine() {
 		return new Line(first, second);
+	}
+
+	public <Type extends ContinuousPoint> Type pointAtDistance(final double d, final PointBuilder<Type> builder) {
+		return pointAtDistance(first, d, builder);
 	}
 }

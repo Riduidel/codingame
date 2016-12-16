@@ -5,8 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
-import org.ndx.codingame.lib2d.continuous.bezier.BezierCurve;
-import org.ndx.codingame.lib2d.continuous.bezier.PolynomialBezierCurve;
+import org.ndx.codingame.lib2d.continuous.shapes.bezier.PolynomialBezierCurve;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.shapes.Circle;
 import org.ndx.codingame.lib2d.shapes.Line;
@@ -37,7 +36,7 @@ public class Geometry {
 				return this;
 			}
 			
-			public BezierCurve build() {
+			public PolynomialBezierCurve build() {
 				return new PolynomialBezierCurve(from, control, to);
 			}
 		}

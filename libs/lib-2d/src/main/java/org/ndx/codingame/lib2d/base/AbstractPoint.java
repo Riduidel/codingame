@@ -56,10 +56,11 @@ public abstract class AbstractPoint implements Distance2 {
 	}
 	@Override
 	public double distance2To(final AbstractPoint other) {
-		if(!getDistanceCache().containsKey(other)) {
-			getDistanceCache().put(other, computeDistance2To(other));
-		}
-		return getDistanceCache().get(other);
+		return computeDistance2To(other);
+//		if(!getDistanceCache().containsKey(other)) {
+//			getDistanceCache().put(other, computeDistance2To(other));
+//		}
+//		return getDistanceCache().get(other);
 	}
 	public double minDistance2To(final Collection<? extends AbstractPoint> dangerous) {
 		if(!getDistanceCache().containsKey(dangerous)) {

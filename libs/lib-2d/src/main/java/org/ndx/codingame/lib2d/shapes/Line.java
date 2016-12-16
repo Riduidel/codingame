@@ -21,7 +21,7 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 			b = first.x-second.x; 
 			c = (first.y-second.y)*first.x + (second.x-first.x)*first.y;
 			squareNorm = first.distance2SquaredTo(second);
-			lineNorm = first.distance2To(second);
+			lineNorm = Math.sqrt(squareNorm);
 		}
 		public double lineEquationFor(final AbstractPoint point) {
 			return a*point.getX()+b*point.getY()+c;
@@ -136,27 +136,26 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 		return pointAtNTimesOf(first, i, this);
 	}
 
-	public <Type extends ContinuousPoint> Type  pointAtNTimes(final double i, final PointBuilder<Type> builder) {
+	public <Type extends AbstractPoint> Type  pointAtNTimes(final double i, final PointBuilder<Type> builder) {
 		return pointAtNTimesOf(first, i, builder);
 	}
 
-	protected <Type extends ContinuousPoint> Type pointAtNTimesOf(final ContinuousPoint p, final double i, final PointBuilder<Type> builder) {
-		double x = p.x;
-		double y = p.y;
-		if(Algebra.isZero(first.distance2To(second))) {
+	protected <Type extends AbstractPoint> Type pointAtNTimesOf(final AbstractPoint p, final double i, final PointBuilder<Type> builder) {
+		double x = p.getX();
+		double y = p.getY();
+		if(first.equals(second) || Algebra.isZero(first.distance2To(second))) {
+			return builder.build(x, y);
+		} else {
+			if(coeffs.isHorizontalLine()) {
+				x = i*(second.x-first.x)+x;
+			} else if(coeffs.isVerticalLine()) {
+				y = i*(second.y-first.y)+y;
+			} else {
+				x = i*(second.x-first.x)+x;
+				y = coeffs.computeYFromX(x);
+			}
 			return builder.build(x, y);
 		}
-		if(coeffs.isHorizontalLine()) {
-			y = p.y;
-			x = i*(second.x-first.x)+p.x;
-		} else if(coeffs.isVerticalLine()) {
-			x = p.x;
-			y = i*(second.y-first.y)+p.y;
-		} else {
-			x = i*(second.x-first.x)+p.x;
-			y = coeffs.computeYFromX(x);
-		}
-		return builder.build(x, y);
 	}
 
 	public double angleWith(final Line aim) {

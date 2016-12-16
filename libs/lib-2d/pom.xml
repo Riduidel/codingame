@@ -20,5 +20,10 @@
 			<groupId>pl.pragmatists</groupId>
 			<artifactId>JUnitParams</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.databene</groupId>
+			<artifactId>contiperf</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
