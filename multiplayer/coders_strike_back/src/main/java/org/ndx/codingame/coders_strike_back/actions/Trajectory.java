@@ -1,4 +1,4 @@
-package org.ndx.codingame.coders_strike_back;
+package org.ndx.codingame.coders_strike_back.actions;
 
 import java.util.Collection;
 

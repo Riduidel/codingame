@@ -19,9 +19,9 @@ public class BezierPerformanceTest {
 		System.err.println("Do not forget to break here for jvisualvm analysis");
 	}
 
-	@PerfTest(invocations = 1000, threads = 10) @Required(percentile95=50)
+	@PerfTest(invocations = 100, threads = 1) @Required(percentile95=50)
 	@Test public void can_handle_a_basic_bezier_curve() {
-		final PolynomialBezierCurve curve = from(at(0, 0)).to(at(1.0, 0)).control(at(0.0, 1)).control(at(1.0, 1)).build();
+		final PolynomialBezierCurve curve = from(at(0, 0)).to(at(1.0, 0)).control(at(0.0, 1)).control(at(1.0, 1)).build(100);
 		assertThat(curve.from).isEqualTo(at(0, 0));
 		assertThat(curve.to).isEqualTo(at(1, 0));
 		final ContinuousPoint curveCenter = curve.pointAtDistance(curve.length()/2);

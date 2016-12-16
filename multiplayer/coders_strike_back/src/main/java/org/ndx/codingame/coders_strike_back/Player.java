@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import org.ndx.codingame.coders_strike_back.actions.TrajectoryBuilder;
+import org.ndx.codingame.coders_strike_back.entities.Pod;
+import org.ndx.codingame.coders_strike_back.entities.Position;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Line;
 

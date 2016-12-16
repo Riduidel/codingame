@@ -1,7 +1,8 @@
-package org.ndx.codingame.coders_strike_back;
+package org.ndx.codingame.coders_strike_back.actions;
 
 import java.util.Collection;
 
+import org.ndx.codingame.coders_strike_back.entities.Position;
 import org.ndx.codingame.lib2d.shapes.Line;
 
 public class StartTrajectory implements Trajectory {

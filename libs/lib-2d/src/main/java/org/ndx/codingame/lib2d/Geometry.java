@@ -39,6 +39,10 @@ public class Geometry {
 			public PolynomialBezierCurve build() {
 				return new PolynomialBezierCurve(from, control, to);
 			}
+			
+			public PolynomialBezierCurve build(final double divider) {
+				return new PolynomialBezierCurve(from, control, to, divider);
+			}
 		}
 		public static class PolygonBuilder {
 			private final List<ContinuousPoint> points = new ArrayList<>();

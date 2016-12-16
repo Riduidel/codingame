@@ -1,8 +1,10 @@
-package org.ndx.codingame.coders_strike_back;
+package org.ndx.codingame.coders_strike_back.actions;
 
 import java.util.Collection;
 import java.util.Deque;
 
+import org.ndx.codingame.coders_strike_back.Player;
+import org.ndx.codingame.coders_strike_back.entities.Position;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.shapes.Line;
 
