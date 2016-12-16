@@ -15,25 +15,31 @@ import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class PolynomialBezierCurve {
 
-	private static final int TOLERANCE = 10;
+	private static final int DISTANCE_DIVIDER = 50;
 	private final List<ContinuousPoint> all;
 	public final ContinuousPoint to;
 	public final ContinuousPoint from;
 	private PolySegment polySegment;
+	private final double distanceDivider;
 
 	public PolynomialBezierCurve(final ContinuousPoint from, final List<ContinuousPoint> control, final ContinuousPoint to) {
+		this(from, control, to, DISTANCE_DIVIDER);
+	}
+	public PolynomialBezierCurve(final ContinuousPoint from, final List<ContinuousPoint> control, final ContinuousPoint to, final double distanceDivider) {
 		this.from = from;
 		this.to = to;
 		all = new ArrayList<>(control.size()+2);
 		all.add(from);
 		all.addAll(control);
 		all.add(to);
+		this.distanceDivider = distanceDivider;
 	}
 
-	public PolynomialBezierCurve(final List<ContinuousPoint> list) {
-		from= list.get(0);
+	PolynomialBezierCurve(final List<ContinuousPoint> list, final double distanceDivider) {
+		from = list.get(0);
 		to = list.get(list.size()-1);
 		all = list;
+		this.distanceDivider = distanceDivider;
 	}
 
 	public <Type extends ContinuousPoint> Type pointAtDistance(final double distance, final PointBuilder<Type> builder) {
@@ -70,8 +76,8 @@ public class PolynomialBezierCurve {
 			// Now second is built in bad order, reverse it to have valid content
 			second.add(center);
 			Collections.reverse(second);
-			final PolynomialBezierCurve firstCurve = new PolynomialBezierCurve(first);
-			final PolynomialBezierCurve secondCurve = new PolynomialBezierCurve(second);
+			final PolynomialBezierCurve firstCurve = new PolynomialBezierCurve(first, distanceDivider);
+			final PolynomialBezierCurve secondCurve = new PolynomialBezierCurve(second, distanceDivider);
 			// Assemble their polysegments
 			return firstCurve.toPolySegment().extendWith(secondCurve.toPolySegment());
 		}
@@ -79,7 +85,7 @@ public class PolynomialBezierCurve {
 
 	private boolean allAreQuiteAligned() {
 		final Line segment = new Line(from, to);
-		final double range = from.distance2To(to)/TOLERANCE;
+		final double range = from.distance2To(to)/distanceDivider;
 		for (final ContinuousPoint continuousPoint : all) {
 			if(continuousPoint!=from && continuousPoint!=to) {
 				if(segment.distance2To(continuousPoint)>range) {
