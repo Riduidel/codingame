@@ -257,4 +257,25 @@ public class InGameTest {
 		final List<String> actions = entitiesStore.computeActionsToString();
 		assertThat(actions).hasSize(2);
 	}
+	@Test public void can_find_actions_in_1481890909782() {
+		final Status status = new Status();
+			status.setTeam(0);
+			status.setMagic(5);
+		final List<Entity> playing=new ArrayList<>();
+			playing.add(new Wizard(2, 4254, 4331, -310, 119, 1, false, false));
+			playing.add(new Wizard(3, 13895, 4752, -74, -326, 1, false, false));
+			playing.add(new Snaffle(5, 2578, 5537, -26, -5));
+			playing.add(new Snaffle(6, 15713, 7083, 2, 86));
+			playing.add(new Snaffle(7, 943, 5802, -6, 2));
+			playing.add(new Snaffle(8, 15817, 2761, 69, 72));
+			playing.add(new Snaffle(10, 2474, 4775, -140, 13));
+			playing.add(new Bludger(11, 12993, 6277, -31, -390));
+			playing.add(new Bludger(12, 6463, 3957, 69, -468));
+		final List<Wizard> myTeam=new ArrayList<>();
+			myTeam.add(new Wizard(0, 15431, 6621, -246, 292, 0, false, true));
+			myTeam.add(new Wizard(1, 15087, 1624, 204, 265, 0, false, false));
+		final Entities entitiesStore = new Entities(status, playing, myTeam, status.get(TeamStatus.class).getAttacked(), status.get(TeamStatus.class).getDefended());
+		final List<String> actions = entitiesStore.computeActionsToString();
+		assertThat(actions).hasSize(2);
+	}
 }

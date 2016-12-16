@@ -1,11 +1,14 @@
 package org.ndx.codingame.fantastic.actions;
 
+import java.util.Arrays;
+
 import org.ndx.codingame.fantastic.Constants;
 import org.ndx.codingame.fantastic.Playground;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.lib2d.continuous.shapes.bezier.PolynomialBezierCurve;
 import org.ndx.codingame.lib2d.shapes.Vector;
 
 public class MoveTo implements Action {
@@ -17,8 +20,10 @@ public class MoveTo implements Action {
 
 	public MoveTo(final Wizard wizard, final Entity entity) {
 		target = entity;
+		
+		final PolynomialBezierCurve curve = new PolynomialBezierCurve(wizard.position, Arrays.asList(wizard.getNextPosition(), entity.position), entity.getNextPosition());
+		next = curve.pointAtDistance(Math.min(curve.length(), Constants.WIZARD_MAX_SPEED));
 		direction = new Vector(wizard.position, entity.direction.second);
-		next = direction.pointAtDistance(direction.first, Math.min(direction.length(), Constants.WIZARD_MAX_SPEED), direction.first);
 	}
 
 	@Override
@@ -48,7 +53,7 @@ public class MoveTo implements Action {
 
 	@Override
 	public String toCommand() {
-		return Actions.moveTo(direction.second);
+		return Actions.moveTo(direction.second, Constants.WIZARD_MAX_SPEED);
 	}
 
 	@Override
