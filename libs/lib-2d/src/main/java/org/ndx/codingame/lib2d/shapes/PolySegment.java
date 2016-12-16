@@ -35,8 +35,9 @@ public class PolySegment {
 		final List<Segment> used = new ArrayList<>(segments());
 		final Segment last = used.get(used.size()-1);
 		final Segment first = polySegment.segments().get(0);
-		if(!first.second.equals(last.first)) {
-			used.add(new Segment(last.second, first.first));
+		if(!last.second.equals(first.first)) {
+			final Segment connector = new Segment(last.second, first.first);
+			used.add(connector);
 		}
 		used.addAll(polySegment.segments());
 		return new PolySegment(used);
