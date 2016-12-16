@@ -11,7 +11,7 @@ public class Constants {
 	public static final int WIZARD_MAX_SPEED = 150;
 	public static final double MAGIC_OBLIVIATE_SCORE = 10;
 	public static final int MAGIC_ACCIO_DURATION = 6;
-	public static final int MAGIC_ACCIO_COST = 20;
+	public static final int MAGIC_ACCIO_COST = 15;
 	public static final int MAGIC_FLIPENDO_COST = 20;
 	public static final int MAGIC_FLIPENDO_DURATION = 3;
 	public static final int MAGIC_PETRIFICUS_COST = 10;
