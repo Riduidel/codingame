@@ -1,0 +1,60 @@
+(ns Solution
+  (:gen-class))
+
+(defn to_binary [n]
+    (clojure.string/split (Long/toBinaryString n) #"")
+)
+
+(defn to_binary_text [n]
+    (clojure.string/join "" (map (fn [digit]
+             (let [bit (read-string digit)]
+                  (cond
+                      (== bit 1) "one"
+                      (== bit 0) "zero"
+                  )
+             )
+    ) (to_binary n)))
+)
+
+(defn to_binary_text_length [n cache]
+    (if
+        (contains? cache n)
+        (get cache n)
+        (let [text (to_binary_text n)]
+             (count text)
+        )
+    )
+)
+
+(defn to_binary_text_at [start iteration]
+    (let [cache (sorted-map)]
+        (loop [start start iteration iteration]
+            (let [length (to_binary_text_length start cache)]
+                (binding [*out* *err*]
+                    (println 
+                             "start =>" 
+                             (to_binary_text_length start cache)
+                             "count =>" iteration)
+                )
+                (assoc cache start length)
+                (if
+                    (== start length)
+                    length
+                    (if
+                        (== iteration 1) 
+                        length
+                        (recur length (- iteration 1))
+                    )
+                )
+            )
+        )
+    )
+)
+
+(defn -main [& args]
+  (let [start (read) n (read)]
+        (binding [*out* *err*]
+            (println "start =>" start "n =>" n))
+    
+    ; Write answer to stdout
+    (println (to_binary_text_at start n))))
