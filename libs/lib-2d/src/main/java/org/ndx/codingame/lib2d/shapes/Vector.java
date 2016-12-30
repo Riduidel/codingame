@@ -43,8 +43,13 @@ public class Vector extends Segment {
 		return new Segment(first, second);
 	}
 
+	@Override
 	public Line toLine() {
 		return new Line(first, second);
 	}
 
+	@Override
+	protected Line create(final ContinuousPoint targetPosition, final ContinuousPoint secondTarget) {
+		return new Vector(targetPosition, secondTarget);
+	}
 }

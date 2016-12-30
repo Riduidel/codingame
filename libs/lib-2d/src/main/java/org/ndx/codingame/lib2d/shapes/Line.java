@@ -124,7 +124,7 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 
 	public Line orthogonal(final ContinuousPoint point) {
 		final ContinuousPoint projected = project(point);
-		return new Line(point, projected);
+		return create(point, projected);
 	}
 
 	/**
@@ -263,5 +263,16 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 	
 	public boolean intersectsWith(final Line line) {
 		return !intersectionWith(line).isEmpty();
+	}
+
+	public Line parallelThrough(final ContinuousPoint targetPosition) {
+		final double x = targetPosition.getX()+(second.getX()-first.getX());
+		final double y = targetPosition.getY()+(second.getY()-first.getY());
+		final ContinuousPoint secondTarget = targetPosition.build(x, y);
+		return create(targetPosition, secondTarget);
+	}
+
+	protected Line create(final ContinuousPoint targetPosition, final ContinuousPoint secondTarget) {
+		return new Line(targetPosition, secondTarget);
 	}
 }

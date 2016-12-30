@@ -107,4 +107,9 @@ public class Segment extends Line {
 	public <Type extends ContinuousPoint> Type pointAtDistance(final double d, final PointBuilder<Type> builder) {
 		return pointAtDistance(first, d, builder);
 	}
+	
+	@Override
+	protected Line create(final ContinuousPoint targetPosition, final ContinuousPoint secondTarget) {
+		return new Segment(targetPosition, secondTarget);
+	}
 }
