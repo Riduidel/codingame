@@ -33,4 +33,10 @@ public class ContinuousPoint extends AbstractPoint implements PointBuilder<Conti
 	public ContinuousPoint moveOf(final double x2, final double y2) {
 		return super.moveOf(x2, y2, this);
 	}
+	@Override
+	public StringBuilder toUnitTestConstructor(final String multilinePrefix)  {
+		final StringBuilder returned = new StringBuilder();
+		returned.append("new ").append(getClass().getSimpleName()).append("(").append(x).append(", ").append(y).append(")");
+		return returned;
+	}
 }

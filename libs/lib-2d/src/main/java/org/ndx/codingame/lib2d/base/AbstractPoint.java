@@ -7,9 +7,10 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.lib2d.PointBuilder;
 
-public abstract class AbstractPoint implements Distance2 {
+public abstract class AbstractPoint implements Distance2, ToUnitTest {
 	public static class PositionByDistance2To implements Comparator<AbstractPoint> {
 	
 		private final Collection<Distance2> centers = new ArrayList<>();
@@ -135,4 +136,7 @@ public abstract class AbstractPoint implements Distance2 {
 	public <Type extends AbstractPoint> Type moveOf(final double x, final double y, final PointBuilder<Type> builder) {
 		return builder.build(getX()+x, getY()+y);
 	}
+	
+	@Override
+	public abstract StringBuilder toUnitTestConstructor(String multilinePrefix);
 }

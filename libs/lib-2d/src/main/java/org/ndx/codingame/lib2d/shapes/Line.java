@@ -3,13 +3,14 @@ package org.ndx.codingame.lib2d.shapes;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.lib2d.Algebra;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.base.Distance2;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
-public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
+public class Line implements PointBuilder<ContinuousPoint>, Distance2, ToUnitTest {
 	public static class Coeffs {
 		public final double a;
 		public final double b;
@@ -274,5 +275,16 @@ public class Line implements PointBuilder<ContinuousPoint>, Distance2 {
 
 	protected Line create(final ContinuousPoint targetPosition, final ContinuousPoint secondTarget) {
 		return new Line(targetPosition, secondTarget);
+	}
+
+	@Override
+	public StringBuilder toUnitTestConstructor(final String string) {
+		final StringBuilder returned = new StringBuilder();
+		final String prefix = string+"\t";
+		returned.append("new ").append(getClass().getName()).append("(\n")
+			.append(prefix).append(first.toUnitTestConstructor(prefix)).append(",\n")
+			.append(prefix).append(second.toUnitTestConstructor(prefix)).append("\n")
+			.append(prefix).append(")");
+		return returned;
 	}
 }

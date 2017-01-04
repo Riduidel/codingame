@@ -9,6 +9,11 @@
 	<artifactId>lib-2d</artifactId>
 	<dependencies>
 		<dependency>
+			<groupId>org.ndx.codingame</groupId>
+			<artifactId>lib-gaming</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
