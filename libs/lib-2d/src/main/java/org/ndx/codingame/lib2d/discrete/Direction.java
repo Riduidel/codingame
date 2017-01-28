@@ -20,7 +20,7 @@ public class Direction extends DiscretePoint {
 	public static final List<Direction> DIRECTIONS_AND_STAY;
 	
 	static {
-		List<Direction> toUse = new ArrayList<Direction>();
+		final List<Direction> toUse = new ArrayList<>();
 		toUse.addAll(DIRECTIONS);
 		toUse.add(STAY);
 		DIRECTIONS_AND_STAY = Collections.unmodifiableList(toUse);
@@ -28,13 +28,20 @@ public class Direction extends DiscretePoint {
 
 	public final String name;
 
-	public Direction(int x, int y, String name) {
+	public Direction(final int x, final int y, final String name) {
 		super(x, y);
 		this.name = name;
 	}
+	
+	@Override
+	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
+		final StringBuilder returned = new StringBuilder();
+		returned.append("Direction.").append(name);
+		return returned;
+	}
 
-	public <Type> ScoredDirection<Type> move(DiscretePoint position) {
-		return new ScoredDirection<Type>(x+position.x, y+position.y, name);
+	public <Type> ScoredDirection<Type> move(final DiscretePoint position) {
+		return new ScoredDirection<>(x+position.x, y+position.y, name);
 	}
 
 	@Override

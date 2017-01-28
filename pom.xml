@@ -147,5 +147,6 @@
 		<module>multiplayer/the_accountant</module>
 		<module>multiplayer/coders_strike_back</module>
 		<module>multiplayer/fantastic-bits</module>
+		<module>multiplayer/the-great-escape</module>
 	</modules>
 </project>

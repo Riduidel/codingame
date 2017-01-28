@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.hypersonic.EvolvableConstants;
 import org.ndx.codingame.hypersonic.entities.Bomb;
 import org.ndx.codingame.hypersonic.entities.Box;
@@ -167,40 +168,38 @@ public class Playfield extends Playground<Content> {
 		}
 	}
 	public String toUnitTestString(final Gamer me) {
-		final String METHOD_PREFIX = "\t\t\t";
-		final String CONTENT_PREFIX = METHOD_PREFIX+"\t";
 		final StringBuilder returned = new StringBuilder();
 		
-		returned.append(METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
-		returned.append(METHOD_PREFIX+"@Test public void can_find_move_")
+		returned.append(ToUnitTest.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
+		returned.append(ToUnitTest.METHOD_PREFIX+"@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append(CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
 		final Collection<String> physical = toStringCollection(new ToPhysicalString());
 		final Iterator<String> physicalIter = physical.iterator();
 		while (physicalIter.hasNext()) {
 			final String row = physicalIter.next();
-			returned.append(CONTENT_PREFIX+"\t\"").append(row).append("\"");
+			returned.append(ToUnitTest.CONTENT_PREFIX+"\t\"").append(row).append("\"");
 			if(physicalIter.hasNext()) {
 				returned.append(",");
 			}
 			returned.append("\n");
 		}
-		returned.append(CONTENT_PREFIX+"\t));\n");
-		returned.append(String.format(CONTENT_PREFIX+"Gamer me = new Gamer(%d, %d, %d, %d, %d);\n", me.id, me.x, me.y, me.bombs, me.range));
-		returned.append(CONTENT_PREFIX+"tested.readGameEntities(\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"\t));\n");
+		returned.append(String.format(ToUnitTest.CONTENT_PREFIX+"Gamer me = new Gamer(%d, %d, %d, %d, %d);\n", me.id, me.x, me.y, me.bombs, me.range));
+		returned.append(ToUnitTest.CONTENT_PREFIX+"tested.readGameEntities(\n");
 		final Collection<String> entities = accept(new ExportGameEntities());
 		final Iterator<String> entitiesIter = entities.iterator();
 		while (entitiesIter.hasNext()) {
 			final String string = entitiesIter.next();
-			returned.append(CONTENT_PREFIX+"\t").append(string);
+			returned.append(ToUnitTest.CONTENT_PREFIX+"\t").append(string);
 			if(entitiesIter.hasNext()) {
 				returned.append(",");
 			}
 			returned.append("\n");
 		}
-		returned.append(CONTENT_PREFIX+"\t);\n");
-		returned.append(CONTENT_PREFIX+"assertThat(me.compute(tested)).isNotNull();\n");
-		returned.append(METHOD_PREFIX+"}\n\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"\t);\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me.compute(tested)).isNotNull();\n");
+		returned.append(ToUnitTest.METHOD_PREFIX+"}\n\n");
 		return returned.toString();
 	}
 	@Override

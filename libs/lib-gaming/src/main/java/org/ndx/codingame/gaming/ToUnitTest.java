@@ -20,6 +20,9 @@ public interface ToUnitTest {
 		}
 		return returned;
 	}
+
+	String METHOD_PREFIX = "\t\t\t";
+	String CONTENT_PREFIX = METHOD_PREFIX+"\t";
 	
 	public abstract StringBuilder toUnitTestConstructor(String multilinePrefix);
 
