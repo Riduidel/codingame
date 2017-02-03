@@ -10,6 +10,11 @@ public class DiscretePoint extends AbstractPoint {
 		this.x = x;
 		this.y = y;
 	}
+	public DiscretePoint(final AbstractPoint other) {
+		super();
+		x = (int) other.getX();
+		y = (int) other.getY();
+	}
 	@Override
 	public double getX() {
 		return x;

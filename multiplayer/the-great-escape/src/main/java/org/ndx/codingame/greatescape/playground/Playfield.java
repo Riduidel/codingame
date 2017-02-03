@@ -3,6 +3,7 @@ package org.ndx.codingame.greatescape.playground;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,7 +21,7 @@ import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 
 public class Playfield extends Playground<GameElement> {
-	private final Collection<Gamer> gamers = new ArrayList<>();
+	private final List<Gamer> gamers = new ArrayList<>();
 	public final int visibleHeight;
 	public final int visibleWidth;
 
@@ -40,7 +41,7 @@ public class Playfield extends Playground<GameElement> {
 			@Override
 			public Collection<DiscretePoint> visitWall(final Wall wall) {
 				final DiscretePoint source = toPlayfieldPositionForWall(visibleX, visibleY, wall.direction);
-				return IntStream.range(0, 2)
+				return IntStream.rangeClosed(0, 2)
 					.mapToObj((increment) -> {
 						switch(wall.direction) {
 						case H:
@@ -56,20 +57,21 @@ public class Playfield extends Playground<GameElement> {
 
 		});
 	}
+	public DiscretePoint toPlayfieldPositionForWall(final int visibleX, final int visibleY, final Orientation direction) {
+		switch(direction) {
+		case H:
+			return new DiscretePoint(visibleX*2, visibleY*2-1);
+		case V:
+			return new DiscretePoint(visibleX*2-1, visibleY*2);
+		default:
+			throw new RuntimeException("mais qu'est-ce que c'est que cette direction ? "+direction);
+		}
+	}
+
 	public DiscretePoint toPlayfieldPositionForContent(final int visibleX, final int visibleY) {
 		return new DiscretePoint(2*visibleX, 2*visibleY);
 	}
 	
-	public DiscretePoint toPlayfieldPositionForWall(final int visibleX, final int visibleY, final Orientation direction) {
-		switch(direction) {
-		case H:
-			return new DiscretePoint(2*visibleX, 2*visibleY+1);
-		case V:
-			return new DiscretePoint(2*visibleX+1, 2*visibleY);
-		default:
-			throw new UnsupportedOperationException("Une direction inconnue ?");
-		}
-	}
 	/**
 	 * Method used in Player class to put elements at their valid location
 	 * @param visibleX
@@ -89,6 +91,14 @@ public class Playfield extends Playground<GameElement> {
 				gamers.add(gamer);
 				return super.visitGamer(gamer);
 			}
+			
+			@Override
+			public Void visitWall(final Wall wall) {
+				if(x%2==0 && y%2==0) {
+					throw new RuntimeException(String.format("on essaye de placer un mur au milieu du terrain (en %d, %d)! ca va plus la tête !",x,y));
+				}
+				return super.visitWall(wall);
+			}
 		});
 		super.set(x, y, c);
 	}
@@ -106,7 +116,6 @@ public class Playfield extends Playground<GameElement> {
 		}
 		@Override
 		public void visit(final int x, final int y, final GameElement content) {
-			final StringBuilder output = new StringBuilder();
 			final Optional<StringBuilder> elementOutput = content.accept(this);
 			elementOutput.ifPresent((s) -> 
 				returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.set(").append(x).append(", ").append(y).append(", ").append(s).append(");\n")
@@ -116,7 +125,7 @@ public class Playfield extends Playground<GameElement> {
 		@Override
 		public Optional<StringBuilder> visitGamer(final Gamer gamer) {
 			final StringBuilder used = new StringBuilder();
-			if(gamer==me) {
+			if(gamer.equals(me)) {
 				used.append("me = ");
 			}
 			used.append(gamer.toUnitTestConstructor(""));
@@ -134,6 +143,11 @@ public class Playfield extends Playground<GameElement> {
 		}
 	}
 	public static class ToDebugString extends PlaygroundAdapter<StringBuilder, GameElement> implements GameElementVisitor<StringBuilder> {
+		public static final String WALL_V_DEBUG = "|";
+		public static final String WALL_H_DEBUG = "-";
+		public static final String GAMER_DEBUG = "g";
+		public static final String GAMER__ME_DEBUG = "G";
+
 		@Override
 		public void startVisit(final Playground<GameElement> playground) {
 			returned = new StringBuilder();
@@ -152,7 +166,7 @@ public class Playfield extends Playground<GameElement> {
 
 		@Override
 		public StringBuilder visitGamer(final Gamer gamer) {
-			return new StringBuilder("G");
+			return new StringBuilder(GAMER_DEBUG);
 		}
 
 		@Override
@@ -164,9 +178,9 @@ public class Playfield extends Playground<GameElement> {
 		public StringBuilder visitWall(final Wall wall) {
 			switch(wall.direction) {
 			case H:
-				return new StringBuilder("-");
+				return new StringBuilder(WALL_H_DEBUG);
 			case V:
-				return new StringBuilder("|");
+				return new StringBuilder(WALL_V_DEBUG);
 			default:
 				throw new UnsupportedOperationException("Une direction inconnue ?");
 			}
@@ -190,12 +204,13 @@ public class Playfield extends Playground<GameElement> {
 			.append(visibleHeight)
 				.append(");\n");
 		returned.append(accept(new ExportGameEntities(me)));
-		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me.compute(tested)).isNotNull();\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me).isNotNull();\n");
+		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me.compute(tested).toCodingame()).isNotNull();\n");
 		returned.append(ToUnitTest.METHOD_PREFIX+"}\n\n");
 		return returned.toString();
 	}
 
-	public Collection<Gamer> getGamers() {
+	public List<Gamer> getGamers() {
 		return gamers;
 	}
 	

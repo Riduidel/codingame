@@ -5,21 +5,20 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.greatescape.actions.Action;
 import org.ndx.codingame.greatescape.actions.MoveTo;
-import org.ndx.codingame.greatescape.actions.Trap;
 import org.ndx.codingame.greatescape.playground.DistanceInfo;
+import org.ndx.codingame.greatescape.playground.DistanceInfoPlayground;
 import org.ndx.codingame.greatescape.playground.DistanceToDestinationComputer;
 import org.ndx.codingame.greatescape.playground.Playfield;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
-import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
-public class Gamer extends DiscretePoint implements GameElement {
-
+public class Gamer extends DiscretePoint implements GameElement, Comparable<Gamer> {
 	private final int wallsLeft;
 	public final Direction direction;
-	private DistanceInfo distanceMap;
+	private DistanceInfoPlayground distanceMap;
 	private DiscretePoint inPlayfield;
-	private int distance;
+	private DistanceInfo distance;
+	private DiscretePoint playfieldPostion;
 
 	public Gamer(final int x, final int y, final int wallsLeft, final Direction direction) {
 		super(x, y);
@@ -43,48 +42,30 @@ public class Gamer extends DiscretePoint implements GameElement {
 	}
 
 	public Action compute(final Playfield tested) {
+		// First step, obtain for each gamer the distance
+		tested.getGamers().stream().forEach((g) -> g.computeDistanceToDestination(tested));
 		final List<Gamer> enemies = tested.getGamers().stream()
 				.filter((g)-> !g.equals(Gamer.this))
 				.collect(Collectors.toList());
-		// First step, obtain for each gamer the distance
-		tested.getGamers().stream().forEach((g) -> g.computeDistanceToDestination(tested));
-		// Now compare distance of this gamer versus the other
+		// Now compare distance of this gamer versus the best one
 		final Gamer firstEnemy = enemies.stream()
-			.sorted((a, b) -> a.distance - b.distance)
+			.sorted()
 			.findFirst()
 			.get();
-		final int difference = firstEnemy.distance-distance;
+		final int difference = distance.getDistance()-firstEnemy.distance.getDistance();
+		// if ahead, rush
 		if(difference<0) {
-			System.err.println("RUSH TO THE END !");
-			return findBestMove();
+			return findBestMove().decorateWith("RUSH !");
+		} else if(wallsLeft>0) {
+			// otherwise, trap at any location
+			return trap(tested.getGamers(), tested).decorateWith(String.format("%d BEHIND.", difference));
 		} else {
-			System.err.println(String.format("Trapping enemy. We're %d behind", difference));
-			return firstEnemy.trap(this, tested);
+			return findBestMove().decorateWith("NO MORE WALLS LEFT !");
 		}
 	}
 
-	private Action trap(final Gamer me, final Playfield tested) {
-		Orientation orientation;
-		if(direction.equals(Direction.LEFT) || direction.equals(Direction.RIGHT)) {
-			orientation = Orientation.V;
-		} else {
-			orientation = Orientation.H;
-		}
-		final ScoredDirection<Object> move = direction.move(this);
-		int x = move.x;
-		int y = move.y;
-		if(move.x>=tested.visibleWidth-1) {
-			x--;
-		}
-		if(move.y>=tested.visibleHeight-1) {
-			y--;
-		}
-		final Trap possible = new Trap(orientation, new DiscretePoint(x, y));
-		if(possible.canInstall(tested)) {
-			return possible;
-		} else {
-			return me.findBestMove();
-		}
+	private Action trap(final List<Gamer> gamers, final Playfield tested) {
+		return tested.accept(new TrapGenerator(gamers, this));
 	}
 
 	private MoveTo findBestMove() {
@@ -94,7 +75,7 @@ public class Gamer extends DiscretePoint implements GameElement {
 				.filter((direction) ->
 					distanceMap.contains(direction))
 				.sorted((first, second) ->
-						distanceMap.get(first)-distanceMap.get(second))
+						distanceMap.getOrCreate(first).compareTo(distanceMap.getOrCreate(second)))
 				.findFirst()
 				.map((point) ->
 						new MoveTo(point))
@@ -111,6 +92,26 @@ public class Gamer extends DiscretePoint implements GameElement {
 			inPlayfield = playfield.toPlayfieldPositionForContent(x, y);
 		}
 		distance = distanceMap.get(inPlayfield);
+	}
+
+	@Override
+	public int compareTo(final Gamer o) {
+		return distance.compareTo(o.getDistance());
+	}
+
+	public DistanceInfo getDistance() {
+		return distance;
+	}
+
+	public DistanceInfoPlayground getDistanceMap() {
+		return distanceMap;
+	}
+
+	public DiscretePoint toPlayfieldPosition() {
+		if(playfieldPostion==null) {
+			playfieldPostion = new DiscretePoint(2*x, 2*y);
+		}
+		return playfieldPostion;
 	}
 
 }

@@ -13,7 +13,14 @@ import org.ndx.codingame.lib2d.discrete.Direction;
  **/
 public class Player {
 
-    public static void main(final String args[]) {
+    private static final Direction[] DIRECTIONS = new Direction[] {
+                                                                Direction.RIGHT,
+                                                                Direction.LEFT,
+                                                                Direction.DOWN,
+                                                                Direction.UP
+    };
+
+	public static void main(final String args[]) {
         final Scanner in = new Scanner(System.in);
         final int WIDTH = in.nextInt(); // width of the board
         final int HEIGHT = in.nextInt(); // height of the board
@@ -30,7 +37,7 @@ public class Player {
                 final int x = in.nextInt(); // x-coordinate of the player
                 final int y = in.nextInt(); // y-coordinate of the player
                 final int wallsLeft = in.nextInt(); // number of walls available for the player
-                final Gamer gamer = new Gamer(x, y, wallsLeft, i==0 ? Direction.RIGHT : Direction.LEFT);
+                final Gamer gamer = new Gamer(x, y, wallsLeft, DIRECTIONS[i]);
                 if(i==myId) {
 					me = gamer;
 				}
@@ -38,13 +45,15 @@ public class Player {
                 if(x>=0 && y>=0) {
 					used.setAt(x, y, gamer);
 				}
+//                System.err.println(String.format("new Gamer(%d, %d)", x, y));
             }
             final int wallCount = in.nextInt(); // number of walls on the board
             for (int i = 0; i < wallCount; i++) {
-                final int wallX = in.nextInt(); // x-coordinate of the wall
-                final int wallY = in.nextInt(); // y-coordinate of the wall
+                final int x = in.nextInt(); // x-coordinate of the wall
+                final int y = in.nextInt(); // y-coordinate of the wall
                 final String wallOrientation = in.next(); // wall orientation ('H' or 'V')
-                used.setAt(wallX, wallY, new Wall(Orientation.valueOf(wallOrientation)));
+                used.setAt(x, y, new Wall(Orientation.valueOf(wallOrientation)));
+                //               System.err.println(String.format("new Wall(%d, %d, %s)", x, y, wallOrientation));
             }
 
             // Write an action using System.out.println()
@@ -52,7 +61,7 @@ public class Player {
 
 
             // action: LEFT, RIGHT, UP, DOWN or "putX putY putOrientation" to place a wall
-            System.out.println(me.compute(used));
+            System.out.println(me.compute(used).toCodingame());
         }
     }
 }
