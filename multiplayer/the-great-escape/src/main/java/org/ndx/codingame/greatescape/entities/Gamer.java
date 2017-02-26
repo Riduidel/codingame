@@ -1,29 +1,36 @@
 package org.ndx.codingame.greatescape.entities;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.greatescape.actions.Action;
 import org.ndx.codingame.greatescape.actions.MoveTo;
-import org.ndx.codingame.greatescape.playground.DistanceInfo;
-import org.ndx.codingame.greatescape.playground.DistanceInfoPlayground;
-import org.ndx.codingame.greatescape.playground.DistanceToDestinationComputer;
+import org.ndx.codingame.greatescape.computers.DistancePlayground;
+import org.ndx.codingame.greatescape.computers.DistancePlaygroundBuilder;
 import org.ndx.codingame.greatescape.playground.Playfield;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
+import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 
-public class Gamer extends DiscretePoint implements GameElement, Comparable<Gamer> {
+public class Gamer extends DiscretePoint implements GameElement {
 	private final int wallsLeft;
 	public final Direction direction;
-	private DistanceInfoPlayground distanceMap;
 	private DiscretePoint inPlayfield;
-	private DistanceInfo distance;
 	private DiscretePoint playfieldPostion;
+	private DistancePlayground distancePlayground;
+	private MoveTo nextMove;
 
 	public Gamer(final int x, final int y, final int wallsLeft, final Direction direction) {
 		super(x, y);
 		this.wallsLeft = wallsLeft;
 		this.direction = direction;
+	}
+
+	public Gamer(final ScoredDirection<Object> move, final int wallsLeft, final Direction direction) {
+		this(move.x, move.y, wallsLeft, direction);
 	}
 
 	@Override
@@ -43,75 +50,56 @@ public class Gamer extends DiscretePoint implements GameElement, Comparable<Game
 
 	public Action compute(final Playfield tested) {
 		// First step, obtain for each gamer the distance
-		tested.getGamers().stream().forEach((g) -> g.computeDistanceToDestination(tested));
-		final List<Gamer> enemies = tested.getGamers().stream()
-				.filter((g)-> !g.equals(Gamer.this))
-				.collect(Collectors.toList());
+		List<Gamer> gamers = tested.getGamers();
+		gamers.stream().forEach((g) -> g.computeDistanceToDestination(tested));
+		gamers = anticipate(tested, gamers);
+		final List<Gamer> enemies = gamers.stream().filter((g) -> !g.equals(Gamer.this)).collect(Collectors.toList());
 		// Now compare distance of this gamer versus the best one
-		final Gamer firstEnemy = enemies.stream()
-			.sorted()
-			.findFirst()
-			.get();
-		final int difference = distance.getDistance()-firstEnemy.distance.getDistance();
-		// if ahead, rush
-		if(difference<0) {
-			return findBestMove().decorateWith("RUSH !");
-		} else if(wallsLeft>0) {
-			// otherwise, trap at any location
-			return trap(tested.getGamers(), tested).decorateWith(String.format("%d BEHIND.", difference));
-		} else {
-			return findBestMove().decorateWith("NO MORE WALLS LEFT !");
+		final Gamer firstEnemy = enemies.stream().sorted().findFirst().get();
+		return nextMove;
+	}
+
+	private List<Gamer> anticipate(final Playfield tested, final List<Gamer> gamers) {
+		final List<Gamer> returned = new ArrayList<>();
+		boolean stopAnticipate = false;
+		for (Gamer gamer : gamers) {
+			if (this == gamer) {
+				stopAnticipate = true;
+			} else {
+				if (!stopAnticipate) {
+					tested.set(gamer, NOTHING);
+					gamer = new Gamer(nextMove.direction.move(gamer), wallsLeft, direction);
+					tested.set(gamer, gamer);
+				}
+			}
+			returned.add(gamer);
 		}
+		return returned;
 	}
 
-	private Action trap(final List<Gamer> gamers, final Playfield tested) {
-		return tested.accept(new TrapGenerator(gamers, this));
+	private void computeDistanceToDestination(final Playfield tested) {
+		distancePlayground = new DistancePlaygroundBuilder(this).computeOn(tested);
+		// Now we have a playground, immediatly compute theoretical next move
+		final Map<Integer, List<DiscretePoint>> scores = Direction.DIRECTIONS.stream()
+				.filter(direction -> distancePlayground.contains(direction))
+				.collect(Collectors.groupingBy(direction -> distancePlayground.get(direction).getReverseDistance()));
+		final Integer distance = new TreeSet<>(scores.keySet()).first();
+		final DiscretePoint next = scores.get(distance).get(0);
+		nextMove = buildNextMoveTo(next);
 	}
 
-	private MoveTo findBestMove() {
-		return Direction.DIRECTIONS.stream()
-				.map((direction) ->
-					direction.move(inPlayfield))
-				.filter((direction) ->
-					distanceMap.contains(direction))
-				.sorted((first, second) ->
-						distanceMap.getOrCreate(first).compareTo(distanceMap.getOrCreate(second)))
-				.findFirst()
-				.map((point) ->
-						new MoveTo(point))
-				.get();
-	}
-
-	/**
-	 * Eager compute the distance map from gamer to the edge of the playfield it is aiming
-	 * @param playfield
-	 */
-	private void computeDistanceToDestination(final Playfield playfield) {
-		distanceMap =  new DistanceToDestinationComputer(this).computeOn(playfield);
-		if(inPlayfield==null) {
-			inPlayfield = playfield.toPlayfieldPositionForContent(x, y);
-		}
-		distance = distanceMap.get(inPlayfield);
-	}
-
-	@Override
-	public int compareTo(final Gamer o) {
-		return distance.compareTo(o.getDistance());
-	}
-
-	public DistanceInfo getDistance() {
-		return distance;
-	}
-
-	public DistanceInfoPlayground getDistanceMap() {
-		return distanceMap;
+	private MoveTo buildNextMoveTo(final DiscretePoint next) {
+		return new MoveTo(Direction.between(this, next));
 	}
 
 	public DiscretePoint toPlayfieldPosition() {
-		if(playfieldPostion==null) {
-			playfieldPostion = new DiscretePoint(2*x, 2*y);
+		if (playfieldPostion == null) {
+			playfieldPostion = new DiscretePoint(2 * x, 2 * y);
 		}
 		return playfieldPostion;
 	}
 
+	public int getDistance() {
+		return distancePlayground.getDistance(toPlayfieldPosition());
+	}
 }

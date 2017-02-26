@@ -218,4 +218,8 @@ public class Playfield extends Playground<GameElement> {
 	public String toString() {
 		return toDebugString();
 	}
+
+	public boolean isWall(final DiscretePoint point) {
+		return Wall.class.isInstance(get(point));
+	}
 }

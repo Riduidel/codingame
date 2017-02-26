@@ -49,4 +49,22 @@ public class Direction extends DiscretePoint {
 		return "Direction [x=" + x + ", y=" + y + ", name=" + name + "]";
 	}
 
+	public static Direction between(final DiscretePoint from, final DiscretePoint to) {
+		final int x = to.x - from.x;
+		final int y = to.y - from.y;
+		if(x==0) {
+			if(y<0) {
+				return UP;
+			} else if(y==0) {
+				return STAY;
+			} else {
+				return DOWN;
+			}
+		} else if(x<0) {
+			return LEFT;
+		} else {
+			return RIGHT;
+		}
+	}
+
 }
