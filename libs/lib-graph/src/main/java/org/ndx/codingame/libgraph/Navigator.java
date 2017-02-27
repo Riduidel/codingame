@@ -1,9 +1,6 @@
-package org.ndx.codingame.ghostinthecell.entities;
+package org.ndx.codingame.libgraph;
 
-import org.ndx.codingame.libgraph.Edge;
-import org.ndx.codingame.libgraph.Vertex;
-
-public enum EdgeToVertexNavigator {
+public enum Navigator {
 	SOURCE,
 	DESTINATION;
 

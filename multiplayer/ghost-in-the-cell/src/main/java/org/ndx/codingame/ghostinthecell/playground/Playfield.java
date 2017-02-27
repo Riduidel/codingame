@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.ComparatorChain;
 import org.ndx.codingame.gaming.ToUnitTest;
-import org.ndx.codingame.ghostinthecell.entities.EdgeToVertexNavigator;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
 import org.ndx.codingame.ghostinthecell.entities.Transport;
 import org.ndx.codingame.ghostinthecell.entities.Troop;
@@ -17,17 +16,19 @@ import org.ndx.codingame.libgraph.DirectedGraph;
 import org.ndx.codingame.libgraph.Edge;
 import org.ndx.codingame.libgraph.Graph;
 import org.ndx.codingame.libgraph.GraphVisitor;
+import org.ndx.codingame.libgraph.Navigator;
 import org.ndx.codingame.libgraph.Vertex;
 
 public class Playfield {
 	public static final Comparator<Edge> ENEMY_FACTORIES_COMPARATOR = new ComparatorChain<>(
-			Collections.reverseOrder(new Transport.ByCyborgOnEdge(EdgeToVertexNavigator.DESTINATION)),
-			Transport.BY_DISTANCE
+				new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG),
+				Transport.BY_DISTANCE
 			);
 	
 	public static final Comparator<Edge> FREE_FACTORIES_COMPARATOR = new ComparatorChain<>(
-			new Transport.ByCyborgOnEdge(EdgeToVertexNavigator.SOURCE),
-			Transport.BY_DISTANCE
+			new Edge.ByPropertyOnVertex(Navigator.SOURCE, Factory.BY_CYBORG),
+			Transport.BY_DISTANCE,
+			Collections.reverseOrder(new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_PRODUCTION))
 			);
 	
 	private static class ToDebugStringVisitor implements GraphVisitor<String> {
