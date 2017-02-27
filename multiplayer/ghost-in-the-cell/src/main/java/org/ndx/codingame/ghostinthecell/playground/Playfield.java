@@ -21,13 +21,15 @@ import org.ndx.codingame.libgraph.Vertex;
 
 public class Playfield {
 	public static final Comparator<Edge> ENEMY_FACTORIES_COMPARATOR = new ComparatorChain<>(
-				new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG),
-				Transport.BY_DISTANCE
+				new Edge.ByPropertyOnVertex(Navigator.SOURCE, Factory.BY_CYBORG),
+				Transport.BY_DISTANCE,
+				new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG)
 			);
 	
 	public static final Comparator<Edge> FREE_FACTORIES_COMPARATOR = new ComparatorChain<>(
 			new Edge.ByPropertyOnVertex(Navigator.SOURCE, Factory.BY_CYBORG),
 			Transport.BY_DISTANCE,
+			new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG),
 			Collections.reverseOrder(new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_PRODUCTION))
 			);
 	
@@ -132,6 +134,13 @@ public class Playfield {
 		return returned.toString();
 	}
 	
+	public int sortEdgesToEnemyFactories(final Edge first, final Edge second) {
+		return ENEMY_FACTORIES_COMPARATOR.compare(first, second);
+	}
+	public int sortEdgesToFreeFactories(final Edge first, final Edge second) {
+		return FREE_FACTORIES_COMPARATOR.compare(first, second);
+	}
+	
 	/** Just push troops to nearest non-owned factory */
 	public String compute() {
 		final List<Edge> myOutgoingEdges = graph.edges().stream()
@@ -151,13 +160,6 @@ public class Playfield {
 		} else {
 			return sendTroopsToFirstOf(interesting);
 		}
-	}
-	
-	public int sortEdgesToEnemyFactories(final Edge first, final Edge second) {
-		return ENEMY_FACTORIES_COMPARATOR.compare(first, second);
-	}
-	public int sortEdgesToFreeFactories(final Edge first, final Edge second) {
-		return FREE_FACTORIES_COMPARATOR.compare(first, second);
 	}
 
 	String sendTroopsToFirstOf(final List<Edge> interesting) {

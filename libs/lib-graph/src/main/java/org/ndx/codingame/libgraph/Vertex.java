@@ -4,7 +4,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Vertex extends Node<Vertex> {
-	private final Map<Integer, Edge> edges = new TreeMap<>();
+	private final Map<Integer, Edge> incoming = new TreeMap<>();
+	private final Map<Integer, Edge> outgoing = new TreeMap<>();
 
 	public final int id;
 
@@ -12,31 +13,44 @@ public class Vertex extends Node<Vertex> {
 		this.id = id;
 	}
 
-	public Edge getEdgeTo(final Vertex to) {
-		return edges.get(to.id);
+	public Edge getEdge(final Navigator navigator, final Vertex to) {
+		switch(navigator) {
+		case DESTINATION:
+			return outgoing.get(to.id);
+		case SOURCE:
+			return incoming.get(to.id);
+		}
+		return null;
 	}
 
-	public boolean hasEdgeTo(final Vertex to) {
-		return edges.containsKey(to.id);
+	public boolean hasEdge(final Navigator direction, final Vertex to) {
+		switch(direction) {
+		case DESTINATION:
+			return outgoing.containsKey(to.id);
+		case SOURCE:
+			return incoming.containsKey(to.id);
+		}
+		return false;
 	}
 
-	public Edge createEdgeTo(final Vertex to) {
-		final Edge returned = new Edge(this, to);
-		putEdge(to, returned);
-		return returned;
-	}
-
-	void putEdge(final Vertex to, final Edge returned) {
-		edges.put(to.id, returned);
+	public void putEdge(final Navigator direction, final Edge returned) {
+		switch(direction) {
+		case DESTINATION:
+			outgoing.put(returned.destination.id, returned);
+			break;
+		case SOURCE:
+			incoming.put(returned.source.id, returned);
+			break;
+		}
 	}
 
 	public Iterable<Edge> edges() {
-		return edges.values();
+		return outgoing.values();
 	}
 
 	public <Type> void accept(final Graph parent, final GraphVisitor<Type> visitor) {
 		if(visitor.startVisit(this)) {
-			for(final Map.Entry<Integer, Edge> entry : edges.entrySet()) {
+			for(final Map.Entry<Integer, Edge> entry : outgoing.entrySet()) {
 				visit(parent, parent.getOrCreateVertex(entry.getKey()), entry.getValue(), visitor);
 			}
 			visitor.endVisit(this);
@@ -55,7 +69,7 @@ public class Vertex extends Node<Vertex> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (edges == null ? 0 : edges.hashCode());
+		result = prime * result + (outgoing == null ? 0 : outgoing.hashCode());
 		result = prime * result + id;
 		return result;
 	}

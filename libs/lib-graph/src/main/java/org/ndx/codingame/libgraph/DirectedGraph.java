@@ -41,15 +41,17 @@ public class DirectedGraph implements Graph {
 		}
 	}
 	protected Edge createEdgeBetween(final Vertex from, final Vertex to) {
-		final Edge returned = from.createEdgeTo(to);
+		final Edge returned = new Edge(from, to);
+		from.putEdge(Navigator.DESTINATION, returned);
+		to.putEdge(Navigator.SOURCE, returned);
 		edges.add(returned);
 		return returned;
 	}
 	private boolean hasEdgeBetween(final Vertex from, final Vertex to) {
-		return from.hasEdgeTo(to);
+		return from.hasEdge(Navigator.DESTINATION, to);
 	}
 	private Edge getEdgeBetween(final Vertex from, final Vertex to) {
-		return from.getEdgeTo(to);
+		return from.getEdge(Navigator.DESTINATION, to);
 	}
 	@Override
 	public Collection<Vertex> vertices() {
