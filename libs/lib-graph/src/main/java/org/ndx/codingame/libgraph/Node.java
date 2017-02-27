@@ -1,5 +1,6 @@
 package org.ndx.codingame.libgraph;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,5 +32,9 @@ public abstract class Node<NodeType extends Node<?>> {
 	@Override
 	public String toString() {
 		return String.format("Node [properties=%s]", properties);
+	}
+
+	public Map<GraphProperty<?>, ?> getProperties() {
+		return Collections.unmodifiableMap(properties);
 	}
 }

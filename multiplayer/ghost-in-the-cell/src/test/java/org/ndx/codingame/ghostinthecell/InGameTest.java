@@ -91,6 +91,7 @@ public class InGameTest {
 		tested.connect(8, 5, 11);
 		tested.connect(8, 6, 1);
 		tested.connect(8, 7, 13);
+		GraphHelper.showGraph(tested);
 		assertThat(tested.compute()).isNotEqualTo("WAIT");
 	}
 }

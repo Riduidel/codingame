@@ -87,7 +87,7 @@ public class Playfield {
 		}
 	}
 
-	private final Graph graph = new DirectedGraph();
+	public final Graph graph = new DirectedGraph();
 
 	public void connect(final int factory1, final int factory2, final int distance) {
         graph.getOrCreateEdgeBetween(factory1, factory2)
