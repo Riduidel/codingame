@@ -1,5 +1,6 @@
 package org.ndx.codingame.libgraph;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -13,6 +14,16 @@ public class Vertex extends Node<Vertex> {
 		this.id = id;
 	}
 
+
+	public Collection<Edge> getEdges(final Navigator navigator) {
+		switch(navigator) {
+		case DESTINATION:
+			return outgoing.values();
+		case SOURCE:
+			return incoming.values();
+		}
+		return null;
+	}
 	public Edge getEdge(final Navigator navigator, final Vertex to) {
 		switch(navigator) {
 		case DESTINATION:
@@ -96,5 +107,4 @@ public class Vertex extends Node<Vertex> {
 	public String toString() {
 		return String.format("Vertex [id=%s, properties=%s]", id, super.toString());
 	}
-
 }

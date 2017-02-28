@@ -70,4 +70,19 @@ public class DirectedGraph implements Graph {
 		}
 		return visitor.endVisit(this);
 	}
+	
+	@Override
+	public Graph clone() {
+		final Graph returned = new DirectedGraph();
+		for(final Vertex sourceVertex : vertices()) {
+			final Vertex createdVertex = returned.getOrCreateVertex(sourceVertex.id);
+			createdVertex.importProperties(sourceVertex);
+		}
+		for(final Edge sourceEdge : edges()) {
+			final Edge createdEdge = returned.getOrCreateEdgeBetween(sourceEdge.source.id, sourceEdge.destination.id);
+			createdEdge.importProperties(sourceEdge);
+		}
+		return returned;
+		
+	}
 }

@@ -26,5 +26,4 @@ public class Edge extends Node<Edge> {
 		source = vertex;
 		destination = to;
 	}
-
 }

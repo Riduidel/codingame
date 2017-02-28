@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Node<NodeType extends Node<?>> {
 	
@@ -18,7 +19,7 @@ public abstract class Node<NodeType extends Node<?>> {
 		}
 	}
 
-	private final Map<GraphProperty, Object> properties = new HashMap<>();
+	private final Map<GraphProperty<?>, Object> properties = new HashMap<>();
 
 	public <Type> NodeType setProperty(final GraphProperty<Type> key, final Type value) {
 		properties.put(key, value);
@@ -36,5 +37,11 @@ public abstract class Node<NodeType extends Node<?>> {
 
 	public Map<GraphProperty<?>, ?> getProperties() {
 		return Collections.unmodifiableMap(properties);
+	}
+
+	public void importProperties(final Node source) {
+		for(final GraphProperty p : (Set<GraphProperty>) source.properties.keySet()) {
+			properties.put(p, p.copy(source.properties.get(p)));
+		}
 	}
 }

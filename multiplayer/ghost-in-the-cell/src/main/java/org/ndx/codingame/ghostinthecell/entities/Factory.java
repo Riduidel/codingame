@@ -14,4 +14,11 @@ public class Factory extends Element {
 	
 	public static final Comparator<Vertex> BY_CYBORG = new Node.ByProperty<>(CYBORGS);
 	public static final Comparator<Vertex> BY_PRODUCTION = new Node.ByProperty<>(PRODUCTION);
+
+	public static final GraphProperty<Integer> HORIZON = new GraphProperty<>("horizon");
+	public static final Comparator<Vertex> BY_HORIZON = new Node.ByProperty<>(HORIZON);
+
+	public static final GraphProperty<Integer> LIFETIME= new GraphProperty<>("lifetime");
+	public static final Comparator<Vertex> BY_LIFETIME = new Node.ByProperty<>(LIFETIME);
+	public static final int MAX_PRODUCTION = 3;
 }

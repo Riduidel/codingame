@@ -12,4 +12,8 @@ public class GraphProperty<Type> {
 	public String toString() {
 		return String.format("[GraphProperty=%s]", name);
 	}
+
+	public Type copy(final Type source) {
+		return source;
+	}
 }

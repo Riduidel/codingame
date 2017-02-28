@@ -1,14 +1,20 @@
 package org.ndx.codingame.ghostinthecell.playground;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.ComparatorChain;
 import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.ghostinthecell.actions.MoveTo;
+import org.ndx.codingame.ghostinthecell.actions.Upgrade;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
 import org.ndx.codingame.ghostinthecell.entities.Transport;
 import org.ndx.codingame.ghostinthecell.entities.Troop;
@@ -20,19 +26,12 @@ import org.ndx.codingame.libgraph.Navigator;
 import org.ndx.codingame.libgraph.Vertex;
 
 public class Playfield {
-	public static final Comparator<Edge> ENEMY_FACTORIES_COMPARATOR = new ComparatorChain<>(
-				new Edge.ByPropertyOnVertex(Navigator.SOURCE, Factory.BY_CYBORG),
-				Transport.BY_DISTANCE,
-				new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG)
+	private static final int UPGRADE_TRESHOLD = 10;
+
+	private static Comparator<Edge> FULL_ATTACK_SCORE = new ComparatorChain<>(
+			Collections.reverseOrder(Transport.BY_INCREASING_ATTACK_SCORE),
+			Collections.reverseOrder(new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG))
 			);
-	
-	public static final Comparator<Edge> FREE_FACTORIES_COMPARATOR = new ComparatorChain<>(
-			new Edge.ByPropertyOnVertex(Navigator.SOURCE, Factory.BY_CYBORG),
-			Transport.BY_DISTANCE,
-			new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_CYBORG),
-			Collections.reverseOrder(new Edge.ByPropertyOnVertex(Navigator.DESTINATION, Factory.BY_PRODUCTION))
-			);
-	
 	private static class ToDebugStringVisitor implements GraphVisitor<String> {
 		private final StringBuilder returned = new StringBuilder();
 
@@ -44,6 +43,8 @@ public class Playfield {
 		@Override
 		public String endVisit(final DirectedGraph directedGraph) {
 			returned.append("\n");
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("final String computed = tested.compute();\n");
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("assertThat(computed).isNotNull();\n");
 			return returned.toString();
 		}
 
@@ -74,7 +75,7 @@ public class Playfield {
 					.append(value.destination.id).append(", ")
 					.append(t.owner).append(", ")
 					.append(t.count).append(", ")
-					.append(t.distance).append(", ")
+					.append(t.distance)
 					.append(");\n");
 				
 			}
@@ -87,7 +88,15 @@ public class Playfield {
 		}
 	}
 
+	private static final int HORIZON = 20;
+
 	public final Graph graph = new DirectedGraph();
+	
+	private final List<Graph> derivations = new ArrayList<>();
+	
+	public Playfield() {
+		clearDerivations();
+	}
 
 	public void connect(final int factory1, final int factory2, final int distance) {
         graph.getOrCreateEdgeBetween(factory1, factory2)
@@ -117,9 +126,9 @@ public class Playfield {
 		}
 	}
 
-	public void setTroop(final int from, final int to, final int owner, final int size, final int distance) {
+	public void setTroop(final int from, final int to, final int owner, final int count, final int distance) {
     	final Edge link = graph.getOrCreateEdgeBetween(from, to);
-    	final Troop t = new Troop(owner, size, distance);
+    	final Troop t = new Troop(owner, count, distance);
     	link.getProperty(Transport.TROOPS).add(t);
 	}
 
@@ -134,46 +143,148 @@ public class Playfield {
 		return returned.toString();
 	}
 	
-	public int sortEdgesToEnemyFactories(final Edge first, final Edge second) {
-		return ENEMY_FACTORIES_COMPARATOR.compare(first, second);
-	}
-	public int sortEdgesToFreeFactories(final Edge first, final Edge second) {
-		return FREE_FACTORIES_COMPARATOR.compare(first, second);
-	}
-	
 	/** Just push troops to nearest non-owned factory */
 	public String compute() {
-		final List<Edge> myOutgoingEdges = graph.edges().stream()
-				.filter((edge) -> edge.source.getProperty(Factory.OWNER)==1)
-				.filter((edge) -> edge.source.getProperty(Factory.CYBORGS)>1)
-				.collect(Collectors.toList());
-		final List<Edge> interesting = myOutgoingEdges.stream()
-			.filter((edge) -> edge.destination.getProperty(Factory.OWNER)==0)
-			.sorted(this::sortEdgesToFreeFactories)
-			.collect(Collectors.toList());
-		if(interesting.isEmpty()) {
-			final List<Edge> enemies = myOutgoingEdges.stream()
-					.filter((edge) -> edge.destination.getProperty(Factory.OWNER)<0)
-					.sorted(this::sortEdgesToEnemyFactories)
-					.collect(Collectors.toList());
-			return sendTroopsToFirstOf(enemies);
+		final List<Vertex> myFactories = findMyFactories();
+		final Collection<Action> toPerform = performAllActionsOn(myFactories);
+		if(toPerform.isEmpty()) {
+			return "WAIT";
 		} else {
-			return sendTroopsToFirstOf(interesting);
+			return toPerform.stream()
+					.map((action) -> action.toCommandString())
+					.collect(Collectors.joining(";"));
 		}
 	}
 
-	String sendTroopsToFirstOf(final List<Edge> interesting) {
-		for(final Edge candidate : interesting) {
-			final Collection<Troop> troops = candidate.getProperty(Transport.TROOPS);
-			final List<Troop> myTroops = troops.stream()
-					.filter((troop) -> troop.owner==1)
-					.collect(Collectors.toList())
-					;
-			if(myTroops.isEmpty()) {
-				final int toMove = candidate.source.getProperty(Factory.CYBORGS)/2;
-				return String.format("MOVE %d %d %d", candidate.source.id, candidate.destination.id, toMove);
+	private Collection<Action> performAllActionsOn(final List<Vertex> myFactories) {
+		final Collection<Action> returned = new ArrayList<>();
+		for(final Vertex factory : myFactories) {
+			returned.addAll(performActionsOn(factory));
+		}
+		return returned;
+	}
+
+	private Collection<Action> performActionsOn(final Vertex factory) {
+		final Collection<Edge> outgoing = factory.getEdges(Navigator.DESTINATION).stream()
+				.filter(this::shouldBeAttacked)
+				.sorted(FULL_ATTACK_SCORE)
+				.collect(Collectors.toList());
+		int cyborgs = factory.getProperty(Factory.CYBORGS);
+		final Iterator<Edge> edgesIterator = outgoing.iterator();
+		final Collection<Action> returned = new LinkedList<>();
+		boolean attackAtLeastOnce = false;
+		while(edgesIterator.hasNext() && cyborgs>1) {
+			final Edge edge = edgesIterator.next();
+			final Integer distance = edge.getProperty(Transport.DISTANCE);
+			final Vertex futureDestination = getVertexAt(distance, edge.destination);
+			final Integer enemies = futureDestination.getProperty(Factory.CYBORGS);
+			if(cyborgs>enemies) {
+				// only attack unproducing nodes with at least 11 cyborgs
+				final Integer production = futureDestination.getProperty(Factory.PRODUCTION);
+				int attackers = Math.min(enemies+1, cyborgs-1);
+				if(production<1) {
+					if(cyborgs<UPGRADE_TRESHOLD+enemies+1) {
+						break;
+					} else {
+						attackers = UPGRADE_TRESHOLD+enemies+1;
+					}
+				}
+				final MoveTo move = createMoveOn(edge, attackers);
+				returned.add(move);
+				cyborgs-=move.count;
+				attackAtLeastOnce = true;
 			}
 		}
-		return "WAIT";
+		if(!attackAtLeastOnce) {
+			if(cyborgs>UPGRADE_TRESHOLD+1) {
+				final Integer production = factory.getProperty(Factory.PRODUCTION);
+				if(production<Factory.MAX_PRODUCTION) {
+					returned.add(upgrade(factory));
+				}
+			}
+		}
+		return returned;
+	}
+
+	private boolean shouldBeAttacked(final Edge edge) {
+		final Integer distance = edge.getProperty(Transport.DISTANCE);
+		final Vertex futureDestination = getVertexAt(distance, edge.destination);
+		return futureDestination.getProperty(Factory.OWNER)<=0;
+	}
+
+	private Vertex getVertexAt(final Integer distance, final Vertex destination) {
+		return derive(distance).getOrCreateVertex(destination.id);
+	}
+
+	private MoveTo createMoveOn(final Edge edge, final int number) {
+		final MoveTo returned = new MoveTo(edge.source.id, edge.destination.id, number);
+		setTroop(returned.source, returned.destination, 1, returned.count, edge.getProperty(Transport.DISTANCE));
+		clearDerivations();
+		return returned;
+	}
+
+	private Upgrade upgrade(final Vertex factory) {
+		final Upgrade returned = new Upgrade(factory.id);
+		factory.setProperty(Factory.PRODUCTION, factory.getProperty(Factory.PRODUCTION)+1);
+		return returned;
+	}
+
+	private void clearDerivations() {
+		derivations.clear();
+		derivations.add(graph);
+	}
+
+	private List<Vertex> findMyFactories() {
+		return graph.vertices().stream()
+				.filter((vertex) -> vertex.getProperty(Factory.OWNER)==1)
+				// Immediatly check danger level on each factory
+				.map(this::computeFactoryInfos)
+				.sorted(Factory.BY_LIFETIME)
+				.collect(Collectors.toList());
+	}
+
+	private List<Vertex> findEnemyFactories() {
+		return graph.vertices().stream()
+				.filter((vertex) -> vertex.getProperty(Factory.OWNER)<=0)
+				// Immediatly check danger level on each factory
+				.map(this::computeFactoryInfos)
+				.sorted(Factory.BY_LIFETIME)
+				.collect(Collectors.toList());
+	}
+	
+	private Vertex computeFactoryInfos(final Vertex factory) {
+		// First, compute horizon
+		final int horizon = factory.getEdges(Navigator.SOURCE).stream()
+			.filter((edge) -> edge.source.getProperty(Factory.OWNER)<0)
+			.mapToInt((edge) -> edge.getProperty(Transport.DISTANCE))
+			.min()
+			.orElse(HORIZON);
+		// Then, compute horizon
+		factory.setProperty(Factory.HORIZON, horizon);
+		boolean lost = false;
+		// And factory lifetime
+		for (int index = 0; index <= horizon; index++) {
+			final Graph iteration = derive(index);
+			final Vertex futureFactory = iteration.getOrCreateVertex(factory.id);
+			if(futureFactory.getProperty(Factory.OWNER)<0) {
+				factory.setProperty(Factory.LIFETIME, index-1);
+				lost = true;
+				break;
+			}
+		}
+		if(!lost) {
+			factory.setProperty(Factory.LIFETIME, horizon);
+		}
+		return factory;
+	}
+
+	public Graph derive(final int iteration) {
+		if(derivations.size()<=iteration) {
+			for (int i = derivations.size()-1; i <= iteration; i++) {
+				final GraphDeriver deriver = new GraphDeriver(derivations.get(i));
+				derivations.add(deriver.derive());
+			}
+		}
+		return derivations.get(iteration);
 	}
 }

@@ -15,4 +15,6 @@ public interface Graph {
 
 	Edge getOrCreateEdgeBetween(int factory1, int factory2);
 
+	public Graph clone();
+
 }
