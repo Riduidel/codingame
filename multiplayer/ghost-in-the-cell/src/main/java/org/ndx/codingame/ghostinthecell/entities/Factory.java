@@ -21,4 +21,5 @@ public class Factory extends Element {
 	public static final GraphProperty<Integer> LIFETIME= new GraphProperty<>("lifetime");
 	public static final Comparator<Vertex> BY_LIFETIME = new Node.ByProperty<>(LIFETIME);
 	public static final int MAX_PRODUCTION = 3;
+	public static final GraphProperty<Boolean> SURVIVOR = new GraphProperty<>("SURVIVOR");
 }

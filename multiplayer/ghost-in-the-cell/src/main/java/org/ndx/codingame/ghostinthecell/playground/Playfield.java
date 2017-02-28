@@ -37,14 +37,13 @@ public class Playfield {
 
 		@Override
 		public void startVisit(final DirectedGraph directedGraph) {
-			returned.append(ToUnitTest.CONTENT_PREFIX+"Playfield tested = new Playfield();\n");
+			returned.append(ToUnitTest.CONTENT_PREFIX+"Playfield p = new Playfield();\n");
 		}
 
 		@Override
 		public String endVisit(final DirectedGraph directedGraph) {
 			returned.append("\n");
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("final String computed = tested.compute();\n");
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("assertThat(computed).isNotNull();\n");
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("assertThat(p.compute()).isNotNull();\n");
 			return returned.toString();
 		}
 
@@ -55,6 +54,14 @@ public class Playfield {
 				.append(vertex.getProperty(Factory.OWNER)).append(", ")
 				.append(vertex.getProperty(Factory.CYBORGS)).append(", ")
 				.append(vertex.getProperty(Factory.PRODUCTION)).append(");\n");
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.f(").append(vertex.id).append(")");
+
+			for(final Edge edge : vertex.getEdges(Navigator.DESTINATION)) {
+				returned
+					.append(".t(").append(edge.destination.id).append(")")
+					.append(".d(").append(edge.getProperty(Transport.DISTANCE)).append(")");
+			}
+			returned.append('\n');
 			return true;
 		}
 
@@ -65,16 +72,12 @@ public class Playfield {
 
 		@Override
 		public boolean startVisit(final Edge value) {
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.connect(")
-				.append(value.source.id).append(", ")
-				.append(value.destination.id).append(", ")
-				.append(value.getProperty(Transport.DISTANCE)).append(");\n");
 			for(final Troop t : value.getProperty(Transport.TROOPS)) {
-				returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.setTroop(")
-					.append(value.source.id).append(", ")
-					.append(value.destination.id).append(", ")
-					.append(t.owner).append(", ")
-					.append(t.count).append(", ")
+				returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.t(")
+					.append(value.source.id).append(",")
+					.append(value.destination.id).append(",")
+					.append(t.owner).append(",")
+					.append(t.count).append(",")
 					.append(t.distance)
 					.append(");\n");
 				
@@ -87,6 +90,31 @@ public class Playfield {
 			return returned.toString();
 		}
 	}
+	
+	public class VertexEdgeListBuilder {
+		public class VertexEdgeBuilder {
+			private final int toId;
+
+			public VertexEdgeBuilder(final int vertexId) {
+				toId = vertexId;
+			}
+			
+			public VertexEdgeListBuilder d(final int distance) {
+				connect(fromId, toId, distance);
+				return VertexEdgeListBuilder.this;
+			}
+		}
+
+		private final int fromId;
+
+		public VertexEdgeListBuilder(final int vertexId) {
+			fromId = vertexId;
+		}
+		
+		public VertexEdgeBuilder t(final int vertexId) {
+			return new VertexEdgeBuilder(vertexId);
+		}
+	}
 
 	private static final int HORIZON = 20;
 
@@ -96,6 +124,10 @@ public class Playfield {
 	
 	public Playfield() {
 		clearDerivations();
+	}
+	
+	public VertexEdgeListBuilder f(final int vertexId) {
+		return new VertexEdgeListBuilder(vertexId);
 	}
 
 	public void connect(final int factory1, final int factory2, final int distance) {
@@ -126,6 +158,9 @@ public class Playfield {
 		}
 	}
 
+	public void t(final int from, final int to, final int owner, final int count, final int distance) {
+		setTroop(from, to, owner, count, distance);
+	}
 	public void setTroop(final int from, final int to, final int owner, final int count, final int distance) {
     	final Edge link = graph.getOrCreateEdgeBetween(from, to);
     	final Troop t = new Troop(owner, count, distance);
@@ -275,6 +310,7 @@ public class Playfield {
 		if(!lost) {
 			factory.setProperty(Factory.LIFETIME, horizon);
 		}
+		factory.setProperty(Factory.SURVIVOR, !lost);
 		return factory;
 	}
 
