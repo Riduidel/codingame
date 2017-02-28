@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.ndx.codingame.gaming.ComparatorChain;
 import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.ghostinthecell.actions.Bomb;
 import org.ndx.codingame.ghostinthecell.actions.MoveTo;
 import org.ndx.codingame.ghostinthecell.actions.Upgrade;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
@@ -121,8 +122,11 @@ public class Playfield {
 	public final Graph graph = new DirectedGraph();
 	
 	private final List<Graph> derivations = new ArrayList<>();
+
+	private int bombs;
 	
 	public Playfield() {
+		bombs = 2;
 		clearDerivations();
 	}
 	
@@ -182,6 +186,9 @@ public class Playfield {
 	public String compute() {
 		final List<Vertex> myFactories = findMyFactories();
 		final Collection<Action> toPerform = performAllActionsOn(myFactories);
+		if(bombs>0) {
+			toPerform.addAll(dropBombs());
+		}
 		if(toPerform.isEmpty()) {
 			return "WAIT";
 		} else {
@@ -189,6 +196,26 @@ public class Playfield {
 					.map((action) -> action.toCommandString())
 					.collect(Collectors.joining(";"));
 		}
+	}
+
+	private Collection<? extends Action> dropBombs() {
+		final List<Vertex> enemies = findEnemyFactories();
+		final Collection<Action> returned = new ArrayList<>();
+		final Vertex enemy = enemies.get(0);
+		returned.add(dropBombOn(enemy));
+		final Action bomb = enemy.getEdges(Navigator.DESTINATION).stream()
+			.sorted(new ComparatorChain<>(Transport.BY_DISTANCE))
+			.findFirst()
+			.map((edge) -> dropBombOn(edge.destination))
+			.get();
+		returned.add(bomb);
+		bombs = 0;
+		return returned;
+	}
+
+	private Action dropBombOn(final Vertex enemy) {
+		final Vertex gunner = findMyFactories().stream().findFirst().get();
+		return new Bomb(gunner.id, enemy.id);
 	}
 
 	private Collection<Action> performAllActionsOn(final List<Vertex> myFactories) {
@@ -244,7 +271,7 @@ public class Playfield {
 	private boolean shouldBeAttacked(final Edge edge) {
 		final Integer distance = edge.getProperty(Transport.DISTANCE);
 		final Vertex futureDestination = getVertexAt(distance, edge.destination);
-		return futureDestination.getProperty(Factory.OWNER)<=0;
+		return futureDestination.getProperty(Factory.OWNER)<=0 && futureDestination.getProperty(Factory.PRODUCTION)>0;
 	}
 
 	private Vertex getVertexAt(final Integer distance, final Vertex destination) {
@@ -278,6 +305,15 @@ public class Playfield {
 				.collect(Collectors.toList());
 	}
 
+	private List<Vertex> findOtherFactories() {
+		return graph.vertices().stream()
+				.filter((vertex) -> vertex.getProperty(Factory.OWNER)<=0)
+				// Immediatly check danger level on each factory
+				.map(this::computeFactoryInfos)
+				.sorted(Factory.BY_LIFETIME)
+				.collect(Collectors.toList());
+	}
+	
 	private List<Vertex> findEnemyFactories() {
 		return graph.vertices().stream()
 				.filter((vertex) -> vertex.getProperty(Factory.OWNER)<=0)
