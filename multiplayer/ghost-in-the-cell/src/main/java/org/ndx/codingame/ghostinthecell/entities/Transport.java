@@ -35,9 +35,9 @@ public class Transport extends Element {
 		}
 
 		private Integer score(final Edge edge) {
-			final Integer production = edge.destination.getProperty(Factory.PRODUCTION);
-			final Integer distance = edge.getProperty(Transport.DISTANCE);
-			return production*production/distance;
+			final float production = edge.destination.getProperty(Factory.PRODUCTION);
+			final float distance = edge.getProperty(Transport.DISTANCE);
+			return (int) (production*production/distance);
 		}
 		
 	};

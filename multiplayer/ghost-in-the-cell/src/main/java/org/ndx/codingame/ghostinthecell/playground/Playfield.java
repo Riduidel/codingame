@@ -50,19 +50,19 @@ public class Playfield {
 
 		@Override
 		public boolean startVisit(final Vertex vertex) {
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.setFactoryInfos(")
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("p.setFactoryInfos(")
 				.append(vertex.id).append(", ")
 				.append(vertex.getProperty(Factory.OWNER)).append(", ")
 				.append(vertex.getProperty(Factory.CYBORGS)).append(", ")
 				.append(vertex.getProperty(Factory.PRODUCTION)).append(");\n");
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.f(").append(vertex.id).append(")");
+			returned.append(ToUnitTest.CONTENT_PREFIX).append("p.f(").append(vertex.id).append(")");
 
 			for(final Edge edge : vertex.getEdges(Navigator.DESTINATION)) {
 				returned
 					.append(".t(").append(edge.destination.id).append(")")
 					.append(".d(").append(edge.getProperty(Transport.DISTANCE)).append(")");
 			}
-			returned.append('\n');
+			returned.append(";\n");
 			return true;
 		}
 
@@ -74,7 +74,7 @@ public class Playfield {
 		@Override
 		public boolean startVisit(final Edge value) {
 			for(final Troop t : value.getProperty(Transport.TROOPS)) {
-				returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.t(")
+				returned.append(ToUnitTest.CONTENT_PREFIX).append("p.t(")
 					.append(value.source.id).append(",")
 					.append(value.destination.id).append(",")
 					.append(t.owner).append(",")
@@ -126,7 +126,11 @@ public class Playfield {
 	private int bombs;
 	
 	public Playfield() {
-		bombs = 2;
+		this(2);
+	}
+	
+	public Playfield(final int bombs) {
+		this.bombs = bombs;
 		clearDerivations();
 	}
 	
@@ -241,16 +245,7 @@ public class Playfield {
 			final Vertex futureDestination = getVertexAt(distance, edge.destination);
 			final Integer enemies = futureDestination.getProperty(Factory.CYBORGS);
 			if(cyborgs>enemies) {
-				// only attack unproducing nodes with at least 11 cyborgs
-				final Integer production = futureDestination.getProperty(Factory.PRODUCTION);
-				int attackers = Math.min(enemies+1, cyborgs-1);
-				if(production<1) {
-					if(cyborgs<UPGRADE_TRESHOLD+enemies+1) {
-						break;
-					} else {
-						attackers = UPGRADE_TRESHOLD+enemies+1;
-					}
-				}
+				final int attackers = Math.min(enemies+1, cyborgs-1);
 				final MoveTo move = createMoveOn(edge, attackers);
 				returned.add(move);
 				cyborgs-=move.count;
