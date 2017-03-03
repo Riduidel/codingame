@@ -37,10 +37,21 @@ public class PlayfieldBuilder extends Playfield {
 			return PlayfieldBuilder.this.t(from, to, owner, count, distance);
 		}
 		
+		public PlayfieldBuilder e(final int i) {
+			return PlayfieldBuilder.this.e(i);
+		}
+		public PlayfieldBuilder b(final int to, final int from, final int distance) {
+			return PlayfieldBuilder.this.b(from, to, distance);
+		}
 	}
 
 	public PlayfieldBuilder i(final int factoryId, final int owner, final int cyborgs, final int production) {
 		setFactoryInfos(factoryId, owner, cyborgs, production);
+		return this;
+	}
+
+	public PlayfieldBuilder b(final int from, final int to, final int distance) {
+		setMyBomb(from, to, distance);
 		return this;
 	}
 
@@ -50,6 +61,16 @@ public class PlayfieldBuilder extends Playfield {
 
 	public PlayfieldBuilder t(final int from, final int to, final int owner, final int count, final int distance) {
 		setTroop(from, to, owner, count, distance);
+		return this;
+	}
+	
+	public PlayfieldBuilder e(final int i) {
+		setEnemyBomb(i);
+		return this;
+	}
+
+	public PlayfieldBuilder at(final int i) {
+		setTurn(i);
 		return this;
 	}
 }

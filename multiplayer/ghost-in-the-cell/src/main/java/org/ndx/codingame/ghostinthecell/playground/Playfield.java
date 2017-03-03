@@ -2,8 +2,9 @@ package org.ndx.codingame.ghostinthecell.playground;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.ghostinthecell.actions.Action;
@@ -33,6 +34,7 @@ public class Playfield {
 
 		@Override
 		public String endVisit(final Graph directedGraph) {
+			enemyBombs.stream().forEach((e)->returned.append(".e(").append(e).append(")"));
 			returned.append(";\n");
 			returned.append(ToUnitTest.CONTENT_PREFIX).append("assertThat(p.compute()).isNotNull();\n");
 			return returned.toString();
@@ -59,22 +61,32 @@ public class Playfield {
 
 		@Override
 		public void visit(final Edge value) {
-			for(final Troop t : value.getProperty(Transport.PROPERTY).troops) {
+			final Transport transport = Transport.of(value);
+			for(final Troop t : transport.troops) {
 				returned.append(ToUnitTest.CONTENT_PREFIX).append(".t(")
 					.append(value.source.id).append(",")
 					.append(value.destination.id).append(",")
 					.append(t.owner).append(",")
 					.append(t.getCount()).append(",")
 					.append(t.distance)
-					.append(")\n");
-				
+					.append(")");
+				returned.append("\n");
+			}
+			if(transport.hasBomb()) {
+				returned.append(ToUnitTest.CONTENT_PREFIX).append(".b(")
+					.append(value.source.id).append(", ")
+					.append(value.destination.id).append(", ")
+					.append(transport.getBomb().distance).append(")");
+				returned.append("\n");
 			}
 		}
 	}
 
 	public final Graph graph = new DirectedGraph();
 	
-	private final Bombs bombs;
+	final Bombs bombs;
+	
+	final SortedSet<Integer> enemyBombs = new TreeSet<>();
 
 	private int turn;
 	
@@ -99,6 +111,7 @@ public class Playfield {
 	}
 	
 	public void cleanup() {
+		enemyBombs.clear();
 		for(final Vertex v : graph.vertices()) {
 			v.getProperty(Factory.PROPERTY).cleanup();
 			for(final Edge edge : v.getEdges(Navigator.DESTINATION)) {
@@ -127,11 +140,11 @@ public class Playfield {
 	/** Just push troops to nearest non-owned factory */
 	public String compute() {
 		final Collection<Action> toPerform = new ArrayList<>();
-		// TODO sort by difference of mean distance to my/enemy factories
+		final MoveComputer computer = new StandardMoveComputer(this);
 		toPerform.addAll(graph.vertices().stream()
 			.filter((v)->Factory.of(v).owner>0)
 			.sorted(Factory.BY_DECREASING_DISTANCE_DIFFERENCE)
-			.flatMap(this::computeMovesOf)
+			.flatMap(computer::computeMovesOf)
 			.collect(Collectors.toList()));
 		if(toPerform.isEmpty()) {
 			return "WAIT";
@@ -142,11 +155,6 @@ public class Playfield {
 		}
 	}
 	
-	public Stream<Action> computeMovesOf(final Vertex vertex) {
-		final Factory my = Factory.of(vertex);
-		return my.computeMoves(bombs, vertex);
-	}
-
 	public void setTurn(final int i) {
 		turn = i;
 	}
@@ -158,7 +166,6 @@ public class Playfield {
 	}
 
 	public void setEnemyBomb(final int timer) {
-		// TODO Auto-generated method stub
-		
+		enemyBombs.add(timer);
 	}
 }

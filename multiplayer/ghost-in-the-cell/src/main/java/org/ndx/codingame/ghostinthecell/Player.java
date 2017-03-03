@@ -43,8 +43,6 @@ public class Player {
                 case "BOMB":
                 	if(owner>0) {
 						playground.setMyBomb(arg2, arg3, arg4);
-					} else {
-						playground.setEnemyBomb(arg2);
 					}
                 	break;
                 }

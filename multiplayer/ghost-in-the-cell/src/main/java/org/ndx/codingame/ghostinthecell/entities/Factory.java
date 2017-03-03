@@ -5,11 +5,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.ndx.codingame.ghostinthecell.Constants;
 import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.DropBomb;
+import org.ndx.codingame.ghostinthecell.actions.Upgrade;
 import org.ndx.codingame.libgraph.Edge;
 import org.ndx.codingame.libgraph.GraphProperty;
 import org.ndx.codingame.libgraph.Navigator;
@@ -51,7 +51,7 @@ public class Factory extends Attack {
 		this.production = production;
 	}
 
-	protected Double getTeamCentrality(final Vertex o2) {
+	public Double getTeamCentrality(final Vertex o2) {
 		if(teamCentrality==null) {
 			teamCentrality = computeTeamCentrality(o2);
 		}
@@ -135,53 +135,16 @@ public class Factory extends Attack {
 	public Collection<Edge> attackInPriority(final Vertex vertex) {
 		return vertex.getEdges(Navigator.DESTINATION).stream()
 			.filter((edge) -> Factory.of(edge.destination).production>0)
-			.sorted(Transport.ATTACK_IN_PRIORITY)
+//			.sorted(Transport.ATTACK_IN_PRIORITY)
+			.sorted(Comparator.comparing(Transport::getDistanceOfTransport))
 			.collect(Collectors.toList());
 	}
 
-	public Stream<Action> computeMoves(final Bombs bombs, final Vertex vertex) {
-		final Collection<Action> actions = new ArrayList<>();
-		final int remaining = getCount();
-		for(final Edge e : attackInPriority(vertex)) {
-			final Vertex targetVertex = e.destination;
-			final Transport transport = Transport.of(e);
-			final Factory targetFactory = Factory.of(targetVertex);
-			final List<Factory> future = targetFactory.getFuture(targetVertex);
-			final Factory realTarget = future.get(transport.distance);
-			final int count = realTarget.getCount();
-			if(realTarget.isMine()) {
-				if(remaining>count) {
-					int reinforcment = 0;
-					if(getTeamCentrality(targetVertex)<getTeamCentrality(vertex)) {
-						reinforcment = remaining-count;
-					} else {
-						reinforcment =  (remaining-count)/2;
-					}
-					actions.add(transport.fireMoveOf(e,reinforcment));
-				}
-			} else {
-				boolean hasBombed = false;
-				// Now ATTACK !
-				if(bombs.getCount()>0) {
-					if(!transport.hasBomb()) {
-						if(bombs.canBomb()) {
-							if(count>10 && realTarget.isEnemy()) {
-								hasBombed = actions.add(dropBomb(e, bombs));
-							}
-						}
-					}
-				}
-				if(!hasBombed) {
-					if(remaining>count+1) {
-						actions.add(transport.fireMoveOf(e, count+1));
-					}
-				}
-			}
-		}
-		return actions.stream();
+	public Action upgrade(final Vertex vertex) {
+		return new Upgrade(vertex.id);
 	}
 
-	private Action dropBomb(final Edge e, final Bombs bombs) {
+	public Action dropBomb(final Edge e, final Bombs bombs) {
 		bombs.dropOne();
 		return new DropBomb(e.source.id, e.destination.id);
 	}
