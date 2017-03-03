@@ -26,4 +26,8 @@ public class Edge extends Node<Edge> {
 		source = vertex;
 		destination = to;
 	}
+	
+	public void accept(final GraphVisitor visitor) {
+		visitor.visit(this);
+	}
 }

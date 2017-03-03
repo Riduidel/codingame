@@ -63,15 +63,6 @@ public class DirectedGraph implements Graph {
 	}
 	
 	@Override
-	public <Type> Type accept(final GraphVisitor<Type> visitor) {
-		visitor.startVisit(this);
-		for(final Vertex v : vertices()) {
-			v.accept(this, visitor);
-		}
-		return visitor.endVisit(this);
-	}
-	
-	@Override
 	public Graph clone() {
 		final Graph returned = new DirectedGraph();
 		for(final Vertex sourceVertex : vertices()) {
@@ -84,5 +75,13 @@ public class DirectedGraph implements Graph {
 		}
 		return returned;
 		
+	}
+	@Override
+	public <Type> Type accept(final GraphVisitor<Type> visitor) {
+		if(visitor.startVisit(this)) {
+			vertices().stream().forEach(v -> visitor.visit(v));
+			edges().stream().forEach(e -> visitor.visit(e));
+		}
+		return visitor.endVisit(this);
 	}
 }

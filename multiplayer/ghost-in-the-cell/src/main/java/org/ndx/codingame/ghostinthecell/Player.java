@@ -9,6 +9,7 @@ import org.ndx.codingame.ghostinthecell.playground.Playfield;
  **/
 public class Player {
     public static void main(final String args[]) {
+    	int turn = 0;
         final Scanner in = new Scanner(System.in);
         final Playfield playground = new Playfield();
         final int factoryCount = in.nextInt(); // the number of factories
@@ -22,21 +23,29 @@ public class Player {
 
         // game loop
         while (true) {
+			playground.setTurn(turn ++);
             final int entityCount = in.nextInt(); // the number of entities (e.g. factories and troops)
             for (int i = 0; i < entityCount; i++) {
                 final int entityId = in.nextInt();
                 final String entityType = in.next();
-                final int arg1 = in.nextInt();
+                final int owner = in.nextInt();
                 final int arg2 = in.nextInt();
                 final int arg3 = in.nextInt();
                 final int arg4 = in.nextInt();
                 final int arg5 = in.nextInt();
                 switch(entityType) {
                 case "FACTORY":
-                	playground.setFactoryInfos(entityId, arg1, arg2, arg3);
+                	playground.setFactoryInfos(entityId, owner, arg2, arg3);
                 	break;
                 case "TROOP":
-                	playground.setTroop(arg2, arg3, arg1, arg4, arg5);
+                	playground.setTroop(arg2, arg3, owner, arg4, arg5);
+                	break;
+                case "BOMB":
+                	if(owner>0) {
+						playground.setMyBomb(arg2, arg3, arg4);
+					} else {
+						playground.setEnemyBomb(arg2);
+					}
                 	break;
                 }
             }

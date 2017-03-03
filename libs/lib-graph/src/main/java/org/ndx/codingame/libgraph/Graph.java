@@ -3,8 +3,6 @@ package org.ndx.codingame.libgraph;
 import java.util.Collection;
 
 public interface Graph {
-	public <Type> Type accept(GraphVisitor<Type> visitor);
-	
 	Collection<Vertex> vertices();
 	
 	Collection<Edge> edges();
@@ -17,4 +15,5 @@ public interface Graph {
 
 	public Graph clone();
 
+	public <Type> Type accept(GraphVisitor<Type> visitor);
 }

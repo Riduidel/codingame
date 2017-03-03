@@ -1,8 +1,11 @@
 package org.ndx.codingame.libgraph;
 
-public interface GraphVisitor<Type> extends VertexVisitor<Type>, EdgeVisitor<Type> {
+public interface GraphVisitor<Type> {
+	public boolean startVisit(Graph graph);
 
-	void startVisit(DirectedGraph directedGraph);
+	void visit(Edge edge);
 
-	Type endVisit(DirectedGraph directedGraph);
+	void visit(Vertex vertex);
+
+	public Type endVisit(Graph graph);
 }

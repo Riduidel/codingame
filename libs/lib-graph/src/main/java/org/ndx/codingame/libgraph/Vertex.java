@@ -55,27 +55,6 @@ public class Vertex extends Node<Vertex> {
 		}
 	}
 
-	public Iterable<Edge> edges() {
-		return outgoing.values();
-	}
-
-	public <Type> void accept(final Graph parent, final GraphVisitor<Type> visitor) {
-		if(visitor.startVisit(this)) {
-			for(final Map.Entry<Integer, Edge> entry : outgoing.entrySet()) {
-				visit(parent, parent.getOrCreateVertex(entry.getKey()), entry.getValue(), visitor);
-			}
-			visitor.endVisit(this);
-		}
-		
-	}
-
-	private <Type> void visit(final Graph parent, final Vertex destination, final Edge value, final GraphVisitor<Type> visitor) {
-		if(visitor.startVisit(value)) {
-			destination.accept(parent, visitor);
-			visitor.endVisit(value);
-		}
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -106,5 +85,9 @@ public class Vertex extends Node<Vertex> {
 	@Override
 	public String toString() {
 		return String.format("Vertex [id=%s, properties=%s]", id, super.toString());
+	}
+	
+	public void accept(final GraphVisitor visitor) {
+		visitor.visit(this);
 	}
 }
