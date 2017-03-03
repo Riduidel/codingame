@@ -75,7 +75,7 @@ public class Factory extends Attack {
 		}
 		final double myMeanFactoryDistance = myFactoriesTotalDistance/myFactoriesCount;
 		final double otherMeanFactoryDistance = otherFactoriesTotalDistance/otherFactoriesCount;
-		return myMeanFactoryDistance/otherMeanFactoryDistance;
+		return myMeanFactoryDistance-otherMeanFactoryDistance;
 	}
 
 	public void cleanup() {
@@ -111,14 +111,19 @@ public class Factory extends Attack {
 		while(horizon>0) {
 			final List<Transport> next = new ArrayList<>();
 			Attack resolved = new Attack(0, 0);
+			boolean bombed = false;
 			for(final Transport t : incoming) {
 				final TransportDeposit transported = t.advanceOneTurn(factory);
 				next.add(transported.remaining);
 				resolved = resolved.resolve(transported);
+				bombed |= transported.bombing;
 			}
 			// Do not forget to add production if possible
 			if(future.owner!=0) {
 				future.setCount(future.getCount()+future.production);
+			}
+			if(bombed) {
+				future.setCount(future.getCount()-Math.max(10, future.getCount()/2));
 			}
 			future = future.resolve(resolved, future.RESOLVER);
 			returned.add(future);
@@ -130,13 +135,12 @@ public class Factory extends Attack {
 	public Collection<Edge> attackInPriority(final Vertex vertex) {
 		return vertex.getEdges(Navigator.DESTINATION).stream()
 			.filter((edge) -> Factory.of(edge.destination).production>0)
-			.sorted(Comparator.comparingInt(Transport::getDistanceOfTransport))
+			.sorted(Transport.ATTACK_IN_PRIORITY)
 			.collect(Collectors.toList());
 	}
 
 	public Stream<Action> computeMoves(final Bombs bombs, final Vertex vertex) {
 		final Collection<Action> actions = new ArrayList<>();
-		// TODO add support of attacked vertices
 		final int remaining = getCount();
 		for(final Edge e : attackInPriority(vertex)) {
 			final Vertex targetVertex = e.destination;
@@ -147,7 +151,13 @@ public class Factory extends Attack {
 			final int count = realTarget.getCount();
 			if(realTarget.isMine()) {
 				if(remaining>count) {
-					actions.add(transport.fireMoveOf(e, (remaining-count)/2));
+					int reinforcment = 0;
+					if(getTeamCentrality(targetVertex)<getTeamCentrality(vertex)) {
+						reinforcment = remaining-count;
+					} else {
+						reinforcment =  (remaining-count)/2;
+					}
+					actions.add(transport.fireMoveOf(e,reinforcment));
 				}
 			} else {
 				boolean hasBombed = false;

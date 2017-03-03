@@ -64,11 +64,24 @@ public class Transport {
 			final Troop next = t.advanceOneTurn();
 			if(next.distance==0) {
 				resolved = resolved.resolve(next);
+				if(t.isEnemy()) {
+					// Consider the enemy always repeat its attacks
+					transported.add(new Troop(t.owner, t.getCount(), distance));
+				}
 			} else {
 				transported.add(next);
 			}
 		}
-		return new TransportDeposit(resolved.owner, resolved.getCount(), new Transport(distance, transported));
+		final Transport future = new Transport(distance, transported);
+		boolean bombing = false;
+		if(hasBomb()) {
+			if(bomb.distance==0) {
+				bombing = true;
+			} else {
+				future.setBomb(new Bomb(bomb.distance-1));
+			}
+		}
+		return new TransportDeposit(resolved.owner, resolved.getCount(), bombing, future);
 	}
 
 	public MoveTo fireMoveOf(final Edge edge, final int i) {
