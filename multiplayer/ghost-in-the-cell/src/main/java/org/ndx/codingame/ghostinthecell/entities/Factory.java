@@ -10,6 +10,7 @@ import org.ndx.codingame.ghostinthecell.Constants;
 import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.DropBomb;
 import org.ndx.codingame.ghostinthecell.actions.Upgrade;
+import org.ndx.codingame.ghostinthecell.playground.Playfield;
 import org.ndx.codingame.libgraph.Edge;
 import org.ndx.codingame.libgraph.GraphProperty;
 import org.ndx.codingame.libgraph.Navigator;
@@ -36,7 +37,7 @@ public class Factory extends Attack {
 
 		@Override
 		public Factory resolvedAttack(final int owner, final int count) {
-			return new Factory(owner, count, production);
+			return new Factory(owner, count, production, previous);
 		}
 		
 	};
@@ -46,9 +47,18 @@ public class Factory extends Attack {
 
 	private Double teamCentrality;
 
-	public Factory(final int owner, final int cyborgs, final int production) {
+	private final Factory previous;
+
+	private int bombedAt = -1;
+
+	private int order;
+
+	private int maxProduction;
+
+	public Factory(final int owner, final int cyborgs, final int production, final Factory factory) {
 		super(owner, cyborgs);
 		this.production = production;
+		previous = factory;
 	}
 
 	public Double getTeamCentrality(final Vertex o2) {
@@ -141,6 +151,7 @@ public class Factory extends Attack {
 	}
 
 	public Action upgrade(final Vertex vertex) {
+		setCount(getCount()-10);
 		return new Upgrade(vertex.id);
 	}
 
@@ -149,4 +160,36 @@ public class Factory extends Attack {
 		return new DropBomb(e.source.id, e.destination.id);
 	}
 
+	public Vertex computeState(final Playfield playfield, final Vertex v) {
+		if(previous!=null) {
+			if(previous.production>production) {
+				bombedAt = playfield.getTurn();
+				maxProduction = previous.maxProduction;
+			} else {
+				maxProduction = production;
+			}
+		}
+		return v;
+	}
+
+	public void setOrder(final int i) {
+		order = i;
+	}
+
+	public int getOrder() {
+		return order;
+	}
+
+	public int getMaxProduction() {
+		return maxProduction;
+	}
+
+	public Vertex getNearest(final Vertex targetVertex, final Vertex vertex, final Factory my) {
+		return targetVertex.getEdges(Navigator.SOURCE).stream()
+			.filter((e) -> Factory.of(e.source).isMine())
+			.sorted(Comparator.comparing(Transport::getDistanceOfTransport))
+			.findFirst()
+			.map((e) -> e.source)
+			.get();
+	}
 }

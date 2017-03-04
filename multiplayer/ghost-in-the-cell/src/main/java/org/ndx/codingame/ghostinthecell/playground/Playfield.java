@@ -1,6 +1,5 @@
 package org.ndx.codingame.ghostinthecell.playground;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -8,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.ToUnitTest;
 import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.ghostinthecell.actions.Message;
 import org.ndx.codingame.ghostinthecell.entities.Bomb;
 import org.ndx.codingame.ghostinthecell.entities.Bombs;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
@@ -89,6 +89,14 @@ public class Playfield {
 	final SortedSet<Integer> enemyBombs = new TreeSet<>();
 
 	private int turn;
+
+	private int enemyCyborgs;
+
+	private int myCyborgs;
+
+	private int enemyProduction;
+
+	private int myProduction;
 	
 	public Playfield() {
 		this(new Bombs(2));
@@ -107,10 +115,19 @@ public class Playfield {
 
 	public void setFactoryInfos(final int factoryId, final int owner, final int cyborgs, final int production) {
     	graph.getOrCreateVertex(factoryId)
-    		.setProperty(Factory.PROPERTY, new Factory(owner, cyborgs, production));
+    		.setProperty(Factory.PROPERTY, new Factory(owner, cyborgs, production, Factory.of(graph.getOrCreateVertex(factoryId))));
+    	if(owner>0) {
+			setMyCyborgs(getMyCyborgs() + cyborgs);
+			myProduction += production;
+		} else if(owner<0) {
+			enemyCyborgs+=cyborgs;
+			enemyProduction += production;
+		}
 	}
 	
 	public void cleanup() {
+		setMyCyborgs(enemyCyborgs = 0);
+		myProduction = enemyProduction = 0;
 		enemyBombs.clear();
 		for(final Vertex v : graph.vertices()) {
 			v.getProperty(Factory.PROPERTY).cleanup();
@@ -139,13 +156,9 @@ public class Playfield {
 	
 	/** Just push troops to nearest non-owned factory */
 	public String compute() {
-		final Collection<Action> toPerform = new ArrayList<>();
 		final MoveComputer computer = new StandardMoveComputer(this);
-		toPerform.addAll(graph.vertices().stream()
-			.filter((v)->Factory.of(v).owner>0)
-			.sorted(Factory.BY_DECREASING_DISTANCE_DIFFERENCE)
-			.flatMap(computer::computeMovesOf)
-			.collect(Collectors.toList()));
+		final Collection<Action> toPerform = computer.compute();
+		toPerform.add(new Message(myProduction, enemyProduction));
 		if(toPerform.isEmpty()) {
 			return "WAIT";
 		} else {
@@ -167,5 +180,17 @@ public class Playfield {
 
 	public void setEnemyBomb(final int timer) {
 		enemyBombs.add(timer);
+	}
+
+	public int getTurn() {
+		return turn;
+	}
+
+	public int getMyCyborgs() {
+		return myCyborgs;
+	}
+
+	public void setMyCyborgs(final int myCyborgs) {
+		this.myCyborgs = myCyborgs;
 	}
 }
