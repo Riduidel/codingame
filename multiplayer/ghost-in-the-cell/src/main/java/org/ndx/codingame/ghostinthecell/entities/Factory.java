@@ -115,7 +115,7 @@ public class Factory extends Attack {
 	}
 
 	/** Derive next factory from current one and various incoming troops */
-	private static List<Factory> populateFuture(final List<Factory> returned, final Factory factory, final List<Transport> incoming, int horizon) {
+	private static List<Factory> populateFuture(final List<Factory> returned, final Factory factory, List<Transport> incoming, int horizon) {
 		returned.add(factory);
 		Factory future = factory;
 		while(horizon>0) {
@@ -133,11 +133,12 @@ public class Factory extends Attack {
 				future.setCount(future.getCount()+future.production);
 			}
 			if(bombed) {
-				future.setCount(future.getCount()-Math.max(10, future.getCount()/2));
+				future.setCount(Math.max(0,  future.getCount()-Math.max(10, future.getCount()/2)));
 			}
 			future = future.resolve(resolved, future.RESOLVER);
 			returned.add(future);
 			horizon--;
+			incoming = next;
 		}
 		return returned;
 	}
@@ -191,5 +192,18 @@ public class Factory extends Attack {
 			.findFirst()
 			.map((e) -> e.source)
 			.get();
+	}
+
+	public int getDefenders() {
+		if(owner==0) {
+			return getCount();
+		} else {
+			return getCount()+production;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s[production=%s]", super.toString(), production);
 	}
 }

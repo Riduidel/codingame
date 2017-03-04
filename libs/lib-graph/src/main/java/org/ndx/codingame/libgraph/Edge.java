@@ -30,4 +30,9 @@ public class Edge extends Node<Edge> {
 	public void accept(final GraphVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s[source=%s, destination=%s]", super.toString(), source, destination);
+	}
 }

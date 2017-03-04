@@ -2,9 +2,7 @@ package org.ndx.codingame.ghostinthecell.playground;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.ndx.codingame.ghostinthecell.Constants;
@@ -16,17 +14,16 @@ import org.ndx.codingame.libgraph.Edge;
 import org.ndx.codingame.libgraph.Navigator;
 import org.ndx.codingame.libgraph.Vertex;
 
-public class StandardMoveComputer implements MoveComputer {
+public class StandardMoveComputer extends AbstractMoveComputer implements MoveComputer {
 	public static int getDestinationOrder(final Edge e) {
 		return Factory.of(e.destination).getOrder();
 	}
 
-	private final Playfield playfield;
-
 	public StandardMoveComputer(final Playfield playfield) {
-		this.playfield = playfield;
+		super(playfield);
 	}
 
+	@Override
 	public Stream<Action> computeMovesOf(final Vertex vertex) {
 		final Factory my = Factory.of(vertex);
 		final Bombs bombs = playfield.bombs;
@@ -71,13 +68,14 @@ public class StandardMoveComputer implements MoveComputer {
 				if(!hasBombed) {
 					final int remaining = my.getCount();
 					if(survive(my, vertex)) {
-						if(remaining>count+1 || playfield.getMyCyborgs()>count) {
+						final int defenders = realTarget.getDefenders()+1;
+						if(remaining>defenders || playfield.getMyCyborgs()>count) {
 							final Vertex nearestVertex = targetFactory.getNearest(targetVertex, vertex, my);
 							if(nearestVertex.equals(vertex)) {
-								actions.add(transport.fireMoveOf(e, Math.min(remaining, count+1)));
+								actions.add(transport.fireMoveOf(e, Math.min(remaining, defenders)));
 							} else {
 								transport = Transport.of(nearestVertex.getEdge(Navigator.SOURCE, vertex));
-								actions.add(transport.fireMoveOf(e, Math.min(remaining, count+1)));
+								actions.add(transport.fireMoveOf(e, Math.min(remaining, defenders)));
 							}
 						} else if(Transport.of(e).hasBomb()) {
 							actions.add(transport.fireMoveOf(e, remaining/2));
@@ -89,17 +87,6 @@ public class StandardMoveComputer implements MoveComputer {
 			}
 		}
 		return actions;
-	}
-	private boolean survive(final Factory my, final Vertex vertex) {
-		final List<Factory> future = my.getFuture(vertex);
-		return future.get(future.size()-1).isMine();
-	}
-
-	private List<Edge> sortByGlobalOrder(final Collection<Edge> edges) {
-		return edges.stream()
-				.filter((e)->Factory.of(e.destination).production>0)
-				.sorted(Comparator.comparing(StandardMoveComputer::getDestinationOrder))
-				.collect(Collectors.toList());
 	}
 
 	private Collection<Action> moveTroopToAlly(final Factory my, final Edge e,
@@ -116,21 +103,5 @@ public class StandardMoveComputer implements MoveComputer {
 			actions.add(transport.fireMoveOf(e,reinforcment));
 		}
 		return actions;
-	}
-	@Override
-	public Collection<Action> compute() {
-		final List<Vertex> orderedVertices = playfield.graph.vertices().stream()
-				.sorted(Factory.BY_DECREASING_DISTANCE_DIFFERENCE)
-				.map((v)->Factory.of(v).computeState(playfield, v))
-				.collect(Collectors.toList());
-		// Now  evaluate them in order
-		int index = 0;
-		for(final Vertex v : orderedVertices) {
-			Factory.of(v).setOrder(index++);
-		}
-		return orderedVertices.stream()
-				.filter((v) -> Factory.of(v).isMine())
-				.flatMap(this::computeMovesOf)
-				.collect(Collectors.toList());
 	}
 }

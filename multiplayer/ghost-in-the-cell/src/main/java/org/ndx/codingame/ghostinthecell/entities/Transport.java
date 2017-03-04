@@ -88,8 +88,7 @@ public class Transport {
 		final MoveTo returned = new MoveTo(edge.source.id, edge.destination.id, i);
 		final Factory source = Factory.of(edge.source);
 		source.setCount(source.getCount()-i);
-		
-		Factory.of(edge.source).cleanup();
+		source.cleanup();
 		Factory.of(edge.destination).cleanup();
 		// Finally create troops
 		add(new Troop(source.owner, i, distance));

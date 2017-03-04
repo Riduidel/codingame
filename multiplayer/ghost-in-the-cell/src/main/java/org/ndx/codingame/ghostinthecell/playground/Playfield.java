@@ -157,6 +157,7 @@ public class Playfield {
 	/** Just push troops to nearest non-owned factory */
 	public String compute() {
 		final MoveComputer computer = new StandardMoveComputer(this);
+//		final MoveComputer computer = new KnapSackMoveComputer(this);
 		final Collection<Action> toPerform = computer.compute();
 		toPerform.add(new Message(myProduction, enemyProduction));
 		if(toPerform.isEmpty()) {

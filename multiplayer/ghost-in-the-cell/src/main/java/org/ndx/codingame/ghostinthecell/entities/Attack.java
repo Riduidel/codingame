@@ -47,4 +47,8 @@ public class Attack {
 	public void setCount(final int count) {
 		this.count = count;
 	}
+	@Override
+	public String toString() {
+		return String.format("%s [owner=%s, count=%s]", getClass().getSimpleName(), owner, count);
+	}
 }

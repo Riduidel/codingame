@@ -32,7 +32,7 @@ public abstract class Node<NodeType extends Node<?>> {
 
 	@Override
 	public String toString() {
-		return String.format("Node [properties=%s]", properties);
+		return String.format("%s [properties=%s]", getClass().getName(), properties);
 	}
 
 	public Map<GraphProperty<?>, ?> getProperties() {
