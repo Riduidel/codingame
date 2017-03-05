@@ -86,7 +86,7 @@ public class Factory extends Attack {
 		final double myMeanFactoryDistance = myFactoriesCount==0 ? 0 : myFactoriesTotalDistance/myFactoriesCount;
 		final double otherMeanFactoryDistance = otherFactoriesCount==0 ? 0 : otherFactoriesTotalDistance/otherFactoriesCount;
 		// Must be far from enemy factories, but near my factories
-		return myMeanFactoryDistance-otherMeanFactoryDistance;
+		return myMeanFactoryDistance;//-otherMeanFactoryDistance;
 	}
 
 	public void cleanup() {
@@ -197,9 +197,9 @@ public class Factory extends Attack {
 
 	public int getDefenders() {
 		if(owner==0) {
-			return getCount();
+			return getCount()+1;
 		} else {
-			return getCount()+production;
+			return getCount()+production+1;
 		}
 	}
 

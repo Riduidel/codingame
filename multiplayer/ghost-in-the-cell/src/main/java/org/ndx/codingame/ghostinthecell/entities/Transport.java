@@ -84,15 +84,23 @@ public class Transport {
 		return new TransportDeposit(resolved.owner, resolved.getCount(), bombing, future);
 	}
 
-	public MoveTo fireMoveOf(final Edge edge, final int i) {
-		final MoveTo returned = new MoveTo(edge.source.id, edge.destination.id, i);
+	public MoveTo fireMoveOf(final Edge edge, final int count) {
+		final MoveTo returned = createMoveTo(edge, count);
+		accountMoveOn(edge, count);
+		return returned;
+	}
+
+	public void accountMoveOn(final Edge edge, final int count) {
 		final Factory source = Factory.of(edge.source);
-		source.setCount(source.getCount()-i);
+		source.setCount(source.getCount()-count);
 		source.cleanup();
 		Factory.of(edge.destination).cleanup();
 		// Finally create troops
-		add(new Troop(source.owner, i, distance));
-		return returned;
+		add(new Troop(source.owner, count, distance));
+	}
+
+	public MoveTo createMoveTo(final Edge edge, final int count) {
+		return new MoveTo(edge.source.id, edge.destination.id, count);
 	}
 
 	public int getDistance() {

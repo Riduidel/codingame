@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.ndx.codingame.ghostinthecell.Constants;
 import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.entities.Bombs;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
@@ -29,15 +28,7 @@ public class StandardMoveComputer extends AbstractMoveComputer implements MoveCo
 		final Bombs bombs = playfield.bombs;
 		final Collection<Action> actions = new ArrayList<>();
 		actions.addAll(buildActionsFromEdges(vertex, my, bombs));
-		if(my.getCount()>Constants.UPGRADE_TRESHOLD) {
-			if(my.production<=Constants.MAX_PRODUCTION) {
-				if(my.production==my.getMaxProduction()) {
-//					if(my.getFuture(vertex).get(Constants.HORIZON).isMine()) {
-					actions.add(my.upgrade(vertex));
-//					}
-				}
-			}
-		}
+		actions.addAll(upgrade(vertex, my));
 		return actions.stream();
 	}
 
@@ -55,20 +46,12 @@ public class StandardMoveComputer extends AbstractMoveComputer implements MoveCo
 			} else {
 				boolean hasBombed = false;
 				// Now ATTACK !
-				if(bombs.getCount()>0) {
-					if(!transport.hasBomb()) {
-						if(bombs.canBomb()) {
-							if(count>10 && realTarget.isEnemy()) {
-								hasBombed = actions.add(my.dropBomb(e, bombs));
-							}
-						}
-					}
-				}
+				hasBombed = dropBomb(my, bombs, actions, e, transport, realTarget);
 				// do not bomb and move at the same time ! it's dangerous !
 				if(!hasBombed) {
 					final int remaining = my.getCount();
 					if(survive(my, vertex)) {
-						final int defenders = realTarget.getDefenders()+1;
+						final int defenders = realTarget.getDefenders();
 						if(remaining>defenders || playfield.getMyCyborgs()>count) {
 							final Vertex nearestVertex = targetFactory.getNearest(targetVertex, vertex, my);
 							if(nearestVertex.equals(vertex)) {
