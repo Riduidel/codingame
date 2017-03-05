@@ -47,7 +47,7 @@ public class Playfield {
 				.append(vertex.id).append(", ")
 				.append(f.owner).append(", ")
 				.append(f.getCount()).append(", ")
-				.append(f.production).append(")\n");
+				.append(f.getProduction()).append(")\n");
 			returned.append(ToUnitTest.CONTENT_PREFIX).append(".f(").append(vertex.id).append(")");
 
 			for(final Edge edge : vertex.getEdges(Navigator.DESTINATION)) {

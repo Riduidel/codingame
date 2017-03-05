@@ -10,7 +10,6 @@ import org.ndx.codingame.ghostinthecell.Constants;
 import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.DropBomb;
 import org.ndx.codingame.ghostinthecell.actions.Upgrade;
-import org.ndx.codingame.ghostinthecell.playground.Playfield;
 import org.ndx.codingame.libgraph.Edge;
 import org.ndx.codingame.libgraph.GraphProperty;
 import org.ndx.codingame.libgraph.Navigator;
@@ -37,19 +36,20 @@ public class Factory extends Attack {
 
 		@Override
 		public Factory resolvedAttack(final int owner, final int count) {
-			return new Factory(owner, count, production, previous);
+			final Factory returned = new Factory(owner, count, production, previous);
+			returned.previous = Factory.this;
+			returned.computeState();
+			return returned;
 		}
 		
 	};
 	
-	public final int production;
+	private int production;
 	private List<Factory> future;
 
 	private Double teamCentrality;
 
-	private final Factory previous;
-
-	private int bombedAt = -1;
+	private Factory previous;
 
 	private int order;
 
@@ -133,15 +133,40 @@ public class Factory extends Attack {
 			if(future.owner!=0) {
 				future.setCount(future.getCount()+future.production);
 			}
+			future = future.resolve(resolved, future.RESOLVER);
+			if(future.isBombOver()) {
+				future.production = future.getMaxProduction();
+			}
 			if(bombed) {
 				future.setCount(Math.max(0,  future.getCount()-Math.max(10, future.getCount()/2)));
+				future.production = 0;
 			}
-			future = future.resolve(resolved, future.RESOLVER);
 			returned.add(future);
 			horizon--;
 			incoming = next;
 		}
 		return returned;
+	}
+
+	private boolean isBombOver() {
+		int duration = 0;
+		Factory current= this;
+		if(current.production>0) {
+			return false;
+		}
+		while(current!=null) {
+			if(current.production>0) {
+				if(duration<5) {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				duration++;
+				current = current.previous;
+			}
+		}
+		return false;
 	}
 
 	public Collection<Edge> attackInPriority(final Vertex vertex) {
@@ -162,16 +187,16 @@ public class Factory extends Attack {
 		return new DropBomb(e.source.id, e.destination.id);
 	}
 
-	public Vertex computeState(final Playfield playfield, final Vertex v) {
-		if(previous!=null) {
-			if(previous.production>production) {
-				bombedAt = playfield.getTurn();
+	public void computeState() {
+		if(previous==null) {
+			maxProduction = production;
+		} else {
+			if(previous.maxProduction>production) {
 				maxProduction = previous.maxProduction;
 			} else {
 				maxProduction = production;
 			}
 		}
-		return v;
 	}
 
 	public void setOrder(final int i) {
@@ -206,5 +231,13 @@ public class Factory extends Attack {
 	@Override
 	public String toString() {
 		return String.format("%s[production=%s]", super.toString(), production);
+	}
+
+	public int getProduction() {
+		return production;
+	}
+
+	public void setProduction(final int production) {
+		this.production = production;
 	}
 }

@@ -21,7 +21,7 @@ public class Transport {
 		private Double score(final Edge edge) {
 			final Transport transport = Transport.of(edge);
 			final Factory destination = Factory.of(edge.destination);
-			return (double)destination.production/transport.distance;
+			return (double)destination.getProduction()/transport.distance;
 		}
 		
 	};

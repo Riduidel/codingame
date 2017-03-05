@@ -26,7 +26,11 @@ public abstract class AbstractMoveComputer implements MoveComputer {
 	@Override
 	public Collection<Action> compute() {
 		final List<Vertex> orderedVertices = playfield.graph.vertices().stream()
-				.sorted(Factory.BY_DECREASING_DISTANCE_DIFFERENCE).map((v) -> Factory.of(v).computeState(playfield, v))
+				.sorted(Factory.BY_DECREASING_DISTANCE_DIFFERENCE)
+				.map((v) -> {
+					Factory.of(v).computeState();
+					return v;
+				})
 				.collect(Collectors.toList());
 		// Now evaluate them in order
 		int index = 0;
@@ -45,15 +49,15 @@ public abstract class AbstractMoveComputer implements MoveComputer {
 	}
 
 	public List<Edge> sortByGlobalOrder(final Collection<Edge> edges) {
-		return edges.stream().filter((e) -> Factory.of(e.destination).production > 0)
+		return edges.stream().filter((e) -> Factory.of(e.destination).getProduction() > 0)
 				.sorted(Comparator.comparing(StandardMoveComputer::getDestinationOrder)).collect(Collectors.toList());
 	}
 
 	protected Collection<Action> upgrade(final Vertex vertex, final Factory my) {
 		final Collection<Action> actions = new ArrayList<>();
 		if (my.getCount() > Constants.UPGRADE_TRESHOLD) {
-			if (my.production <= Constants.MAX_PRODUCTION) {
-				if (my.production == my.getMaxProduction()) {
+			if (my.getProduction() <= Constants.MAX_PRODUCTION) {
+				if (my.getProduction() == my.getMaxProduction()) {
 					// if(my.getFuture(vertex).get(Constants.HORIZON).isMine())
 					// {
 					actions.add(my.upgrade(vertex));
@@ -66,13 +70,11 @@ public abstract class AbstractMoveComputer implements MoveComputer {
 
 	protected boolean dropBomb(final Factory my, final Bombs bombs, final Collection<Action> actions, final Edge e,
 			final Transport transport, final Factory realTarget) {
-		if (bombs.getCount() > 0) {
+		if (bombs.canBomb()) {
 			if (!transport.hasBomb()) {
-				if (bombs.canBomb()) {
-					if (realTarget.getCount() > 10 && realTarget.isEnemy()) {
-						actions.add(my.dropBomb(e, bombs));
-						return true;
-					}
+				if (realTarget.getCount() > 10 && realTarget.isEnemy() && realTarget.getProduction()>0) {
+					actions.add(my.dropBomb(e, bombs));
+					return true;
 				}
 			}
 		}
