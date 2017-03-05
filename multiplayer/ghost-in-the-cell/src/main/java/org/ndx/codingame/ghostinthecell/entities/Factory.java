@@ -83,8 +83,9 @@ public class Factory extends Attack {
 				otherFactoriesTotalDistance+= transport.distance;
 			}
 		}
-		final double myMeanFactoryDistance = myFactoriesTotalDistance/myFactoriesCount;
-		final double otherMeanFactoryDistance = otherFactoriesTotalDistance/otherFactoriesCount;
+		final double myMeanFactoryDistance = myFactoriesCount==0 ? 0 : myFactoriesTotalDistance/myFactoriesCount;
+		final double otherMeanFactoryDistance = otherFactoriesCount==0 ? 0 : otherFactoriesTotalDistance/otherFactoriesCount;
+		// Must be far from enemy factories, but near my factories
 		return myMeanFactoryDistance-otherMeanFactoryDistance;
 	}
 

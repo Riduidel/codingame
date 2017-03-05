@@ -16,14 +16,18 @@ public class PlayfieldBuilder extends Playfield {
 				connect(from, to, distance);
 				return PlayfieldEdgeListBuilder.this;
 			}
-			
+
+
+			public Playfield build() {
+				return PlayfieldEdgeListBuilder.this.build();
+			}
 		}
 
 		private final int from;
 
 		public PlayfieldEdgeListBuilder(final int from) {
 			this.from = from;
-	}
+		}
 
 		public PlayfieldEdgeBuilder t(final int to) {
 			return new PlayfieldEdgeBuilder(to);
@@ -36,17 +40,26 @@ public class PlayfieldBuilder extends Playfield {
 		public PlayfieldBuilder t(final int from, final int to, final int owner, final int count, final int distance) {
 			return PlayfieldBuilder.this.t(from, to, owner, count, distance);
 		}
-		
+
 		public PlayfieldBuilder e(final int i) {
 			return PlayfieldBuilder.this.e(i);
 		}
+
 		public PlayfieldBuilder b(final int to, final int from, final int distance) {
 			return PlayfieldBuilder.this.b(from, to, distance);
+		}
+
+		public Playfield build() {
+			return PlayfieldBuilder.this.build();
 		}
 	}
 
 	public PlayfieldBuilder i(final int factoryId, final int owner, final int cyborgs, final int production) {
 		setFactoryInfos(factoryId, owner, cyborgs, production);
+		return this;
+	}
+
+	public Playfield build() {
 		return this;
 	}
 
@@ -63,7 +76,7 @@ public class PlayfieldBuilder extends Playfield {
 		setTroop(from, to, owner, count, distance);
 		return this;
 	}
-	
+
 	public PlayfieldBuilder e(final int i) {
 		setEnemyBomb(i);
 		return this;
