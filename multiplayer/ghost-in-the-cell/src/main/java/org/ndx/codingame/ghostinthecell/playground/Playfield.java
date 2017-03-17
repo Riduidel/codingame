@@ -5,7 +5,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.Message;
 import org.ndx.codingame.ghostinthecell.entities.Bomb;
@@ -26,7 +26,7 @@ public class Playfield {
 
 		@Override
 		public boolean startVisit(final Graph directedGraph) {
-			returned.append(ToUnitTest.CONTENT_PREFIX+"Playfield p = new PlayfieldBuilder()")
+			returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Playfield p = new PlayfieldBuilder()")
 				.append(".at(").append(turn).append(")")
 				.append("\n");
 			return true;
@@ -36,19 +36,19 @@ public class Playfield {
 		public String endVisit(final Graph directedGraph) {
 			enemyBombs.stream().forEach((e)->returned.append(".e(").append(e).append(")"));
 			returned.append(";\n");
-			returned.append(ToUnitTest.CONTENT_PREFIX).append("assertThat(p.compute()).isNotNull();\n");
+			returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("assertThat(p.compute()).isNotNull();\n");
 			return returned.toString();
 		}
 
 		@Override
 		public void visit(final Vertex vertex) {
 			final Factory f = vertex.getProperty(Factory.PROPERTY);
-			returned.append(ToUnitTest.CONTENT_PREFIX).append(".i(")
+			returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(".i(")
 				.append(vertex.id).append(", ")
 				.append(f.owner).append(", ")
 				.append(f.getCount()).append(", ")
 				.append(f.getProduction()).append(")\n");
-			returned.append(ToUnitTest.CONTENT_PREFIX).append(".f(").append(vertex.id).append(")");
+			returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(".f(").append(vertex.id).append(")");
 
 			for(final Edge edge : vertex.getEdges(Navigator.DESTINATION)) {
 				final Transport t = edge.getProperty(Transport.PROPERTY);
@@ -63,7 +63,7 @@ public class Playfield {
 		public void visit(final Edge value) {
 			final Transport transport = Transport.of(value);
 			for(final Troop t : transport.troops) {
-				returned.append(ToUnitTest.CONTENT_PREFIX).append(".t(")
+				returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(".t(")
 					.append(value.source.id).append(",")
 					.append(value.destination.id).append(",")
 					.append(t.owner).append(",")
@@ -73,7 +73,7 @@ public class Playfield {
 				returned.append("\n");
 			}
 			if(transport.hasBomb()) {
-				returned.append(ToUnitTest.CONTENT_PREFIX).append(".b(")
+				returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(".b(")
 					.append(value.source.id).append(", ")
 					.append(value.destination.id).append(", ")
 					.append(transport.getBomb().distance).append(")");
@@ -143,14 +143,14 @@ public class Playfield {
     	Transport.of(link).add(t);
 	}
 
-	public String toDebugString() {
+	public String toUnitTestString() {
 		final StringBuilder returned = new StringBuilder();
 		
-		returned.append(ToUnitTest.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
-		returned.append(ToUnitTest.METHOD_PREFIX+"@Test public void can_find_move_")
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
 		returned.append(graph.accept(new ToDebugStringVisitor()));
-		returned.append(ToUnitTest.METHOD_PREFIX+"}\n\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"}\n\n");
 		return returned.toString();
 	}
 	

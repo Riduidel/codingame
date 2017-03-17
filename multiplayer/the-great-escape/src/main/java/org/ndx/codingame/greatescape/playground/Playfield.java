@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.greatescape.entities.GameElement;
 import org.ndx.codingame.greatescape.entities.GameElementAdapter;
 import org.ndx.codingame.greatescape.entities.GameElementVisitor;
@@ -118,7 +118,7 @@ public class Playfield extends Playground<GameElement> {
 		public void visit(final int x, final int y, final GameElement content) {
 			final Optional<StringBuilder> elementOutput = content.accept(this);
 			elementOutput.ifPresent((s) -> 
-				returned.append(ToUnitTest.CONTENT_PREFIX).append("tested.set(").append(x).append(", ").append(y).append(", ").append(s).append(");\n")
+				returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("tested.set(").append(x).append(", ").append(y).append(", ").append(s).append(");\n")
 					);
 		}
 
@@ -195,18 +195,18 @@ public class Playfield extends Playground<GameElement> {
 	public String toUnitTestString(final Gamer me) {
 		final StringBuilder returned = new StringBuilder();
 		
-		returned.append(ToUnitTest.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
-		returned.append(ToUnitTest.METHOD_PREFIX+"@Test public void can_find_move_")
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append(ToUnitTest.CONTENT_PREFIX+"Gamer me = null;\n");
-		returned.append(ToUnitTest.CONTENT_PREFIX+"Playfield tested = new Playfield(")
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Gamer me = null;\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Playfield tested = new Playfield(")
 			.append(visibleWidth).append(", ")
 			.append(visibleHeight)
 				.append(");\n");
 		returned.append(accept(new ExportGameEntities(me)));
-		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me).isNotNull();\n");
-		returned.append(ToUnitTest.CONTENT_PREFIX+"assertThat(me.compute(tested).toCodingame()).isNotNull();\n");
-		returned.append(ToUnitTest.METHOD_PREFIX+"}\n\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"assertThat(me).isNotNull();\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"assertThat(me.compute(tested).toCodingame()).isNotNull();\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"}\n\n");
 		return returned.toString();
 	}
 

@@ -3,14 +3,14 @@ package org.ndx.codingame.lib2d.shapes;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 import org.ndx.codingame.lib2d.Algebra;
 import org.ndx.codingame.lib2d.PointBuilder;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.base.Distance2;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
-public class Line implements PointBuilder<ContinuousPoint>, Distance2, ToUnitTest {
+public class Line implements PointBuilder<ContinuousPoint>, Distance2, ConstructableInUnitTest {
 	public static class Coeffs {
 		public final double a;
 		public final double b;

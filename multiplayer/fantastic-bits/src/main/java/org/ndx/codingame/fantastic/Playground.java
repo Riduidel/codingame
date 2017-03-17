@@ -1,5 +1,6 @@
 package org.ndx.codingame.fantastic;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import org.ndx.codingame.fantastic.entities.EntityVisitor;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
 import org.ndx.codingame.fantastic.status.Status;
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Segment;
@@ -85,12 +86,12 @@ public class Playground {
 		returned.append(CONTENT_PREFIX).append("Status status = new Status();\n");
 		returned.append(CONTENT_PREFIX).append("\t").append("status.setTeam(").append(status.getTeam()).append(");\n");
 		returned.append(CONTENT_PREFIX).append("\t").append("status.setMagic(").append(status.getMagic()).append(");\n");
-		returned.append(CONTENT_PREFIX).append(ToUnitTest.declareCollection(playing, List.class, Entity.class, "playing")).append("\n");
+		returned.append(CONTENT_PREFIX).append(ToUnitTestHelpers.declareElement(playing, List.class, Entity.class, ArrayList.class, "playing")).append("\n");
 		for (final Entity entity : playing) {
 			final String adding = entity.accept(ELEMENT_WRITER);
 			returned.append(CONTENT_PREFIX).append("\t").append("playing.add(").append(adding).append(");\n");
 		}
-		returned.append(CONTENT_PREFIX).append(ToUnitTest.declareCollection(myTeam, List.class, Wizard.class, "myTeam")).append("\n");
+		returned.append(CONTENT_PREFIX).append(ToUnitTestHelpers.declareElement(myTeam, List.class, Wizard.class, ArrayList.class, "myTeam")).append("\n");
 		for (final Entity entity : myTeam) {
 			final String adding = entity.accept(ELEMENT_WRITER);
 			returned.append(CONTENT_PREFIX).append("\t").append("myTeam.add(").append(adding).append(");\n");

@@ -144,10 +144,11 @@
 		<module>tooling</module>
 		<module>training/labyrinth</module>
 		<module>multiplayer/hypersonic</module>
-		<module>multiplayer/the_accountant</module>
+		<module>optimization/the_accountant</module>
 		<module>multiplayer/coders_strike_back</module>
 		<module>multiplayer/fantastic-bits</module>
 		<module>multiplayer/the-great-escape</module>
 		<module>multiplayer/ghost-in-the-cell</module>
+		<module>optimization/code-vs-zombies</module>
 	</modules>
 </project>

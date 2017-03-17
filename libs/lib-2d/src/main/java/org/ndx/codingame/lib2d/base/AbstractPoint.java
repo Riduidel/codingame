@@ -7,10 +7,10 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 import org.ndx.codingame.lib2d.PointBuilder;
 
-public abstract class AbstractPoint implements Distance2, ToUnitTest {
+public abstract class AbstractPoint implements Distance2, ConstructableInUnitTest {
 	public static class PositionByDistance2To implements Comparator<AbstractPoint> {
 	
 		private final Collection<Distance2> centers = new ArrayList<>();

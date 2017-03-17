@@ -50,7 +50,7 @@ public class Player {
 
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");
-            System.err.println(playground.toDebugString());
+            System.err.println(playground.toUnitTestString());
 
             // Any valid action, such as "WAIT" or "MOVE source destination cyborgs"
             System.out.println(playground.compute());

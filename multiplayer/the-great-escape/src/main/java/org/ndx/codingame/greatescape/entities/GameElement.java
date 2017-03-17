@@ -1,8 +1,8 @@
 package org.ndx.codingame.greatescape.entities;
 
-import org.ndx.codingame.gaming.ToUnitTest;
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 
-public interface GameElement extends ToUnitTest {
+public interface GameElement extends ConstructableInUnitTest {
 
 	GameElement NOTHING = Nothing.instance;
 
