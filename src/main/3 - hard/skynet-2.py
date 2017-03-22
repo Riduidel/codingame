@@ -83,26 +83,46 @@ def find_short_paths_between(start, end, paths = None):
 			return find_short_paths_between(start, end, new_paths)
 		else:
 			return returned
+
+def compute_safety_duration_for(path):
+	duration = 0
+	for node in path:
+		increment = 1
+		for output in node.edges:
+			if "exit" in output.properties:
+				increment = increment-1
+		duration = duration + increment
+#	print("Safety of %s is %s"%(path, duration), file=sys.stderr)
+	return duration
+
 def find_best_pair(paths):
 	nodes_to_gateways = {}
 	best_node = None
 	for p in paths:
+		# p[-1] is the exit node, so we don't use it at all
+		# p[-2] is the last non exit node we must use as key
 		last_node = p[-2]
 		if not last_node in nodes_to_gateways:
-			nodes_to_gateways[last_node]={'length':sys.maxsize, 'exits':set(), 'measure':sys.maxsize}
-		nodes_to_gateways[last_node]['length']=min(len(p), nodes_to_gateways[last_node]['length'])
+			nodes_to_gateways[last_node]={'length':sys.maxsize, 'exits':set()}
 		nodes_to_gateways[last_node]['exits'].add(p[-1])
-#		print("Processing path %s"%(p), file=sys.stderr)
+		nodes_to_gateways[last_node]['count']=len(nodes_to_gateways[last_node]['exits'])
+		nodes_to_gateways[last_node]['safety']=compute_safety_duration_for(p[0:len(p)-1])
+		nodes_to_gateways[last_node]['length']=min(len(p), nodes_to_gateways[last_node]['length'])
 	# Now we have a full hash, sort it by measure
 	if not nodes_to_gateways:
 		raise ValueError("Hell, no exit found")
 	nodes = sorted(nodes_to_gateways, key=lambda k:nodes_to_gateways[k]['length'])
 	for n in nodes:
 		print("node %s is linked to %s"%(n, nodes_to_gateways[n]), file=sys.stderr)
+	# best node should be the last node before reaching exit node
 	best_node = nodes[0]
+	print("Suppsed best node %s"%best_node, file=sys.stderr)
+	# replacing best_node by an even better one if necessary
 	if nodes_to_gateways[best_node]['length']>2:
+		nodes = sorted(nodes_to_gateways, key=lambda k:nodes_to_gateways[k]['safety'])
+		# we have some time left, so choose **wisely** which node to disconnect
 		for n in nodes:
-			if len(nodes_to_gateways[n]['exits'])>1:
+			if nodes_to_gateways[n]['count']>1:
 				best_node = n
 				break
 	return best_node, next(iter(nodes_to_gateways[best_node]['exits']))
