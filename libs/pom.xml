@@ -11,6 +11,7 @@
 	<modules>
 		<module>lib-2d</module>
 		<module>lib-gaming</module>
+		<module>lib-gaming-2d</module>
 		<module>lib-graph</module>
 	</modules>
 	<build>

@@ -5,8 +5,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
-import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.Message;
 import org.ndx.codingame.ghostinthecell.entities.Bomb;
 import org.ndx.codingame.ghostinthecell.entities.Bombs;

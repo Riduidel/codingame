@@ -6,8 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.ghostinthecell.Constants;
-import org.ndx.codingame.ghostinthecell.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.DropBomb;
 import org.ndx.codingame.ghostinthecell.actions.Upgrade;
 import org.ndx.codingame.libgraph.Edge;

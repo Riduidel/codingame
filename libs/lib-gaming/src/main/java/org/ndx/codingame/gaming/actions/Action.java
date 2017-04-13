@@ -1,4 +1,4 @@
-package org.ndx.codingame.ghostinthecell.actions;
+package org.ndx.codingame.gaming.actions;
 
 public interface Action {
 

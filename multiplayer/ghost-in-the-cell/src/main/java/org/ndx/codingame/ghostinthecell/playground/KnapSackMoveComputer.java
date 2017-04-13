@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.ghostinthecell.actions.MoveTo;
 import org.ndx.codingame.ghostinthecell.entities.Bombs;
 import org.ndx.codingame.ghostinthecell.entities.Factory;

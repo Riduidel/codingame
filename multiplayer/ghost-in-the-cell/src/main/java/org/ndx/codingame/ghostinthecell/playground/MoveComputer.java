@@ -2,7 +2,7 @@ package org.ndx.codingame.ghostinthecell.playground;
 
 import java.util.Collection;
 
-import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.gaming.actions.Action;
 
 @FunctionalInterface
 public interface MoveComputer {

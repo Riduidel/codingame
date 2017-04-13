@@ -1,0 +1,142 @@
+using System;
+using System.Linq;
+using System.IO;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+class Solution
+{
+    static int[][] toMatrix(string[] lines) {
+        int SIZE = lines.GetLength(0);
+        int[][] returned = new int[SIZE][];
+        for(int row=0; row<lines.GetLength(0); row++) {
+            returned[row] = new int[SIZE];
+            string[] elements = Regex.Split(lines[row],"");
+            int index = 0;
+            for(int column=0; column<elements.GetLength(0); column++) {
+                string value = elements[column];
+                if(!String.IsNullOrEmpty(value)) {
+                    returned[row][index++] = Int32.Parse(value);
+                }
+            }
+        }
+        return returned;
+    }
+    
+    static string toString(int[][] matrix) {
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<matrix.GetLength(0); i++) {
+            if(i>0) {
+                sb.Append("\n");
+            }
+            for(int j=0; j<matrix.GetLength(0); j++) {
+                sb.Append(matrix[i][j]);
+            }
+        }
+        return sb.ToString();
+    }
+    
+    static int[][] sum(int[][] first, int[][] second) {
+        int SIZE = first.GetLength(0);
+        int[][] returned = new int[SIZE][];
+        for(int i=0; i<SIZE; i++) {
+            returned[i] = new int[SIZE];
+            for(int j=0; j<SIZE; j++) {
+                returned[i][j] = first[i][j] + second[i][j];
+            }
+        }
+        return returned;
+    }
+    static int[][] copy(int[][] matrix) {
+        int SIZE = matrix.GetLength(0);
+        int[][] returned = new int[SIZE][];
+        for(int i=0; i<SIZE; i++) {
+            returned[i] = new int[SIZE];
+            for(int j=0; j<SIZE; j++) {
+                returned[i][j] = matrix[i][j];
+            }
+        }
+        return returned;
+    }
+    
+    static int[][] findDistributablesIn(int[][] matrix) {
+        List<int[]> positions = new List<int[]>();
+        int SIZE = matrix.GetLength(0);
+        for(int i=0; i<SIZE; i++) {
+            for(int j=0; j<SIZE; j++) {
+                if(matrix[i][j]>3) {
+                    positions.Add(new int[] {i, j});
+//                    Console.Error.WriteLine("found value at ["+i+"]["+j+"]");
+                }
+            }
+        }
+        return positions.ToArray();
+    }
+    
+    static int[][] distribute(int[][] distributables, int[][] matrix) {
+        int SIZE = matrix.GetLength(0);
+        int[][] TARGETS = new int[][] {
+            new int[] {-1, 0},
+            new int[] {0, -1},
+            new int[] {1, 0},
+            new int[] {0, 1}
+        };
+        int[][] returned = copy(matrix);
+        for(int distribute=0; distribute<distributables.GetLength(0); distribute++) {
+            int i = distributables[distribute][0];
+            int j = distributables[distribute][1];
+            returned[i][j] = returned[i][j]-4;
+            for(int t=0; t<TARGETS.GetLength(0); t++) {
+                int t_i = i+TARGETS[t][0];
+                int t_j = j+TARGETS[t][1];
+                if(t_i>=0 && t_i<SIZE) {
+                    if(t_j>=0 && t_j<SIZE) {
+                        returned[t_i][t_j] = returned[t_i][t_j]+1;
+                    }
+                }
+            }
+        }
+        return returned;
+    }
+    
+    static void Main(string[] args)
+    {
+        int n = int.Parse(Console.ReadLine());
+        string[] lines = new string[n];
+        for (int i = 0; i < n; i++)
+        {
+            lines[i] = Console.ReadLine();
+        }
+        int[][] first = toMatrix(lines);
+        Console.Error.WriteLine("first is\n"+toString(first));
+        for (int i = 0; i < n; i++)
+        {
+            lines[i] = Console.ReadLine();
+        }
+        int[][] second = toMatrix(lines);
+        Console.Error.WriteLine("second is\n"+toString(second));
+        
+        int[][] result = sum(first, second);
+        
+//        Console.Error.WriteLine("sum is\n"+toString(result));
+
+        bool shouldDistribute = true;
+        
+        while(shouldDistribute) {
+            int[][] distributables = findDistributablesIn(result);
+            if(shouldDistribute = (distributables.GetLength(0)>0)) {
+                result = distribute(distributables, result);
+//                Console.Error.WriteLine("result is\n"+toString(result));
+            }
+        }
+
+        Console.Error.WriteLine("Final result below");
+        Console.WriteLine(toString(result));
+    }
+}

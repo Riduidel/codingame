@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.ndx.codingame.ghostinthecell.actions.Action;
+import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.ghostinthecell.entities.Bombs;
 import org.ndx.codingame.ghostinthecell.entities.Factory;
 import org.ndx.codingame.ghostinthecell.entities.Transport;

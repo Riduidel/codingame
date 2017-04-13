@@ -150,5 +150,6 @@
 		<module>multiplayer/the-great-escape</module>
 		<module>multiplayer/ghost-in-the-cell</module>
 		<module>optimization/code-vs-zombies</module>
+		<module>multiplayer/game-of-drones</module>
 	</modules>
 </project>

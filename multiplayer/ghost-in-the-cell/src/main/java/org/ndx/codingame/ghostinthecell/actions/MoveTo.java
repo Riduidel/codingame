@@ -1,5 +1,7 @@
 package org.ndx.codingame.ghostinthecell.actions;
 
+import org.ndx.codingame.gaming.actions.Action;
+
 public class MoveTo implements Action {
 
 	public final int source;
