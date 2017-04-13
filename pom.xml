@@ -151,5 +151,6 @@
 		<module>multiplayer/ghost-in-the-cell</module>
 		<module>optimization/code-vs-zombies</module>
 		<module>multiplayer/game-of-drones</module>
+		<module>multiplayer/coders-of-the-carribean</module>
 	</modules>
 </project>
