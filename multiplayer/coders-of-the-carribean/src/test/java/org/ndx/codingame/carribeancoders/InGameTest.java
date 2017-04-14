@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.ndx.codingame.carribeancoders.actions.MoveTo;
+import org.ndx.codingame.carribeancoders.actions.ShootAt;
 import org.ndx.codingame.carribeancoders.entities.Barrel;
+import org.ndx.codingame.carribeancoders.entities.Cannonball;
 import org.ndx.codingame.carribeancoders.entities.Entity;
+import org.ndx.codingame.carribeancoders.entities.Mine;
 import org.ndx.codingame.carribeancoders.entities.Ship;
 import org.ndx.codingame.carribeancoders.playground.Playfield;
 
@@ -64,5 +68,31 @@ public class InGameTest {
 		final Playfield playfield = new Playfield();
 		playfield.addAllEntities(entities);
 		assertThat(playfield.movesToCommand()).isEqualTo("MOVE 17 5");
+	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_find_moves_with_no_barrel() {
+		Ship enemy;
+		final List<Entity> entities=new ArrayList<>();
+			entities.add(new Ship(5, 6, 0, 1, 95, 1));
+			entities.add(enemy = new Ship(12, 4, 2, 1, 100, 0));
+			entities.add(new Mine(3, 7));
+			entities.add(new Mine(5, 8));
+			entities.add(new Cannonball(2, 6, 1, 2));
+		final Playfield playfield = new Playfield();
+		playfield.addAllEntities(entities);
+		assertThat(playfield.computeMoves())
+			.isNotEmpty()
+			.contains(new MoveTo(enemy.position));
+	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void should_shoot_enemy_when_nearby() {
+		Ship enemy;
+		final List<Entity> entities=new ArrayList<>();
+			entities.add(new Ship(19, 5, 1, 0, 37, 1));
+			entities.add(enemy = new Ship(19, 1, 5, 0, 4, 0));
+		final Playfield playfield = new Playfield();
+		playfield.addAllEntities(entities);
+		assertThat(playfield.computeMoves()).isNotEmpty()
+			.contains(new ShootAt(enemy.position));
 	}
 }

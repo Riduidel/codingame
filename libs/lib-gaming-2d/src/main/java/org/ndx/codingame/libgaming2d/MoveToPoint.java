@@ -1,9 +1,10 @@
 package org.ndx.codingame.libgaming2d;
 
+import org.ndx.codingame.gaming.actions.AbstractAction;
 import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 
-public class MoveToPoint implements Action {
+public class MoveToPoint extends AbstractAction implements Action {
 	String message;
 	AbstractPoint target;
 

@@ -15,12 +15,19 @@ import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 public class Playfield implements ToUnitTestFiller {
 	private final Collection<Entity> entities = new ArrayList<>();
 
-	public Collection<Ship> getMyBoats() {
+
+	public Collection<Ship> getEnemyShips() {
+		return getShipsOf(0);
+	}
+	private Collection<Ship> getShipsOf(final int i) {
 		return entities.stream()
 				.filter((e) -> e instanceof Ship)
 				.map((e) -> (Ship) e)
-				.filter((b) -> b.owner>0)
+				.filter((b) -> b.owner==i)
 				.collect(Collectors.toList());
+	}
+	public Collection<Ship> getMyShips() {
+		return getShipsOf(1);
 	}
 	
 	public Collection<Barrel> getBarrels() {
@@ -47,7 +54,7 @@ public class Playfield implements ToUnitTestFiller {
 	}
 
 	public Collection<Action> computeMoves() {
-        return getMyBoats().stream()
+        return getMyShips().stream()
 	    	.map((b) -> b.computeMove(this))
 	    	.collect(Collectors.toList());
 	}

@@ -3,6 +3,8 @@ package org.ndx.codingame.carribeancoders;
 import java.util.Scanner;
 
 import org.ndx.codingame.carribeancoders.entities.Barrel;
+import org.ndx.codingame.carribeancoders.entities.Cannonball;
+import org.ndx.codingame.carribeancoders.entities.Mine;
 import org.ndx.codingame.carribeancoders.entities.Ship;
 import org.ndx.codingame.carribeancoders.playground.Playfield;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestStringBuilder;
@@ -31,6 +33,12 @@ public class Player {
                 	break;
                 case "BARREL":
                 	playfield.add(new Barrel(x, y, arg1));
+                	break;
+                case "CANNONBALL":
+                	playfield.add(new Cannonball(x, y, arg1, arg2));
+                	break;
+                case "MINE":
+                	playfield.add(new Mine(x, y));
                 	break;
                 }
             }

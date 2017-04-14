@@ -4,6 +4,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.ndx.codingame.carribeancoders.actions.MoveTo;
+import org.ndx.codingame.carribeancoders.actions.ShootAt;
 import org.ndx.codingame.carribeancoders.playground.Playfield;
 import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
@@ -27,10 +28,30 @@ public class Ship extends Entity {
 	
 	public Action computeMove(final Playfield playfield) {
 		// Move to nearest barrel 
-		final SortedMap<DiscretePoint, Barrel> byDistance = new TreeMap<>(new AbstractPoint.PositionByDistance2To(position));
+		final SortedMap<DiscretePoint, Barrel> barrelsByDistance = new TreeMap<>(new AbstractPoint.PositionByDistance2To(position));
+		final SortedMap<DiscretePoint, Ship> enemiesByDistance = new TreeMap<>(new AbstractPoint.PositionByDistance2To(position));
 		playfield.getBarrels().stream()
-			.forEach((b) -> byDistance.put(b.position, b));
-		return new MoveTo(byDistance.firstKey());
+			.forEach((b) -> barrelsByDistance.put(b.position, b));
+		playfield.getEnemyShips().stream()
+			.forEach((s) -> enemiesByDistance.put(s.position, s));
+		DiscretePoint nearestBarrelPosition = null;
+		if(!barrelsByDistance.isEmpty()) {
+			nearestBarrelPosition = barrelsByDistance.firstKey();
+		}
+		DiscretePoint nearestEnemyPosition = null;
+		if(!enemiesByDistance.isEmpty()) {
+			nearestEnemyPosition = enemiesByDistance.firstKey();
+		}
+		if(nearestBarrelPosition==null || nearestEnemyPosition.distance2To(position)<nearestBarrelPosition.distance2To(position)) {
+			if(nearestEnemyPosition.distance2To(position)<5) {
+				return new ShootAt(nearestEnemyPosition);
+			} else {
+				return new MoveTo(nearestEnemyPosition);
+			}
+		} else {
+			return new MoveTo(nearestBarrelPosition);
+		}
+		
 	}
 	
 	@Override
