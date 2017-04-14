@@ -1,0 +1,68 @@
+package org.ndx.codingame.carribeancoders;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.ndx.codingame.carribeancoders.entities.Barrel;
+import org.ndx.codingame.carribeancoders.entities.Entity;
+import org.ndx.codingame.carribeancoders.entities.Ship;
+import org.ndx.codingame.carribeancoders.playground.Playfield;
+
+public class InGameTest {
+
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_find_moves_1492189151862() {
+		final List<Entity> entities=new ArrayList<>();
+			entities.add(new Barrel(2, 19, 12));
+			entities.add(new Barrel(2, 1, 12));
+			entities.add(new Barrel(13, 14, 16));
+			entities.add(new Barrel(13, 6, 16));
+			entities.add(new Barrel(6, 12, 10));
+			entities.add(new Barrel(6, 8, 10));
+			entities.add(new Barrel(3, 10, 19));
+			entities.add(new Barrel(7, 14, 16));
+			entities.add(new Barrel(7, 6, 16));
+			entities.add(new Barrel(7, 18, 19));
+			entities.add(new Barrel(7, 2, 19));
+			entities.add(new Barrel(12, 17, 13));
+			entities.add(new Barrel(12, 3, 13));
+			entities.add(new Barrel(16, 11, 10));
+			entities.add(new Barrel(16, 9, 10));
+			entities.add(new Barrel(3, 19, 14));
+			entities.add(new Barrel(3, 1, 14));
+		final Playfield playfield = new Playfield();
+		playfield.addAllEntities(entities);
+		// No boats, no actions !
+		assertThat(playfield.computeMoves()).isEmpty();
+	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_find_moves_1492189684380() {
+		final List<Entity> entities=new ArrayList<>();
+			entities.add(new Ship(19, 6, 0, 0, 100, 1));
+			entities.add(new Ship(19, 14, 0, 0, 100, 0));
+			entities.add(new Barrel(2, 11, 11));
+			entities.add(new Barrel(2, 9, 11));
+			entities.add(new Barrel(10, 11, 20));
+			entities.add(new Barrel(10, 9, 20));
+			entities.add(new Barrel(20, 18, 19));
+			entities.add(new Barrel(20, 2, 19));
+			entities.add(new Barrel(9, 13, 15));
+			entities.add(new Barrel(9, 7, 15));
+			entities.add(new Barrel(15, 14, 19));
+			entities.add(new Barrel(15, 6, 19));
+			entities.add(new Barrel(16, 15, 11));
+			entities.add(new Barrel(16, 5, 11));
+			entities.add(new Barrel(9, 12, 14));
+			entities.add(new Barrel(9, 8, 14));
+			entities.add(new Barrel(17, 15, 20));
+			entities.add(new Barrel(17, 5, 20));
+			entities.add(new Barrel(9, 14, 19));
+			entities.add(new Barrel(9, 6, 19));
+		final Playfield playfield = new Playfield();
+		playfield.addAllEntities(entities);
+		assertThat(playfield.movesToCommand()).isEqualTo("MOVE 17 5");
+	}
+}
