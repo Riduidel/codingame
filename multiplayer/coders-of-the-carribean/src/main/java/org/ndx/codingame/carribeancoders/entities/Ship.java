@@ -65,7 +65,7 @@ public class Ship extends Entity {
 			return attackEnemy(nearestEnemyPosition, enemiesByDistance.get(nearestEnemyPosition));
 		} else if(rum<55) {
 			return new MoveTo(nearestBarrelPosition);
-		} else if(rum>80) {
+		} else if(nearestEnemyPosition.distance2To(position)<nearestBarrelPosition.distance2To(position)) {
 			return attackEnemy(nearestEnemyPosition, enemiesByDistance.get(nearestEnemyPosition));
 		} else {
 			return new MoveTo(nearestBarrelPosition);

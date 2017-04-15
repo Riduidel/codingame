@@ -95,4 +95,20 @@ public class InGameTest {
 		assertThat(playfield.computeMoves()).isNotEmpty()
 			.contains(new ShootAt(enemy.position));
 	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void should_shoot_enemy_when_both_are_stopped() {
+		Ship enemy;
+		final List<Entity> entities=new ArrayList<>();
+			entities.add(new Ship(16, 17, 2, 0, 70, 1));
+			entities.add(enemy = new Ship(15, 18, 0, 0, 17, 0));
+			entities.add(new Cannonball(16, 20, 0, 0));
+			entities.add(new Barrel(11, 4, 20));
+			entities.add(new Barrel(18, 17, 15));
+			entities.add(new Barrel(15, 5, 19));
+			entities.add(new Barrel(10, 2, 14));
+		final Playfield playfield = new Playfield();
+		playfield.addAllEntities(entities);
+		assertThat(playfield.computeMoves()).isNotEmpty()
+			.contains(new ShootAt(enemy.position));
+	}
 }
