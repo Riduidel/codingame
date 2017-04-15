@@ -42,16 +42,23 @@ public class Ship extends Entity {
 		if(!enemiesByDistance.isEmpty()) {
 			nearestEnemyPosition = enemiesByDistance.firstKey();
 		}
-		if(nearestBarrelPosition==null || nearestEnemyPosition.distance2To(position)<nearestBarrelPosition.distance2To(position)) {
-			if(nearestEnemyPosition.distance2To(position)<5) {
-				return new ShootAt(nearestEnemyPosition);
-			} else {
-				return new MoveTo(nearestEnemyPosition);
-			}
+		if(nearestBarrelPosition==null) {
+			return attackEnemy(nearestEnemyPosition);
+		} else if(rum<55) {
+			return new MoveTo(nearestBarrelPosition);
+		} else if(rum>80) {
+			return attackEnemy(nearestEnemyPosition);
 		} else {
 			return new MoveTo(nearestBarrelPosition);
 		}
 		
+	}
+	private Action attackEnemy(final DiscretePoint nearestEnemyPosition) {
+		if(nearestEnemyPosition.distance2To(position)<5) {
+			return new ShootAt(nearestEnemyPosition);
+		} else {
+			return new MoveTo(nearestEnemyPosition);
+		}
 	}
 	
 	@Override

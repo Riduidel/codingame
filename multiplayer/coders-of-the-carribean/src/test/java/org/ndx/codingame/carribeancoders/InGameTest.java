@@ -67,7 +67,7 @@ public class InGameTest {
 			entities.add(new Barrel(9, 6, 19));
 		final Playfield playfield = new Playfield();
 		playfield.addAllEntities(entities);
-		assertThat(playfield.movesToCommand()).isEqualTo("MOVE 17 5");
+		assertThat(playfield.movesToCommand()).isEqualTo("MOVE 19 14");
 	}
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_moves_with_no_barrel() {
