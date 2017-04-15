@@ -72,4 +72,8 @@ public class Ship extends Entity {
 			;
 		return returned;
 	}
+	@Override
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
+		return visitor.visitShip(this);
+	}
 }

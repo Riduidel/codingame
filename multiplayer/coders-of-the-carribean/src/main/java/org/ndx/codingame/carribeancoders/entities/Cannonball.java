@@ -21,4 +21,9 @@ public class Cannonball extends Entity {
 		return returned;
 	}
 
+	@Override
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
+		return visitor.visitCannonball(this);
+	}
+
 }

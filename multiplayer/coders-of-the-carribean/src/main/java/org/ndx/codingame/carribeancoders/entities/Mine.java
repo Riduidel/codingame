@@ -16,4 +16,9 @@ public class Mine extends Entity {
 		return returned;
 	}
 
+	@Override
+	public <Type> Type accept(final EntityVisitor<Type> visitor) {
+		return visitor.visitMine(this);
+	}
+
 }

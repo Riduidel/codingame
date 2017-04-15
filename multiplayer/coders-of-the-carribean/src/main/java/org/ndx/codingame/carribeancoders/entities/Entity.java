@@ -20,4 +20,6 @@ public abstract class Entity implements ConstructableInUnitTest  {
 				.append(position.y).append(", ")
 				;
 	}
+	
+	public abstract <Type> Type accept(EntityVisitor<Type> visitor);
 }
