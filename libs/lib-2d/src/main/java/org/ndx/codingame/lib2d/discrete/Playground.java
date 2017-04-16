@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Playground<Content> implements ImmutablePlayground<Content> {
+import org.ndx.codingame.lib2d.ImmutablePlayground;
+import org.ndx.codingame.lib2d.MutablePlayground;
+
+public class Playground<Content> implements MutablePlayground<Content> {
 	private Object[][] content;
 	public final int height;
 	public final int width;
@@ -50,10 +53,12 @@ public class Playground<Content> implements ImmutablePlayground<Content> {
 		}
 	}
 
+	@Override
 	public void set(final DiscretePoint p, final Content c) {
 		set(p.x, p.y, c);
 	}
 
+	@Override
 	public void set(final int x, final int y, final Content c) {
 		this.content[y][x] = c;
 	}

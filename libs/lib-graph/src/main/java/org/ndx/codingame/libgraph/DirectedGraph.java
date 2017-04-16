@@ -41,11 +41,17 @@ public class DirectedGraph implements Graph {
 		}
 	}
 	protected Edge createEdgeBetween(final Vertex from, final Vertex to) {
-		final Edge returned = new Edge(from, to);
-		from.putEdge(Navigator.DESTINATION, returned);
-		to.putEdge(Navigator.SOURCE, returned);
+		final Edge returned = doCreateEdge(from, to);
+		doConnect(returned, from, to);
 		edges.add(returned);
 		return returned;
+	}
+	protected void doConnect(final Edge returned, final Vertex from, final Vertex to) {
+		from.putEdge(Navigator.DESTINATION, returned);
+		to.putEdge(Navigator.SOURCE, returned);
+	}
+	protected Edge doCreateEdge(final Vertex from, final Vertex to) {
+		return new Edge(from, to);
 	}
 	private boolean hasEdgeBetween(final Vertex from, final Vertex to) {
 		return from.hasEdge(Navigator.DESTINATION, to);
@@ -64,7 +70,7 @@ public class DirectedGraph implements Graph {
 	
 	@Override
 	public Graph clone() {
-		final Graph returned = new DirectedGraph();
+		final Graph returned = doCreateClone();
 		for(final Vertex sourceVertex : vertices()) {
 			final Vertex createdVertex = returned.getOrCreateVertex(sourceVertex.id);
 			createdVertex.importProperties(sourceVertex);
@@ -75,6 +81,9 @@ public class DirectedGraph implements Graph {
 		}
 		return returned;
 		
+	}
+	protected DirectedGraph doCreateClone() {
+		return new DirectedGraph();
 	}
 	@Override
 	public <Type> Type accept(final GraphVisitor<Type> visitor) {

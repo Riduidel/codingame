@@ -15,6 +15,7 @@ import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 public class Playfield implements ToUnitTestFiller {
 	private final Collection<Entity> entities = new ArrayList<>();
 
+	private final GraphStorage storage = new GraphStorage();
 
 	public Collection<Ship> getEnemyShips() {
 		return getShipsOf(0);

@@ -1,4 +1,6 @@
-package org.ndx.codingame.lib2d.discrete;
+package org.ndx.codingame.lib2d;
+
+import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 
 public interface ImmutablePlayground<Content> {
 	public Content get(DiscretePoint p);
