@@ -141,7 +141,6 @@
 	</build>
 	<modules>
 		<module>libs</module>
-		<module>tooling</module>
 		<module>training/labyrinth</module>
 		<module>multiplayer/hypersonic</module>
 		<module>optimization/the_accountant</module>
