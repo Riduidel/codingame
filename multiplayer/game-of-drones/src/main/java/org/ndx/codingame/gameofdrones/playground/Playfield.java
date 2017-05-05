@@ -8,14 +8,34 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.gameofdrones.entities.Drone;
 import org.ndx.codingame.gameofdrones.entities.Zone;
+import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestStringBuilder;
+import org.ndx.codingame.lib2d.Geometry;
+import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
+import org.ndx.codingame.libgaming2d.MoveToPoint;
 
 public class Playfield implements ToUnitTestFiller {
+	public static interface Dimension {
+		public static final int MIN_X = 0;
+		public static final int MIN_Y = 0;
+		public static final int MAX_X = 4000;
+		public static final int MAX_Y = 1800;
+	}
 	private int owner;
 	private final List<Zone> zones = new ArrayList<>();
 	private final List<Drone> drones = new ArrayList<>();
+	
+	public Playfield() {
+		
+	}
+	
+	public Playfield(final List<Zone> zones, final List<Drone> drones) {
+		this();
+		addAllZones(zones);
+		addAllDrones(drones);
+	}
 	
 	public String toUnitTestString() {
 		return new ToUnitTestStringBuilder("can_find_moves").build(this);
@@ -54,13 +74,51 @@ public class Playfield implements ToUnitTestFiller {
 	 * @return
 	 */
 	public String computeMoves() {
-		// before computing moves, check which zone owns which drone
-		drones.forEach((d)->d.findContainingZone(zones));
-		return drones.stream()
-			.filter((d) -> d.owner==owner)
-			.map(d -> d.findDestination(this))
-			.map((a) -> a.toCommandString())
+		final Map<Drone, Action> actionPerDrone = computeMovesPerDrones();
+		return actionPerDrone.values().stream()
+			.map(a -> a.toCommandString())
 			.collect(Collectors.joining("\n"));
+	}
+
+
+	Map<Drone, Action> computeMovesPerDrones() {
+		return drones.stream()
+				.collect(Collectors.toMap(
+						(d) -> d,
+						(d) -> computeMoveFor(d)));
+	}
+
+	/**
+	 * For each drone, we look for the nearest non owned zone (at time of arrival)
+	 * @param d
+	 * @return
+	 */
+	private Action computeMoveFor(final Drone d) {
+		final Optional<ContinuousPoint> byDistanceToDrone = zones.stream()
+			.sorted(new Zone.PositionByDistance2To(d.position))
+			.filter(z -> !owns(z, (int) d.position.distance2To(z.circle.center)/Drone.SPEED+1))
+			.map(z -> z.circle.center)
+			.findFirst();
+		if(byDistanceToDrone.isPresent()) {
+			return new MoveToPoint(byDistanceToDrone.get());
+		} else {
+			return new MoveToPoint(Geometry.at((Dimension.MAX_X-Dimension.MIN_X)/2, (Dimension.MAX_Y-Dimension.MIN_Y)/2));
+		}
+	}
+
+	/**
+	 * Check if the owner of this simulation owns the given zone at the given delay
+	 * @param z
+	 * @param derivation
+	 * @return
+	 */
+	private boolean owns(final Zone zone, final int derivation) {
+		Playfield current = this;
+		for (int i = 0; i < derivation; i++) {
+			current = current.derive();
+		}
+		final Zone future = current.zones.stream().filter(z -> z.circle.center.equals(zone.circle.center)).findFirst().get();
+		return future.owner==owner;
 	}
 
 	public List<Zone> getZones() {
@@ -86,5 +144,31 @@ public class Playfield implements ToUnitTestFiller {
 						Collectors.groupingBy((d) -> d.number,
 							Collectors.reducing((a, b) -> a))));
 	}
+
+	public Playfield derive() {
+		final List<Drone> nextDrones = drones.stream()
+			.map(d -> d.derive(zones))
+			.collect(Collectors.toList());
+		final List<Zone> nextZones = zones.stream()
+				.map(z -> z.derive(nextDrones))
+				.collect(Collectors.toList());
+		return new Playfield(nextZones, nextDrones);
+	}
 	
+	public Playfield deriveToHorizon() {
+		if(isStabilized()) {
+			return this;
+		} else {
+			return derive().deriveToHorizon();
+		}
+	}
+
+	/**
+	 * Simulation is stabilized when all drones stop moving
+	 * @return
+	 */
+	private boolean isStabilized() {
+		return drones.stream()
+				.allMatch(d -> d.getVector().length()<1);
+	}
 }

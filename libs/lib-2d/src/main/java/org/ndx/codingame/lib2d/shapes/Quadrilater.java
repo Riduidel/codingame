@@ -5,7 +5,7 @@ import org.ndx.codingame.lib2d.base.AbstractPoint;
 public class Quadrilater implements Polygon {
 	private final AbstractPoint a, b, c, d;
 
-	public Quadrilater(AbstractPoint a, AbstractPoint b, AbstractPoint c, AbstractPoint d) {
+	public Quadrilater(final AbstractPoint a, final AbstractPoint b, final AbstractPoint c, final AbstractPoint d) {
 		super();
 		this.a = a;
 		this.b = b;
