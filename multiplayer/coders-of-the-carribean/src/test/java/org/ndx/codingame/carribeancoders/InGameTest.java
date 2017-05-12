@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ndx.codingame.carribeancoders.actions.MoveTo;
 import org.ndx.codingame.carribeancoders.actions.ShootAt;
@@ -14,7 +15,7 @@ import org.ndx.codingame.carribeancoders.entities.Entity;
 import org.ndx.codingame.carribeancoders.entities.Mine;
 import org.ndx.codingame.carribeancoders.entities.Ship;
 import org.ndx.codingame.carribeancoders.playground.Playfield;
-
+@Ignore
 public class InGameTest {
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)

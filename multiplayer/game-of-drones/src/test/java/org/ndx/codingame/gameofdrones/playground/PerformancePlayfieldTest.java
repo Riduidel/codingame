@@ -19,9 +19,10 @@ public class PerformancePlayfieldTest extends Playfield {
 	@PerfTest(invocations = 1000, threads = 10) @Required(percentile90=10)
 	public void can_derive_simple_playground() {
 		Playfield tested = new Playfield(
+				1,
 				Arrays.asList(
 						new Zone(1000, 1000, 0)
-						), 
+						),
 				Arrays.asList(
 						new Drone(0, 0, 10, 10, 1, 0),
 						new Drone(0, 0, 0, 0, 1, 1),

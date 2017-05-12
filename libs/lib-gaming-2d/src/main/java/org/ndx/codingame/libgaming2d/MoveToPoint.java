@@ -5,8 +5,8 @@ import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 
 public class MoveToPoint extends AbstractAction implements Action {
-	AbstractPoint target;
-	String message;
+	public final AbstractPoint target;
+	public final String message;
 
 	public MoveToPoint(final AbstractPoint target) {
 		this(target, "");

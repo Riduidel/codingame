@@ -58,7 +58,8 @@ public class Zone implements ConstructableInUnitTest {
 	@Override
 	public StringBuilder toUnitTestConstructor(final String multilinePrefix)  {
 		final StringBuilder returned = new StringBuilder();
-		returned.append("new ").append(getClass().getSimpleName()).append("(").append(circle.center.x).append(", ").append(circle.center.y).append(", ").append(owner).append(")");
+		returned.append("new ").append(getClass().getSimpleName())
+			.append("(").append((int) circle.center.x).append(", ").append((int) circle.center.y).append(", ").append(owner).append(")");
 		return returned;
 	}
 

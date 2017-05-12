@@ -15,10 +15,10 @@ public class InGameTest {
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_moves_1491420023187() {
 		final List<Zone> z=new ArrayList<>();
-			z.add(new Zone(544.0, 1296.0, 0));
-			z.add(new Zone(457.0, 510.0, 1));
-			z.add(new Zone(2064.0, 1077.0, 0));
-			z.add(new Zone(3423.0, 629.0, 0));
+			z.add(new Zone(544, 1296, 0));
+			z.add(new Zone(457, 510, 1));
+			z.add(new Zone(2064, 1077, 0));
+			z.add(new Zone(3423, 629, 0));
 		final List<Drone> d=new ArrayList<>();
 			d.add(new Drone(2064.0, 1077.0, 2064.0, 1077.0, 0, 0));
 			d.add(new Drone(2064.0, 1077.0, 2064.0, 1077.0, 0, 1));

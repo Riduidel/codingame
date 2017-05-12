@@ -1,6 +1,7 @@
 package org.ndx.codingame.gameofdrones.playground;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +28,24 @@ public class Playfield implements ToUnitTestFiller {
 	private final List<Zone> zones = new ArrayList<>();
 	private final List<Drone> drones = new ArrayList<>();
 	
+	/**
+	 * Override moves from standard derivation.
+	 * This map is typically populated from {@link #computeMovesPerDrones()} actions.
+	 */
+	private Map<Drone, MoveToPoint> derivationOverride = new HashMap<>();
+	
 	public Playfield() {
 		
 	}
 	
-	public Playfield(final List<Zone> zones, final List<Drone> drones) {
+	/**
+	 * Test constructor streamlining most of construction operations
+	 * @param zones
+	 * @param drones
+	 */
+	public Playfield(int owner, final List<Zone> zones, final List<Drone> drones) {
 		this();
+		this.owner = owner;
 		addAllZones(zones);
 		addAllDrones(drones);
 	}
@@ -74,18 +87,20 @@ public class Playfield implements ToUnitTestFiller {
 	 * @return
 	 */
 	public String computeMoves() {
-		final Map<Drone, Action> actionPerDrone = computeMovesPerDrones();
+		final Map<Drone, MoveToPoint> actionPerDrone = computeMovesPerDrones();
 		return actionPerDrone.values().stream()
 			.map(a -> a.toCommandString())
 			.collect(Collectors.joining("\n"));
 	}
 
 
-	Map<Drone, Action> computeMovesPerDrones() {
-		return drones.stream()
-				.collect(Collectors.toMap(
-						(d) -> d,
-						(d) -> computeMoveFor(d)));
+	Map<Drone, MoveToPoint> computeMovesPerDrones() {
+		for(Drone d : drones) {
+			if(d.owner==owner) {
+				derivationOverride.put(d, computeMoveFor(d));
+			}
+		}
+		return derivationOverride;
 	}
 
 	/**
@@ -93,9 +108,10 @@ public class Playfield implements ToUnitTestFiller {
 	 * @param d
 	 * @return
 	 */
-	private Action computeMoveFor(final Drone d) {
+	private MoveToPoint computeMoveFor(final Drone d) {
 		final Optional<ContinuousPoint> byDistanceToDrone = zones.stream()
 			.sorted(new Zone.PositionByDistance2To(d.position))
+			// check if zone is owned at time of drone arrival
 			.filter(z -> !owns(z, (int) d.position.distance2To(z.circle.center)/Drone.SPEED+1))
 			.map(z -> z.circle.center)
 			.findFirst();
@@ -147,12 +163,12 @@ public class Playfield implements ToUnitTestFiller {
 
 	public Playfield derive() {
 		final List<Drone> nextDrones = drones.stream()
-			.map(d -> d.derive(zones))
+			.map(d -> d.derive(zones, Optional.ofNullable(derivationOverride.get(d))))
 			.collect(Collectors.toList());
 		final List<Zone> nextZones = zones.stream()
 				.map(z -> z.derive(nextDrones))
 				.collect(Collectors.toList());
-		return new Playfield(nextZones, nextDrones);
+		return new Playfield(owner, nextZones, nextDrones);
 	}
 	
 	public Playfield deriveToHorizon() {

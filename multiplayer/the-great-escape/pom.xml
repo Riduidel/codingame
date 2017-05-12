@@ -5,6 +5,7 @@
 		<groupId>org.ndx.codingame</groupId>
 		<artifactId>codingame</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>the-great-escape</artifactId>
 	<dependencies>
