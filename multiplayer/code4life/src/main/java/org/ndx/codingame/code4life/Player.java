@@ -12,9 +12,10 @@ import java.util.stream.Collectors;
 import org.ndx.codingame.code4life.actions.ConnectToDiagnostic;
 import org.ndx.codingame.code4life.actions.ConnectToDistribution;
 import org.ndx.codingame.code4life.actions.ConnectToLaboratory;
+import org.ndx.codingame.code4life.actions.ConnectToSampler;
 import org.ndx.codingame.code4life.actions.Goto;
 import org.ndx.codingame.code4life.entities.Module;
-import org.ndx.codingame.code4life.entities.MoleculeType;
+import org.ndx.codingame.code4life.entities.Molecule;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
 import org.ndx.codingame.gaming.actions.Action;
@@ -45,23 +46,23 @@ public class Player {
 				final int eta = in.nextInt();
 				// health points of player
 				final int score = in.nextInt();
-				final Map<MoleculeType, Integer> counts = new EnumMap<>(MoleculeType.class);
+				final Map<Molecule, Integer> counts = new EnumMap<>(Molecule.class);
 				// number of molecules of each type
-				for (final MoleculeType type : MoleculeType.values()) {
+				for (final Molecule type : Molecule.values()) {
 					counts.put(type, in.nextInt());
 				}
-				final Map<MoleculeType, Integer> expertise = new EnumMap<>(MoleculeType.class);
+				final Map<Molecule, Integer> expertise = new EnumMap<>(Molecule.class);
 				// number of molecules of each type
-				for (final MoleculeType type : MoleculeType.values()) {
+				for (final Molecule type : Molecule.values()) {
 					expertise.put(type, in.nextInt());
 				}
 				if (my == null) {
 					my = new Robot(target, eta, score, counts, expertise);
 				}
 			}
-			final Map<MoleculeType, Integer> available = new EnumMap<>(MoleculeType.class);
+			final Map<Molecule, Integer> available = new EnumMap<>(Molecule.class);
 			// number of molecules of each type
-			for (final MoleculeType type : MoleculeType.values()) {
+			for (final Molecule type : Molecule.values()) {
 				available.put(type, in.nextInt());
 			}
 			Collection<Sample> samples = new ArrayList<>();
@@ -72,9 +73,9 @@ public class Player {
 				final int rank = in.nextInt();
 				final String expertiseGain = in.next();
 				final int health = in.nextInt();
-				final Map<MoleculeType, Integer> cost = new EnumMap<>(MoleculeType.class);
+				final Map<Molecule, Integer> cost = new EnumMap<>(Molecule.class);
 				// number of molecules of each type
-				for (final MoleculeType type : MoleculeType.values()) {
+				for (final Molecule type : Molecule.values()) {
 					cost.put(type, in.nextInt());
 				}
 				samples.add(new Sample(sampleId, carriedBy, rank, expertiseGain, health, cost));
@@ -96,31 +97,44 @@ public class Player {
 	private static Action computeMovesOf(final Robot my, final Collection<Sample> samples) {
 		final List<Sample> onRobot = samples.stream().filter((s) -> s.owner == 0).collect(Collectors.toList());
 		if(onRobot.isEmpty()) {
-			if(my.target.equals(Module.DIAGNOSIS)) {
-				final List<Sample> inCloud = samples.stream().filter((s) -> s.owner < 0).collect(Collectors.toList());
-				// Get sample giving best score
-				final Sample toCollect = inCloud.stream()
-						.findFirst()
-						.get();
-				return new ConnectToDiagnostic(toCollect);
+			System.err.println("Robot has no sample");
+			if(my.target.equals(Module.SAMPLES)) {
+//				final List<Sample> inCloud = samples.stream().filter((s) -> s.owner < 0).collect(Collectors.toList());
+//				// Get sample giving best score
+//				final Sample toCollect = inCloud.stream()
+//						.sorted(Comparator.comparingInt(Sample::getRank).reversed())
+//						.findFirst()
+//						.get();
+				System.err.println("Getting samples from cloud");
+				return new ConnectToSampler(2);
 			} else {
+				System.err.println("Moving to samples");
 				// Robot has no sample. Go to Diagnosis
-				return new Goto(Module.DIAGNOSIS);
+				return new Goto(Module.SAMPLES);
 			}
 		} else {
+			System.err.println("Having samples");
 			// Just take first sample as reference
 			final Sample toProcess = onRobot.get(0);
-			if(my.target.equals(Module.MOLECULES)) {
-				final List<MoleculeType> required = my.findRequiredMoleculesFor(toProcess);
-				if(required.isEmpty()) {
-					return new Goto(Module.LABORATORY);
+			if(toProcess.isDiagnosed()) {
+				if(my.target.equals(Module.MOLECULES)) {
+					final List<Molecule> required = my.findRequiredMoleculesFor(toProcess);
+					if(required.isEmpty()) {
+						return new Goto(Module.LABORATORY);
+					} else {
+						return new ConnectToDistribution(required.get(0));
+					}
+				} else if(my.target.equals(Module.LABORATORY)) {
+					return new ConnectToLaboratory(toProcess);
 				} else {
-					return new ConnectToDistribution(required.get(0));
+					return new Goto(Module.MOLECULES);
 				}
-			} else if(my.target.equals(Module.LABORATORY)) {
-				return new ConnectToLaboratory(toProcess);
 			} else {
-				return new Goto(Module.MOLECULES);
+				if(my.target.equals(Module.DIAGNOSIS)) {
+					return new ConnectToDiagnostic(toProcess);
+				} else {
+					return new Goto(Module.DIAGNOSIS);
+				}
 			}
 		}
 	}
