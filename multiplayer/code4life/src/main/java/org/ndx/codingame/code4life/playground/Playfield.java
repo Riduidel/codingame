@@ -116,6 +116,14 @@ public class Playfield implements ToUnitTestFiller {
 		if (unanalyzed.isEmpty()) {
 			// No unanalyzed sample ? cool
 			// wait ... do we have enough sample ?
+			if (mySamples.size()>0) {
+				for(final Sample s : mySamples) {
+					if(!isProcessable(s)) {
+						// Push sample in cloud
+						return new ConnectToDiagnostic(s);
+					}
+				}
+			}
 			if (mySamples.size() < Constants.MAX_SAMPLES) {
 				final Optional<Sample> bestSample = my.findBestSampleIn(getProcessableSamplesInCloud());
 				if (bestSample.isPresent()) {
@@ -159,6 +167,11 @@ public class Playfield implements ToUnitTestFiller {
 					return new ConnectToLaboratory(sample);
 				}
 			}
+			for (final Sample sample : byHealth) {
+				if(isProcessable(sample)) {
+					return new Goto(Module.MOLECULES);
+				}
+			}
 			// TODO check if we can just reload molecules
 			return new Goto(Module.DIAGNOSIS);
 		}
@@ -186,7 +199,7 @@ public class Playfield implements ToUnitTestFiller {
 		if (mySamples.size() < Constants.MAX_SAMPLES) {
 			// Get one sample of the most interesting type
 			// TODO compute type dynamically
-			return new ConnectToSampler(1);
+			return new ConnectToSampler(mySamples.size()+1);
 		} else {
 			return new Goto(Module.DIAGNOSIS);
 		}
