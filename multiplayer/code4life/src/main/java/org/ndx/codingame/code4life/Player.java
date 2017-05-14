@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.ndx.codingame.code4life.entities.Module;
 import org.ndx.codingame.code4life.entities.Molecule;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
@@ -20,6 +21,10 @@ import org.ndx.codingame.gaming.tounittest.ToUnitTestStringBuilder;
 public class Player {
 
 	public static void main(final String args[]) {
+		System.err.println("Loading modules ...");
+		for(final Module m : Module.values()) {
+			System.err.println(m.loaded());
+		}
 		final Scanner in = new Scanner(System.in);
 		final int projectCount = in.nextInt();
 		for (int i = 0; i < projectCount; i++) {

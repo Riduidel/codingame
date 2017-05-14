@@ -52,9 +52,21 @@ public class Sample implements ConstructableInUnitTest {
 			.append(id).append(",\t")
 			.append(owner).append(",\t")
 			.append(rank).append(",\t")
-			.append(expertiseGain).append(",\t")
+			.append("\"").append(expertiseGain).append("\"").append(",\t")
 			.append(health).append(",\t")
 			.append(Molecule.moleculeMapToArguments(cost)).append(")");
 		return returned;
+	}
+	/**
+	 * Compute cost in molecules for robot
+	 * @param robot
+	 * @return
+	 */
+	public int costFor(final Robot robot) {
+		int computed = 0;
+		for(final Molecule m : Molecule.values()) {
+			computed += cost.get(m) - robot.expertise.get(m);
+		}
+		return computed;
 	}
 }

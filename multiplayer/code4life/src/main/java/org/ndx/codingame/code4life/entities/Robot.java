@@ -1,9 +1,13 @@
 package org.ndx.codingame.code4life.entities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.ndx.codingame.code4life.Constants;
 import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 
 public class Robot implements ConstructableInUnitTest {
@@ -42,7 +46,7 @@ public class Robot implements ConstructableInUnitTest {
 	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append("new Robot(")
-			.append(target.name()).append(",\t")
+			.append("\"").append(target.name()).append("\"").append(",\t")
 			.append(eta).append(",\t")
 			.append(score).append(",\t")
 			.append(Molecule.moleculeMapToArguments(counts)).append(", ")
@@ -56,6 +60,43 @@ public class Robot implements ConstructableInUnitTest {
 			if(counts.get(type)<toProcess.cost.get(type)) {
 				returned.add(type);
 			}
+		}
+		return returned;
+	}
+	/**
+	 * The best sample is the one which
+	 * <ul><li>Do not cost more than 10 molecules</li>
+	 * <li>Gives the most health</li>
+	 * </ul>
+	 * @param samplesInCloud
+	 * @return
+	 */
+	public Optional<Sample> findBestSampleIn(final List<Sample> samplesInCloud) {
+		return samplesInCloud.stream()
+			.filter((s) -> s.costFor(this)<Constants.MAX_MOLECULES)
+			.sorted(Comparator.comparingInt(Sample::getHealth))
+			.findFirst();
+	}
+	public boolean canSendToLaboratory(final Sample sample) {
+		return findMissingFor(sample).isEmpty();
+	}
+	public Map<Molecule, Integer> findMissingFor(final Sample sample) {
+		final Map<Molecule, Integer> missingRequirements = new EnumMap<>(Molecule.class);
+		for(final Molecule type : Molecule.values()) {
+			final int remaining = sample.cost.get(type) - (counts.get(type)+expertise.get(type));
+			if(remaining>0) {
+				missingRequirements.put(type, remaining);
+			}
+		}
+		return missingRequirements;
+	}
+	public boolean isFull() {
+		return getTotalCount()>=Constants.MAX_MOLECULES;
+	}
+	private int getTotalCount() {
+		int returned = 0;
+		for(final Molecule type : Molecule.values()) {
+			returned += counts.get(type);
 		}
 		return returned;
 	}
