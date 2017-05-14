@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Robot {
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
+
+public class Robot implements ConstructableInUnitTest {
 
 	public final Module target;
 	public final int eta;
@@ -19,6 +21,33 @@ public class Robot {
 		this.score = score;
 		this.counts = counts;
 		this.expertise = expertise;
+	}
+	public Robot(final String target, final int eta, final int score,
+			final int countA,
+			final int countB,
+			final int countC,
+			final int countD,
+			final int countE,
+			final int expertiseA,
+			final int expertiseB,
+			final int expertiseC,
+			final int expertiseD,
+			final int expertiseE) {
+		this(target, eta, score,
+				Molecule.toMap(countA, countB, countC, countD, countE),
+				Molecule.toMap(expertiseA, expertiseB, expertiseC, expertiseD, expertiseE));
+	}
+
+	@Override
+	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
+		final StringBuilder returned = new StringBuilder();
+		returned.append("new Robot(")
+			.append(target.name()).append(",\t")
+			.append(eta).append(",\t")
+			.append(score).append(",\t")
+			.append(Molecule.moleculeMapToArguments(counts)).append(", ")
+			.append(Molecule.moleculeMapToArguments(expertise)).append(")");
+		return returned;
 	}
 
 	public List<Molecule> findRequiredMoleculesFor(final Sample toProcess) {

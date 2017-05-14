@@ -3,7 +3,9 @@ package org.ndx.codingame.code4life.entities;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Sample {
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
+
+public class Sample implements ConstructableInUnitTest {
 
 	public final int id;
 	public final int owner;
@@ -22,6 +24,15 @@ public class Sample {
 		this.health = health;
 		this.cost = cost;
 	}
+	public Sample(final int sampleId, final int carriedBy, final int rank, final String expertiseGain, final int health,
+			final int countA,
+			final int countB,
+			final int countC,
+			final int countD,
+			final int countE) {
+		this(sampleId, carriedBy, rank, expertiseGain, health, Molecule.toMap(countA, countB, countC, countD, countE));
+	}
+
 
 	public int getHealth() {
 		return health;
@@ -33,5 +44,17 @@ public class Sample {
 
 	public boolean isDiagnosed() {
 		return cost.values().stream().collect(Collectors.summingInt((v) -> v))>0;
+	}
+	@Override
+	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
+		final StringBuilder returned = new StringBuilder();
+		returned.append("new Sample(")
+			.append(id).append(",\t")
+			.append(owner).append(",\t")
+			.append(rank).append(",\t")
+			.append(expertiseGain).append(",\t")
+			.append(health).append(",\t")
+			.append(Molecule.moleculeMapToArguments(cost)).append(")");
+		return returned;
 	}
 }
