@@ -63,12 +63,6 @@ public class Playfield implements ToUnitTestFiller {
 		if(onRobot.isEmpty()) {
 			System.err.println("Robot has no sample");
 			if(my.target.equals(Module.SAMPLES)) {
-//				final List<Sample> inCloud = samples.stream().filter((s) -> s.owner < 0).collect(Collectors.toList());
-//				// Get sample giving best score
-//				final Sample toCollect = inCloud.stream()
-//						.sorted(Comparator.comparingInt(Sample::getRank).reversed())
-//						.findFirst()
-//						.get();
 				System.err.println("Getting samples from cloud");
 				return new ConnectToSampler(2);
 			} else {
