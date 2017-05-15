@@ -98,4 +98,26 @@ public class InGameTest {
 		assertThat(playfield.computeMoves()).isNotEmpty()
 			.isEqualTo("GOTO SAMPLES");
 	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_compute_at__1494861402433_should_not_go_to_laboratory() {
+		final List<Robot> robots=new ArrayList<>();
+			robots.add(new Robot("MOLECULES",	0,	4,	1, 0, 2, 3, 4, 2, 1, 1, 0, 0));
+			robots.add(new Robot("MOLECULES",	2,	90,	0, 0, 0, 0, 0, 0, 1, 1, 2, 1));
+		final List<Sample> samples=new ArrayList<>();
+			samples.add(new Sample(7,	0,	3,	"B",	30,	3, 0, 3, 3, 5));
+			samples.add(new Sample(11,	1,	2,	"A",	20,	0, 0, 0, 5, 0));
+			samples.add(new Sample(12,	1,	2,	"E",	10,	3, 2, 2, 0, 0));
+			samples.add(new Sample(9,	-1,	1,	"C",	1,	1, 1, 0, 1, 1));
+		final List<Project> projects=new ArrayList<>();
+			projects.add(new Project(0, 3, 3, 3, 0));
+			projects.add(new Project(0, 0, 4, 4, 0));
+			projects.add(new Project(3, 0, 0, 3, 3));
+		final Playfield playfield = new Playfield();
+		playfield.addAllRobots(robots);
+		playfield.addAllSamples(samples);
+		playfield.addAllProjects(projects);
+		playfield.addAllAvailable(MoleculeStore.toMap(5, 6, 4, 3, 2));
+		assertThat(playfield.computeMoves()).isNotEmpty()
+			.isNotEqualTo("GOTO LABORATORY");
+	}
 }

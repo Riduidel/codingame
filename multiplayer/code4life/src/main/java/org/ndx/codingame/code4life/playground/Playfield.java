@@ -173,8 +173,21 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 					}
 				}
 			}
+			// Take one molecule of the least owned one
+			final Optional<Molecule> toGet = getAvailable().keySet().stream()
+				.filter((m) -> getAvailable().get(m)>0)
+				.sorted((first, second) -> (int) Math.signum(my.getAvailable().get(first)-my.getAvailable().get(second)))
+				.findFirst();
+			if(toGet.isPresent()) {
+				return new ConnectToDistribution(toGet.get());
+			}
 		}
-		return new Goto(Module.LABORATORY);
+		for(final Sample s : getSamplesOf(my)) {
+			if(my.canSendToLaboratory(s)) {
+				return new Goto(Module.LABORATORY);
+			}
+		}
+		return new Goto(Module.DIAGNOSIS);
 	}
 
 	public Action computeMoveOnSamples(final Robot my, final List<Sample> mySamples) {
@@ -182,7 +195,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 			// Get one sample of the most interesting type
 			int totalExpertise = MoleculeStore.totalCostOf(my.expertise);
 			for(final Sample s : mySamples) {
-				totalExpertise = totalExpertise - s.rank;
+				totalExpertise = totalExpertise - s.rank*Constants.RANK_FACTOR;
 			}
 			return new ConnectToSampler(Math.min(Math.max(totalExpertise, 1), 3));
 		} else {
