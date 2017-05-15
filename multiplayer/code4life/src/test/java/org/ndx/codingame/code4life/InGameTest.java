@@ -79,4 +79,23 @@ public class InGameTest {
 		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 5, 6, 5));
 		assertThat(playfield.computeMoves()).isNotEqualTo("CONNECT 8").isNotEmpty();
 	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_compute_at__1494859419190_should_go_to_samples() {
+		final List<Robot> robots=new ArrayList<>();
+			robots.add(new Robot("LABORATORY",	0,	3,	0, 0, 0, 1, 0, 1, 1, 0, 1, 0));
+			robots.add(new Robot("MOLECULES",	1,	40,	0, 3, 0, 0, 0, 0, 0, 0, 1, 1));
+		final List<Sample> samples=new ArrayList<>();
+			samples.add(new Sample(3,	1,	2,	"D",	10,	0, 3, 0, 2, 3));
+		final List<Project> projects=new ArrayList<>();
+			projects.add(new Project(0, 0, 4, 4, 0));
+			projects.add(new Project(4, 0, 0, 0, 4));
+			projects.add(new Project(3, 3, 0, 0, 3));
+		final Playfield playfield = new Playfield();
+		playfield.addAllRobots(robots);
+		playfield.addAllSamples(samples);
+		playfield.addAllProjects(projects);
+		playfield.addAllAvailable(MoleculeStore.toMap(6, 3, 6, 5, 6));
+		assertThat(playfield.computeMoves()).isNotEmpty()
+			.isEqualTo("GOTO SAMPLES");
+	}
 }
