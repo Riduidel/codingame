@@ -128,10 +128,10 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 				.collect(Collectors.toList());
 		if (byHealth.isEmpty()) {
 			// Are there any samples in diagnosis ?
-			if (getSamplesOf(this).isEmpty()) {
-				return new Goto(Module.SAMPLES);
-			} else {
+			if(getUsableSamplesOf(my).isEmpty()) {
 				return new Goto(Module.DIAGNOSIS);
+			} else {
+				return new Goto(Module.SAMPLES);
 			}
 		} else {
 			// Do we have enough molecules to process first sample ?
