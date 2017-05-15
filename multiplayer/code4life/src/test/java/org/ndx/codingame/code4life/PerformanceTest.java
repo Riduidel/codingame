@@ -11,7 +11,7 @@ import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.ndx.codingame.code4life.entities.Molecule;
+import org.ndx.codingame.code4life.entities.MoleculeStore;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
 import org.ndx.codingame.code4life.playground.Playfield;
@@ -39,7 +39,7 @@ public class PerformanceTest {
 		final Playfield playfield = new Playfield();
 		playfield.addAllRobots(robots);
 		playfield.addAllSamples(samples);
-		playfield.setAvailable(Molecule.toMap(6, 6, 6, 6, 6));
+		playfield.addAllAvailable(MoleculeStore.toMap(6, 6, 6, 6, 6));
 		assertThat(playfield.computeMoves()).isNotEmpty();
 	}
 }

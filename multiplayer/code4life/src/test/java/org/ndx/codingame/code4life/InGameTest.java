@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.ndx.codingame.code4life.entities.Molecule;
+import org.ndx.codingame.code4life.entities.MoleculeStore;
+import org.ndx.codingame.code4life.entities.Project;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
 import org.ndx.codingame.code4life.playground.Playfield;
@@ -31,9 +32,51 @@ public class InGameTest {
 		final Playfield playfield = new Playfield();
 		playfield.addAllRobots(robots);
 		playfield.addAllSamples(samples);
-		playfield.setAvailable(Molecule.toMap(0, 2, 6, 6, 6));
+		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 6, 6, 6));
 		assertThat(playfield.computeMoves())
 			.isNotEqualTo("GOTO LABORATORY")
 			.isNotEmpty();
+	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void should_release_not_processable_sample_stored_locally() {
+		final List<Robot> robots=new ArrayList<>();
+			robots.add(new Robot("DIAGNOSIS",	0,	3,	0, 1, 1, 0, 0, 1, 1, 1, 0, 0));
+			robots.add(new Robot("DIAGNOSIS",	3,	31,	6, 3, 0, 0, 1, 0, 0, 0, 1, 1));
+		final List<Sample> samples=new ArrayList<>();
+			samples.add(new Sample(8,	0,	1,	"C",	1,	2, 1, 0, 0, 0));
+			samples.add(new Sample(5,	1,	3,	"B",	40,	6, 3, 0, 0, 3));
+			samples.add(new Sample(6,	-1,	3,	"E",	30,	3, 3, 5, 3, 0));
+			samples.add(new Sample(7,	-1,	1,	"D",	1,	2, 0, 0, 2, 0));
+		final List<Project> projects=new ArrayList<>();
+			projects.add(new Project(4, 0, 0, 0, 4));
+			projects.add(new Project(0, 0, 4, 4, 0));
+			projects.add(new Project(3, 3, 3, 0, 0));
+		final Playfield playfield = new Playfield();
+		playfield.addAllRobots(robots);
+		playfield.addAllSamples(samples);
+		playfield.addAllProjects(projects);
+		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 5, 6, 5));
+		assertThat(playfield.computeMoves()).isEqualTo("CONNECT 8").isNotEmpty();
+	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void should_not_take_sample_8() {
+		final List<Robot> robots=new ArrayList<>();
+			robots.add(new Robot("DIAGNOSIS",	0,	3,	0, 1, 1, 0, 0, 1, 1, 1, 0, 0));
+			robots.add(new Robot("DIAGNOSIS",	3,	31,	6, 3, 0, 0, 1, 0, 0, 0, 1, 1));
+		final List<Sample> samples=new ArrayList<>();
+			samples.add(new Sample(8,	-1,	1,	"C",	1,	2, 1, 0, 0, 0));
+			samples.add(new Sample(5,	1,	3,	"B",	40,	6, 3, 0, 0, 3));
+			samples.add(new Sample(6,	-1,	3,	"E",	30,	3, 3, 5, 3, 0));
+			samples.add(new Sample(7,	-1,	1,	"D",	1,	2, 0, 0, 2, 0));
+		final List<Project> projects=new ArrayList<>();
+			projects.add(new Project(4, 0, 0, 0, 4));
+			projects.add(new Project(0, 0, 4, 4, 0));
+			projects.add(new Project(3, 3, 3, 0, 0));
+		final Playfield playfield = new Playfield();
+		playfield.addAllRobots(robots);
+		playfield.addAllSamples(samples);
+		playfield.addAllProjects(projects);
+		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 5, 6, 5));
+		assertThat(playfield.computeMoves()).isNotEqualTo("CONNECT 8").isNotEmpty();
 	}
 }

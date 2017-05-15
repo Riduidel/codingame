@@ -2,7 +2,6 @@ package org.ndx.codingame.code4life.entities;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,12 +9,11 @@ import java.util.Optional;
 import org.ndx.codingame.code4life.Constants;
 import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 
-public class Robot implements ConstructableInUnitTest {
+public class Robot extends MoleculeStore implements ConstructableInUnitTest {
 
 	public final Module target;
 	public final int eta;
 	public final int score;
-	public final Map<Molecule, Integer> counts;
 	public final Map<Molecule, Integer> expertise;
 
 	public Robot(final String target, final int eta, final int score, final Map<Molecule, Integer> counts,
@@ -23,7 +21,7 @@ public class Robot implements ConstructableInUnitTest {
 		this.target = Module.valueOf(target);
 		this.eta = eta;
 		this.score = score;
-		this.counts = counts;
+		addAllAvailable(counts);
 		this.expertise = expertise;
 	}
 	public Robot(final String target, final int eta, final int score,
@@ -38,8 +36,8 @@ public class Robot implements ConstructableInUnitTest {
 			final int expertiseD,
 			final int expertiseE) {
 		this(target, eta, score,
-				Molecule.toMap(countA, countB, countC, countD, countE),
-				Molecule.toMap(expertiseA, expertiseB, expertiseC, expertiseD, expertiseE));
+				MoleculeStore.toMap(countA, countB, countC, countD, countE),
+				MoleculeStore.toMap(expertiseA, expertiseB, expertiseC, expertiseD, expertiseE));
 	}
 
 	@Override
@@ -49,15 +47,15 @@ public class Robot implements ConstructableInUnitTest {
 			.append("\"").append(target.name()).append("\"").append(",\t")
 			.append(eta).append(",\t")
 			.append(score).append(",\t")
-			.append(Molecule.moleculeMapToArguments(counts)).append(", ")
-			.append(Molecule.moleculeMapToArguments(expertise)).append(")");
+			.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append(", ")
+			.append(MoleculeStore.moleculeMapToArguments(expertise)).append(")");
 		return returned;
 	}
 
 	public List<Molecule> findRequiredMoleculesFor(final Sample toProcess) {
 		final List<Molecule> returned = new ArrayList<>();
 		for(final Molecule type : Molecule.values()) {
-			if(counts.get(type)<toProcess.cost.get(type)) {
+			if(getAvailable().get(type)<toProcess.cost.get(type)) {
 				returned.add(type);
 			}
 		}
@@ -73,31 +71,29 @@ public class Robot implements ConstructableInUnitTest {
 	 */
 	public Optional<Sample> findBestSampleIn(final List<Sample> samplesInCloud) {
 		return samplesInCloud.stream()
-			.filter((s) -> s.costFor(this)<Constants.MAX_MOLECULES)
+			.filter((s) -> costOf(s)<Constants.MAX_MOLECULES)
 			.sorted(Comparator.comparingInt(Sample::getHealth))
 			.findFirst();
+	}
+
+	public int costOf(final Sample s) {
+		final Map<Molecule, Integer> expertiseApplied = MoleculeStore.substract(s.cost, expertise);
+		return totalCostOf(expertiseApplied);
 	}
 	public boolean canSendToLaboratory(final Sample sample) {
 		return findMissingFor(sample).isEmpty();
 	}
-	public Map<Molecule, Integer> findMissingFor(final Sample sample) {
-		final Map<Molecule, Integer> missingRequirements = new EnumMap<>(Molecule.class);
-		for(final Molecule type : Molecule.values()) {
-			final int remaining = sample.cost.get(type) - (counts.get(type)+expertise.get(type));
-			if(remaining>0) {
-				missingRequirements.put(type, remaining);
-			}
+
+	@Override
+	public Map<Molecule, Integer> findMissingFor(final Map<Molecule, Integer> cost) {
+		final Map<Molecule, Integer> expertiseApplied = MoleculeStore.substract(cost, expertise);
+		if(expertiseApplied.isEmpty()) {
+			return expertiseApplied;
 		}
-		return missingRequirements;
+		return super.findMissingFor(expertiseApplied);
 	}
+
 	public boolean isFull() {
 		return getTotalCount()>=Constants.MAX_MOLECULES;
-	}
-	private int getTotalCount() {
-		int returned = 0;
-		for(final Molecule type : Molecule.values()) {
-			returned += counts.get(type);
-		}
-		return returned;
 	}
 }

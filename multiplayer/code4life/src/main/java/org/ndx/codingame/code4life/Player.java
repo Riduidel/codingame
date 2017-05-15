@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Scanner;
 
 import org.ndx.codingame.code4life.entities.Molecule;
+import org.ndx.codingame.code4life.entities.MoleculeStore;
+import org.ndx.codingame.code4life.entities.Project;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
 import org.ndx.codingame.code4life.playground.Playfield;
@@ -22,18 +24,21 @@ public class Player {
 	public static void main(final String args[]) {
 		final Scanner in = new Scanner(System.in);
 		final int projectCount = in.nextInt();
+		final List<Project> projects = new ArrayList<>();
 		for (int i = 0; i < projectCount; i++) {
 			final int a = in.nextInt();
 			final int b = in.nextInt();
 			final int c = in.nextInt();
 			final int d = in.nextInt();
 			final int e = in.nextInt();
+			projects.add(new Project(MoleculeStore.toMap(a, b, c, d, e)));
 		}
 
 		// game loop
 		while (true) {
 			final Playfield playfield = new Playfield();
-			final Robot my = null;
+			playfield.addAllProjects(projects);
+			final MoleculeStore my = null;
 			final List<Robot> robots= new ArrayList<>();
 			for (int i = 0; i < 2; i++) {
 				// module where player is
@@ -42,13 +47,13 @@ public class Player {
 				// health points of player
 				final int score = in.nextInt();
 				final Map<Molecule, Integer> counts =
-						Molecule.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt());
+						MoleculeStore.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt());
 				final Map<Molecule, Integer> expertise =
-						Molecule.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt());
+						MoleculeStore.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt());
 				robots.add(new Robot(target, eta, score, counts, expertise));
 			}
 			playfield.addAllRobots(robots);
-			playfield.setAvailable(Molecule.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt()));
+			playfield.addAllAvailable(MoleculeStore.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt()));
 			final Collection<Sample> samples = new ArrayList<>();
 			final int sampleCount = in.nextInt();
 			for (int i = 0; i < sampleCount; i++) {
