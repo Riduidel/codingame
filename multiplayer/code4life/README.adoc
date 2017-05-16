@@ -1,0 +1,52 @@
+= Notes diverses
+
+Alors,
+pour l'instant, je tente d'implémenter une machine à états, mais ça me paraît un peu flou.
+Je vais donc claquer un bon coup de PlantUML pour clarifier les choses.
+
+[uml,file="src/site/images/sequence.png"]
+----
+@startuml
+
+state NoSamples {
+    state Anywhere_NoSamples
+    state OnSamples
+    Anywhere_NoSamples --> OnSamples : Move to samples
+    OnSamples : requires sample ranking
+}
+
+[*] --> Anywhere_NoSamples
+
+state HavingUnknownSamples {
+    state Anywhere_UnknownSamples
+    state OnDiagnosis
+    OnDiagnosis : read/write samples to cloud
+    OnDiagnosis : TODO get samples for which we can have enough molecules
+	OnSamples --> Anywhere_UnknownSamples : collected samples
+    Anywhere_UnknownSamples --> OnDiagnosis : Move to diagnosis
+}
+
+state HavingKnownSamples {
+    state Anywhere_KnownSamples
+    state OnMolecules
+    OnMolecules : TODO Always get first molecules with the smallest count
+    Anywhere_KnownSamples --> OnMolecules : Move to molecules
+}
+
+OnDiagnosis --> Anywhere_KnownSamples : collected usable samples\ncount them according to usable molecules
+OnDiagnosis --> Anywhere_NoSamples : collected unusable samples
+Anywhere_KnownSamples --> OnDiagnosis : No molecules for collected samples
+
+state HavingSamplesAndMolecules {
+    state Anywhere_SamplesAndMolecules
+    state OnLaboratory
+    Anywhere_SamplesAndMolecules --> OnLaboratory : Move to laboratory
+}
+
+OnMolecules --> Anywhere_SamplesAndMolecules : collected molecules for samples
+OnMolecules --> Anywhere_NoSamples : couldn't collect enough molecules
+OnLaboratory --> Anywhere_NoSamples : processed samples
+OnLaboratory --> Anywhere_KnownSamples : not enough molecules
+
+@enduml
+----
