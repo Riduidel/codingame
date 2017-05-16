@@ -59,12 +59,12 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 				Project.class, "c"));
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield();\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.withRobots(r)\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithSamples(s)\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithProjects(c);\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithAvailable(MoleculeStore.toMap(")
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withSamples(s)\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withProjects(c)\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.addAllAvailable(MoleculeStore.toMap(")
 				.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append("));\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
-				.append("assertThat(playfield.computeMoves()).isNotEmpty();\n");
+				.append("assertThat(p.computeMoves()).isNotEmpty();\n");
 		return returned;
 	}
 
