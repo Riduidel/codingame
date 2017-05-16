@@ -30,8 +30,8 @@ public class InGameTest {
 			samples.add(new Sample(5,	-1,	0,	"C",	1,	1, 1, 0, 1, 2));
 			samples.add(new Sample(6,	-1,	0,	"D",	1,	1, 1, 1, 0, 1));
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
 		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 6, 6, 6));
 		assertThat(playfield.computeMoves())
 			.isNotEqualTo("GOTO LABORATORY")
@@ -52,9 +52,9 @@ public class InGameTest {
 			projects.add(new Project(0, 0, 4, 4, 0));
 			projects.add(new Project(3, 3, 3, 0, 0));
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
-		playfield.addAllProjects(projects);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
+		playfield.withProjects(projects);
 		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 5, 6, 5));
 		assertThat(playfield.computeMoves()).isEqualTo("CONNECT 8").isNotEmpty();
 	}
@@ -73,9 +73,9 @@ public class InGameTest {
 			projects.add(new Project(0, 0, 4, 4, 0));
 			projects.add(new Project(3, 3, 3, 0, 0));
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
-		playfield.addAllProjects(projects);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
+		playfield.withProjects(projects);
 		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 5, 6, 5));
 		assertThat(playfield.computeMoves()).isNotEqualTo("CONNECT 8").isNotEmpty();
 	}
@@ -91,9 +91,9 @@ public class InGameTest {
 			projects.add(new Project(4, 0, 0, 0, 4));
 			projects.add(new Project(3, 3, 0, 0, 3));
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
-		playfield.addAllProjects(projects);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
+		playfield.withProjects(projects);
 		playfield.addAllAvailable(MoleculeStore.toMap(6, 3, 6, 5, 6));
 		assertThat(playfield.computeMoves()).isNotEmpty()
 			.isEqualTo("GOTO SAMPLES");
@@ -113,9 +113,9 @@ public class InGameTest {
 			projects.add(new Project(0, 0, 4, 4, 0));
 			projects.add(new Project(3, 0, 0, 3, 3));
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
-		playfield.addAllProjects(projects);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
+		playfield.withProjects(projects);
 		playfield.addAllAvailable(MoleculeStore.toMap(5, 6, 4, 3, 2));
 		assertThat(playfield.computeMoves()).isNotEmpty()
 			.isNotEqualTo("GOTO LABORATORY");

@@ -33,32 +33,35 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	private final List<Project> projects = new ArrayList<>();
 	private List<Sample> usableSamples;
 
-	public void addAllProjects(final List<Project> projects) {
+	public Playfield withProjects(final List<Project> projects) {
 		this.projects.addAll(projects);
+		return this;
 	}
 
-	public void addAllRobots(final List<Robot> robots) {
+	public Playfield withRobots(final List<Robot> robots) {
 		this.robots.addAll(robots);
+		return this;
 	}
 
-	public void addAllSamples(final Collection<Sample> samples) {
+	public Playfield withSamples(final Collection<Sample> samples) {
 		this.samples.addAll(samples);
+		return this;
 	}
 
 	@Override
 	public StringBuilder build() {
 		final StringBuilder returned = new StringBuilder();
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, robots, List.class,
-				Robot.class, "robots"));
+				Robot.class, "r"));
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, samples, List.class,
-				Sample.class, "samples"));
+				Sample.class, "s"));
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, projects, List.class,
-				Project.class, "projects"));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield playfield = new Playfield();\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("playfield.addAllRobots(robots);\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("playfield.addAllSamples(samples);\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("playfield.addAllProjects(projects);\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("playfield.addAllAvailable(MoleculeStore.toMap(")
+				Project.class, "c"));
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield();\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.withRobots(r)\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithSamples(s)\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithProjects(c);\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\twithAvailable(MoleculeStore.toMap(")
 				.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append("));\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
 				.append("assertThat(playfield.computeMoves()).isNotEmpty();\n");
@@ -100,7 +103,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 						// We have not filled our collection, but can't fill it
 						// any more, so give up
 						// and jump on molecules
-						return new Goto(Module.MOLECULES);
+						return leaveDiagnosis(my);
 					}
 				}
 				// TODO can all owned samples be processed ? If not, release
@@ -108,11 +111,18 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 			} else {
 				// What are we waiting ? Jump to molecules ! (TODO unless we
 				// have enough molecules)
-				return new Goto(Module.MOLECULES);
+				return leaveDiagnosis(my);
 			}
 		} else {
 			return new ConnectToDiagnostic(unanalyzed.get(0));
 		}
+	}
+
+	private Action leaveDiagnosis(final Robot my) {
+		if(my.isFull()) {
+			return new Goto(Module.LABORATORY);
+		}
+		return new Goto(Module.MOLECULES);
 	}
 	private List<Sample> getUsableSamplesOf(final Robot my) {
 		if(usableSamples==null) {

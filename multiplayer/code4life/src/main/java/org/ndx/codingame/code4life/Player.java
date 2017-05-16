@@ -37,7 +37,7 @@ public class Player {
 		// game loop
 		while (true) {
 			final Playfield playfield = new Playfield();
-			playfield.addAllProjects(projects);
+			playfield.withProjects(projects);
 			final MoleculeStore my = null;
 			final List<Robot> robots= new ArrayList<>();
 			for (int i = 0; i < 2; i++) {
@@ -52,7 +52,7 @@ public class Player {
 						MoleculeStore.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt());
 				robots.add(new Robot(target, eta, score, counts, expertise));
 			}
-			playfield.addAllRobots(robots);
+			playfield.withRobots(robots);
 			playfield.addAllAvailable(MoleculeStore.toMap(in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt(), in.nextInt()));
 			final Collection<Sample> samples = new ArrayList<>();
 			final int sampleCount = in.nextInt();
@@ -69,7 +69,7 @@ public class Player {
 				}
 				samples.add(new Sample(sampleId, carriedBy, rank, expertiseGain, health, cost));
 			}
-			playfield.addAllSamples(samples);
+			playfield.withSamples(samples);
 
 			System.err.println(ToUnitTestStringBuilder.canComputeAt(playfield));
 			System.out.println(playfield.computeMoves());

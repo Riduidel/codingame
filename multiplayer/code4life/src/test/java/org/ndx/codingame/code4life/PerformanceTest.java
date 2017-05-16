@@ -37,8 +37,8 @@ public class PerformanceTest {
 		robots.add(new Robot("MOLECULES", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 		final List<Sample> samples = new ArrayList<>();
 		final Playfield playfield = new Playfield();
-		playfield.addAllRobots(robots);
-		playfield.addAllSamples(samples);
+		playfield.withRobots(robots);
+		playfield.withSamples(samples);
 		playfield.addAllAvailable(MoleculeStore.toMap(6, 6, 6, 6, 6));
 		assertThat(playfield.computeMoves()).isNotEmpty();
 	}
