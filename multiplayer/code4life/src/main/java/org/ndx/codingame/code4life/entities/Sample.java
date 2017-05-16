@@ -106,4 +106,24 @@ public class Sample implements ConstructableInUnitTest {
 			return Constants.SCORE_NOT_PROCESSABLE;
 		}
 	}
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("Sample [id=");
+		builder.append(id);
+		builder.append(", owner=");
+		builder.append(owner);
+		builder.append(", cost=");
+		builder.append(cost);
+		builder.append(", rank=");
+		builder.append(rank);
+		builder.append(", expertiseGain=");
+		builder.append(expertiseGain);
+		builder.append(", health=");
+		builder.append(health);
+		builder.append(", score=");
+		builder.append(score);
+		builder.append("]");
+		return builder.toString();
+	}
 }

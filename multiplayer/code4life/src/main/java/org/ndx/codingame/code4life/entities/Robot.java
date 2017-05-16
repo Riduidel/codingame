@@ -96,4 +96,16 @@ public class Robot extends MoleculeStore implements ConstructableInUnitTest {
 	public boolean isFull() {
 		return getTotalCount()>=Constants.MAX_MOLECULES;
 	}
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("Robot [score=");
+		builder.append(score);
+		builder.append(",\n getAvailable()=\t");
+		builder.append(getAvailable());
+		builder.append(",\n      expertise=\t");
+		builder.append(expertise);
+		builder.append("]");
+		return builder.toString();
+	}
 }

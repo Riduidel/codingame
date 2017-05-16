@@ -229,12 +229,24 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	public Set<Molecule> completableProjectsRequirements() {
 		final Set<Molecule> returned = new HashSet<>();
 		for(final Project p : completableProjects()) {
-			returned.addAll(p.required.keySet());
+			returned.addAll(p.getAvailable().keySet());
 		}
 		return returned;
 	}
 
 	private Collection<Project> completableProjects() {
 		return projects;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("Playfield [");
+		builder.append("getAvailable()=");
+		builder.append(getAvailable());
+		builder.append(",\nprojects=[");
+		builder.append(projects.stream().map(Project::toString).collect(Collectors.joining(",\n\t", "\n\t", "]")));
+		builder.append("]");
+		return builder.toString();
 	}
 }
