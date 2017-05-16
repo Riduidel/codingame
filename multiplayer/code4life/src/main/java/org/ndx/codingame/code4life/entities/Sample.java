@@ -101,7 +101,7 @@ public class Sample implements ConstructableInUnitTest {
 		final Map<Molecule, Integer> missingFromRobot = my.findMissingFor(this);
 		final Map<Molecule, Integer> missingFromStore = playfield.findMissingFor(missingFromRobot);
 		if(missingFromStore.isEmpty()) {
-			return missingFromRobot.values().stream().collect(Collectors.summingInt((c) -> c));
+			return -1*missingFromRobot.values().stream().collect(Collectors.summingInt((c) -> c));
 		} else {
 			return Constants.SCORE_NOT_PROCESSABLE;
 		}
