@@ -18,9 +18,11 @@ public class Known extends StatedComputer {
 	public Action compute(final Robot my) {
 		if (playfield.canService(my)) {
 			return new Goto(Module.MOLECULES);
-		} else {
+		} else if(my.target.equals(Module.DIAGNOSIS)){
 			final Sample toRemove = playfield.findUnservicable(my).get(0);
 			return new ConnectToDiagnostic(toRemove);
+		} else {
+			return new Goto(Module.DIAGNOSIS);
 		}
 	}
 }
