@@ -31,15 +31,15 @@ public class Processing extends StatedComputer {
 		final List<Sample> processableSamples = samplesWithMoleculesSetTo(my, true);
 		if(processableSamples.isEmpty()) {
 			final Playfield derived = playfield.derive(my.target.distanceTo(Module.DIAGNOSIS)+Module.DIAGNOSIS.distanceTo(Module.MOLECULES));
-			if(findInterestingSamplesIn(derived, my, playfield.getSamplesListOf(playfield)).isEmpty()) {
-				return new Goto(Module.SAMPLES);
-			} else {
+			//			if(findInterestingSamplesIn(derived, my, playfield.getSamplesListOf(playfield)).isEmpty()) {
+			return new Goto(Module.SAMPLES);
+			/*			} else {
 				return new Goto(Module.DIAGNOSIS);
 			}
-		} else {
-			processableSamples.sort(Sample.BY_DESCENDING_HEALTH);
-			return new ConnectToLaboratory(processableSamples.get(0));
-		}
+			 */		} else {
+				 processableSamples.sort(Sample.BY_DESCENDING_HEALTH);
+				 return new ConnectToLaboratory(processableSamples.get(0));
+			 }
 	}
 
 }
