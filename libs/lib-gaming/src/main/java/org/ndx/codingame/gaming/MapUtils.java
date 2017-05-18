@@ -1,8 +1,9 @@
 package org.ndx.codingame.gaming;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,10 +43,10 @@ public class MapUtils {
 		}
 	}
 
-	public static <Key, Value extends Comparable<? super Value>> Collection<Key> keysByValue(final Map<Key, Value> map) {
+	public static <Key, Value extends Comparable<? super Value>> Deque<Key> keysByValue(final Map<Key, Value> map) {
 		final List<Map.Entry<Key, Value>> content = new ArrayList<>(map.entrySet());
 		content.sort(new ValueComparator<>());
-		final List<Key> returned = new ArrayList<>();
+		final Deque<Key> returned = new ArrayDeque<>();
 		for(final Map.Entry<Key, Value> entry : content) {
 			returned.add(entry.getKey());
 		}

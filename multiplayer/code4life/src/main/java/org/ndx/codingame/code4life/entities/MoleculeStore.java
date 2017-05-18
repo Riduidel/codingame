@@ -1,6 +1,6 @@
 package org.ndx.codingame.code4life.entities;
 
-import java.util.Collection;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -91,7 +91,7 @@ public class MoleculeStore {
 		return returned;
 	}
 
-	public Collection<Molecule> moleculesByRarity() {
+	public Deque<Molecule> moleculesByRarity() {
 		return MapUtils.keysByValue(available);
 	}
 }

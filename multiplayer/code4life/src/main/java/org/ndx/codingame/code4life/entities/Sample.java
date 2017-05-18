@@ -37,6 +37,7 @@ public class Sample implements ConstructableInUnitTest {
 	public final int health;
 	public final Map<Molecule, Integer> cost;
 	private Optional<Integer> score = Optional.empty();
+	private Optional<Integer> adequation = Optional.empty();
 
 	public Sample(final int sampleId, final int carriedBy, final int rank, final Molecule expertiseGain, final int health,
 			final Map<Molecule, Integer> cost) {
@@ -174,5 +175,15 @@ public class Sample implements ConstructableInUnitTest {
 			return false;
 		}
 		return true;
+	}
+	public int scienceProjectAdequation(final Playfield playfield) {
+		if(!adequation.isPresent()) {
+			int returned = 0;
+			for(final Molecule m : playfield.completableProjectsRequirements()) {
+				returned += cost.get(m);
+			}
+			adequation = Optional.of(returned);
+		}
+		return adequation.get();
 	}
 }

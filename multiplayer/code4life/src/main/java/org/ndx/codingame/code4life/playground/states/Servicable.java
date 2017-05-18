@@ -1,6 +1,6 @@
 package org.ndx.codingame.code4life.playground.states;
 
-import java.util.Collection;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.SortedSet;
@@ -23,7 +23,7 @@ public class Servicable extends StatedComputer {
 
 	@Override
 	public Action compute(final Robot my) {
-		final Collection<Molecule> byRarity = playfield.moleculesByRarity();
+		final Deque<Molecule> byRarity = playfield.moleculesByRarity();
 
 		final SortedSet<Sample> toService = new TreeSet<>(Sample.BY_DESCENDING_HEALTH);
 		toService.addAll(playfield.getSamplesListOf(my));
@@ -45,6 +45,15 @@ public class Servicable extends StatedComputer {
 				}
 			}
 			hasOneFilledSample = true;
+		}
+		// If we have molecules for all samples and still have some room, take some time
+		// to take adversary down
+		if(!my.isFullOfMolecules()) {
+			for(final Molecule m : byRarity) {
+				if(playfield.getAvailable().get(m)>0) {
+					return new ConnectToDistribution(m);
+				}
+			}
 		}
 		return new Goto(Module.LABORATORY);
 	}
