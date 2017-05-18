@@ -106,10 +106,19 @@ public class PlayfieldDeriver extends Playfield {
 		}
 	}
 
+	/**
+	 * Do not forget to put molecules back in game !
+	 * @param derived
+	 * @param toDrop
+	 * @return
+	 */
 	private Robot scoring(final Robot derived, final Sample toDrop) {
 		final Robot scored = derived.scoreTo(toDrop);
 		robots.set(robots.indexOf(derived), scored);
 		samples.remove(toDrop);
+		for(final Molecule m : Molecule.values()) {
+			getAvailable().put(m, getAvailable().get(m)+toDrop.cost.get(m));
+		}
 		return scored;
 	}
 
