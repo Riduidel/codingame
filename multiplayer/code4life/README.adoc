@@ -9,44 +9,46 @@ Je vais donc claquer un bon coup de PlantUML pour clarifier les choses.
 @startuml
 
 state NoSamples {
-    state Anywhere_NoSamples
-    state OnSamples
-    Anywhere_NoSamples --> OnSamples : Move to samples
-    OnSamples : requires sample ranking
+    state NOT_ENOUGH_SAMPLES
+    state LOADED_SAMPLES
+    NOT_ENOUGH_SAMPLES --> LOADED_SAMPLES : Move to samples
+    LOADED_SAMPLES : requires sample ranking
 }
 
-[*] --> Anywhere_NoSamples
+[*] --> NOT_ENOUGH_SAMPLES
 
 state HavingUnknownSamples {
-    state Anywhere_UnknownSamples
-    state OnDiagnosis
-    OnDiagnosis : read/write samples to cloud
-    OnDiagnosis : TODO get samples for which we can have enough molecules
-	OnSamples --> Anywhere_UnknownSamples : collected samples
-    Anywhere_UnknownSamples --> OnDiagnosis : Move to diagnosis
+    state UNKNOWN_SAMPLES
+    state DIAGNOSED_SAMPLES
+    DIAGNOSED_SAMPLES : read/write samples to cloud
+    DIAGNOSED_SAMPLES : TODO get samples for which we can have enough molecules
+	LOADED_SAMPLES --> UNKNOWN_SAMPLES : collected samples
+    UNKNOWN_SAMPLES --> DIAGNOSED_SAMPLES : Push samples to diagnosis
 }
 
 state HavingKnownSamples {
-    state Anywhere_KnownSamples
-    state OnMolecules
-    OnMolecules : TODO Always get first molecules with the smallest count
-    Anywhere_KnownSamples --> OnMolecules : Move to molecules
+    state KNOWN_SAMPLES
+    state SERVICABLE
+    SERVICABLE : Get molecules from machine
+    SERVICABLE : TODO Always get first molecules with the smallest count
+    KNOWN_SAMPLES --> SERVICABLE : Move to molecules
 }
 
-OnDiagnosis --> Anywhere_KnownSamples : collected usable samples\ncount them according to usable molecules
-OnDiagnosis --> Anywhere_NoSamples : collected unusable samples
-Anywhere_KnownSamples --> OnDiagnosis : No molecules for collected samples
+DIAGNOSED_SAMPLES --> KNOWN_SAMPLES : collected usable samples\ncount them according to usable molecules
+DIAGNOSED_SAMPLES --> NOT_ENOUGH_SAMPLES : collected unusable samples
+KNOWN_SAMPLES --> DIAGNOSED_SAMPLES : No molecules for collected samples
 
 state HavingSamplesAndMolecules {
-    state Anywhere_SamplesAndMolecules
-    state OnLaboratory
-    Anywhere_SamplesAndMolecules --> OnLaboratory : Move to laboratory
+    state PROCESSABLE_SAMPLE
+    state PROCESSING_SAMPLE
+    PROCESSING_SAMPLE : sending sample to laboratory
+    PROCESSABLE_SAMPLE --> PROCESSING_SAMPLE : Move to laboratory
 }
 
-OnMolecules --> Anywhere_SamplesAndMolecules : collected molecules for samples
-OnMolecules --> Anywhere_NoSamples : couldn't collect enough molecules
-OnLaboratory --> Anywhere_NoSamples : processed samples
-OnLaboratory --> Anywhere_KnownSamples : not enough molecules
+SERVICABLE --> PROCESSABLE_SAMPLE : collected molecules for samples
+SERVICABLE --> NOT_ENOUGH_SAMPLES : couldn't collect enough molecules
+PROCESSING_SAMPLE --> NOT_ENOUGH_SAMPLES : processed samples
+PROCESSING_SAMPLE --> KNOWN_SAMPLES : not enough molecules
 
 @enduml
 ----

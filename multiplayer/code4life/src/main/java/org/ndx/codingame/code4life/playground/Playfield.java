@@ -2,7 +2,8 @@ package org.ndx.codingame.code4life.playground;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.code4life.Constants;
-import org.ndx.codingame.code4life.actions.ConnectToDiagnostic;
-import org.ndx.codingame.code4life.actions.ConnectToDistribution;
-import org.ndx.codingame.code4life.actions.ConnectToLaboratory;
-import org.ndx.codingame.code4life.actions.ConnectToSampler;
-import org.ndx.codingame.code4life.actions.Goto;
 import org.ndx.codingame.code4life.actions.Wait;
 import org.ndx.codingame.code4life.entities.Module;
 import org.ndx.codingame.code4life.entities.Molecule;
@@ -23,15 +19,24 @@ import org.ndx.codingame.code4life.entities.MoleculeStore;
 import org.ndx.codingame.code4life.entities.Project;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
+import org.ndx.codingame.code4life.playground.states.Diagnosed;
+import org.ndx.codingame.code4life.playground.states.Initial;
+import org.ndx.codingame.code4life.playground.states.Known;
+import org.ndx.codingame.code4life.playground.states.LoadedSamples;
+import org.ndx.codingame.code4life.playground.states.NotEnough;
+import org.ndx.codingame.code4life.playground.states.Processing;
+import org.ndx.codingame.code4life.playground.states.Servicable;
+import org.ndx.codingame.code4life.playground.states.StatedComputer;
+import org.ndx.codingame.code4life.playground.states.Unknown;
 import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 
 public class Playfield extends MoleculeStore implements ToUnitTestFiller {
-	private final List<Robot> robots = new ArrayList<>();
-	private final List<Sample> samples = new ArrayList<>();
-	private final List<Project> projects = new ArrayList<>();
-	private List<Sample> usableSamples;
+	protected final List<Robot> robots = new ArrayList<>();
+	protected final List<Sample> samples = new ArrayList<>();
+	protected final List<Project> projects = new ArrayList<>();
+	private final Map<Integer, List<Sample>> samplesByOwner = new HashMap<>();
 
 	public Playfield withProjects(final List<Project> projects) {
 		this.projects.addAll(projects);
@@ -62,155 +67,132 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withSamples(s)\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withProjects(c)\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.addAllAvailable(MoleculeStore.toMap(")
-				.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append("));\n");
+		.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append("));\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
-				.append("assertThat(p.computeMoves()).isNotEmpty();\n");
+		.append("assertThat(p.computeMoves()).isNotEmpty();\n");
 		return returned;
 	}
 
 	private Action computeMoveOf(final Robot my) {
-		if (my.eta > 0) {
-			// As long as we are not on a module, move to that module
-			return new Wait();
-		} else {
-			return my.target.computeMoveOf(my, this);
+		if (my.eta == 0) {
+			final State state = identifyState(my);
+			final StatedComputer computer = getComputerFor(state);
+			return computer.compute(my);
+		}
+		// As long as we are not on a module, move to that module
+		return new Wait();
+	}
+	private StatedComputer getComputerFor(final State state) {
+		switch(state) {
+		case INITIAL:
+			return new Initial(this);
+		case NOT_ENOUGH_SAMPLES:
+			return new NotEnough(this);
+		case LOADED_SAMPLES:
+			return new LoadedSamples(this);
+		case UNKNOWN_SAMPLES:
+			return new Unknown(this);
+		case DIAGNOSED_SAMPLES:
+			return new Diagnosed(this);
+		case KNOWN_SAMPLES:
+			return new Known(this);
+		case SERVICABLE:
+			return new Servicable(this);
+		case PROCESSING:
+			return new Processing(this);
+		default:
+			throw new UnsupportedOperationException("unknown state "+state);
 		}
 	}
 
-	public Action computeMoveOnDiagnosis(final Robot my, final List<Sample> mySamples) {
-		// Do we have any unanalyzed sample ?
-		// If so, publish it on cloud
-		final List<Sample> unanalyzed = mySamples.stream().filter((s) -> !s.isDiagnosed()).collect(Collectors.toList());
-		if (unanalyzed.isEmpty()) {
-			// No unanalyzed sample ? cool
-			// wait ... do we have enough sample ?
-			if (mySamples.size()>0) {
-				for(final Sample s : mySamples) {
-					if(s.score(this, my)<0) {
-						// Push sample in cloud
-						return new ConnectToDiagnostic(s);
-					}
-				}
-			}
-			if (mySamples.size() < Constants.MAX_SAMPLES) {
-				final Optional<Sample> bestSample = my.findBestSampleIn(getUsableSamplesOf(my));
-				if (bestSample.isPresent()) {
-					return new ConnectToDiagnostic(bestSample.get());
-				} else {
-					if (mySamples.isEmpty()) {
-						return new Goto(Module.SAMPLES);
-					} else {
-						// We have not filled our collection, but can't fill it
-						// any more, so give up
-						// and jump on molecules
-						return leaveDiagnosis(my);
-					}
-				}
-				// TODO can all owned samples be processed ? If not, release
-				// sample
+	private State identifyState(final Robot my) {
+		switch(my.target) {
+		case START_POS:
+			return State.INITIAL;
+		case SAMPLES:
+			if(isFullOfSamples(my)) {
+				return State.LOADED_SAMPLES;
 			} else {
-				// What are we waiting ? Jump to molecules ! (TODO unless we
-				// have enough molecules)
-				return leaveDiagnosis(my);
+				return State.NOT_ENOUGH_SAMPLES;
 			}
-		} else {
-			return new ConnectToDiagnostic(unanalyzed.get(0));
-		}
-	}
-
-	private Action leaveDiagnosis(final Robot my) {
-		if(my.isFull()) {
-			return new Goto(Module.LABORATORY);
-		}
-		return new Goto(Module.MOLECULES);
-	}
-	private List<Sample> getUsableSamplesOf(final Robot my) {
-		if(usableSamples==null) {
-			usableSamples = getSamplesOf(this).stream()
-					.filter((s) -> s.score(this, my)>Constants.SCORE_NOT_PROCESSABLE)
-					.collect(Collectors.toList());
-		}
-		return usableSamples;
-	}
-
-	public Action computeMoveOnLaboratory(final Robot my, final List<Sample> mySamples) {
-		final List<Sample> byHealth = mySamples.stream().sorted(Comparator.comparingInt(Sample::getHealth))
-				.collect(Collectors.toList());
-		if (byHealth.isEmpty()) {
-			// Are there any samples in diagnosis ?
-			if(getUsableSamplesOf(my).isEmpty()) {
-				return new Goto(Module.SAMPLES);
+		case DIAGNOSIS:
+			if(hasUndiagnosedSamples(my)) {
+				return State.UNKNOWN_SAMPLES;
 			} else {
-				return new Goto(Module.DIAGNOSIS);
+				return State.DIAGNOSED_SAMPLES;
 			}
-		} else {
-			// Do we have enough molecules to process first sample ?
-			for (final Sample sample : byHealth) {
-				if (my.canSendToLaboratory(sample)) {
-					return new ConnectToLaboratory(sample);
-				}
+		case MOLECULES:
+			if(canGetMoleculesForSamples(my)) {
+				return State.SERVICABLE;
+			} else {
+				return State.KNOWN_SAMPLES;
 			}
-			for (final Sample sample : byHealth) {
-				if(isProcessable(my, sample)) {
-					return new Goto(Module.MOLECULES);
-				}
-			}
-			// TODO check if we can just reload molecules
-			return new Goto(Module.DIAGNOSIS);
+		case LABORATORY:
+			return State.PROCESSING;
+		default:
+			throw new UnsupportedOperationException("unknown target "+my.target.name());
 		}
 	}
 
-	private boolean isProcessable(final Robot my, final Sample sample) {
-		return findMissingFor(my, sample).isEmpty();
+	/**
+	 * @param my
+	 * @return true if we can get molecules for at least one of the robots
+	 */
+	private boolean canGetMoleculesForSamples(final Robot my) {
+		return !samplesWithMolecules(my).isEmpty();
+	}
+
+	public List<Sample> samplesWithoutMolecules(final Robot my) {
+		return samplesWithMoleculesSetTo(my, false);
+	}
+	public List<Sample> samplesWithMolecules(final Robot my) {
+		return samplesWithMoleculesSetTo(my, true);
+	}
+	public List<Sample> samplesWithMoleculesSetTo(final Robot my, final boolean expected) {
+		final List<Sample> returned = new ArrayList<>();
+		for(final Sample s: getSamplesListOf(my)) {
+			if(canProvideMoleculesFor(my, s)==expected) {
+				returned.add(s);
+			}
+		}
+		return returned;
+	}
+
+	public boolean hasUndiagnosedSamples(final Robot my) {
+		return getFirstUndiagnosedSample(my).isPresent();
+	}
+	public Optional<Sample> getFirstUndiagnosedSample(final Robot my) {
+		for(final Sample s : getSamplesListOf(my)) {
+			if(s.isDiagnosed()==false) {
+				return Optional.of(s);
+			}
+		}
+		return Optional.empty();
+	}
+
+	public boolean hasDiagnosedSamples(final Robot my) {
+		return !getSamplesListOf(my).isEmpty() && !getFirstUndiagnosedSample(my).isPresent();
+	}
+	public boolean isFullOfDiagnosedSamples(final Robot my) {
+		if(!isFullOfSamples(my)) {
+			return false;
+		}
+		for(final Sample s : getSamplesListOf(my)) {
+			if(s.isDiagnosed()==false) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isFullOfSamples(final Robot my) {
+		return getSamplesListOf(my).size()>=Constants.MAX_SAMPLES;
 	}
 
 	private Map<Molecule, Integer> findMissingFor(final Robot my, final Sample sample) {
 		final Map<Molecule, Integer> missingFromRobot = my.findMissingFor(sample);
 		final Map<Molecule, Integer> missingFromStore = findMissingFor(missingFromRobot);
 		return missingFromStore;
-	}
-
-	public Action computeMoveOnMolecules(final Robot my, final List<Sample> mySamples) {
-		if (!my.isFull()) {
-			final List<Sample> byHealth = mySamples.stream().sorted(Comparator.comparingInt(Sample::getHealth))
-					.collect(Collectors.toList());
-			for (final Sample s : byHealth) {
-				final Map<Molecule, Integer> missing = my.findMissingFor(s);
-				if (!missing.isEmpty()) {
-					final Molecule molecule = missing.keySet().iterator().next();
-					if (getAvailable().get(molecule) > 0) {
-						return new ConnectToDistribution(molecule);
-					}
-				}
-			}
-			// Take one molecule of the least owned one
-			final Optional<Molecule> toGet = getAvailable().keySet().stream()
-				.filter((m) -> getAvailable().get(m)>0)
-				.sorted((first, second) -> (int) Math.signum(my.getAvailable().get(first)-my.getAvailable().get(second)))
-				.findFirst();
-			if(toGet.isPresent()) {
-				return new ConnectToDistribution(toGet.get());
-			}
-		}
-		for(final Sample s : getSamplesOf(my)) {
-			if(my.canSendToLaboratory(s)) {
-				return new Goto(Module.LABORATORY);
-			}
-		}
-		return new Goto(Module.DIAGNOSIS);
-	}
-
-	public Action computeMoveOnSamples(final Robot my, final List<Sample> mySamples) {
-		if (mySamples.size() < Constants.MAX_SAMPLES) {
-			// Get one sample of the most interesting type
-			int totalExpertise = MoleculeStore.totalCostOf(my.expertise);
-			for(final Sample s : mySamples) {
-				totalExpertise = totalExpertise - s.rank*Constants.RANK_FACTOR;
-			}
-			return new ConnectToSampler(Math.min(Math.max(totalExpertise, 1), 3));
-		} else {
-			return new Goto(Module.DIAGNOSIS);
-		}
 	}
 
 	public String computeMoves() {
@@ -225,17 +207,27 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	 *            ceux dans le cloud
 	 * @return
 	 */
-	private List<Sample> getSamplesIn(final int indexOf) {
-		return samples.stream().filter((s) -> s.owner == indexOf).collect(Collectors.toList());
+	private List<Sample> getSamplesListIn(final int indexOf) {
+		if(!samplesByOwner.containsKey(indexOf)) {
+			final List<Sample> returned = new ArrayList<>();
+			for(final Sample s : samples) {
+				if(s.owner==indexOf) {
+					returned.add(s);
+				}
+			}
+			samplesByOwner.put(indexOf, Collections.unmodifiableList(returned));
+		}
+		return samplesByOwner.get(indexOf);
 	}
-
-	public List<Sample> getSamplesOf(final MoleculeStore my) {
+	public List<Sample> getSamplesListOf(final MoleculeStore my) {
 		/**
 		 * maniac magic : as playfield is not in robots list, it returns -1, which is index for
 		 * samples in cloud !
 		 */
-		return getSamplesIn(robots.indexOf(my));
+		return getSamplesListIn(robots.indexOf(my));
+
 	}
+
 	public Set<Molecule> completableProjectsRequirements() {
 		final Set<Molecule> returned = new HashSet<>();
 		for(final Project p : completableProjects()) {
@@ -258,5 +250,41 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 		builder.append(projects.stream().map(Project::toString).collect(Collectors.joining(",\n\t", "\n\t", "]")));
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public boolean canProvideMoleculesFor(final Robot robot, final Sample s) {
+		final Map<Molecule, Integer> missing = findMissingFor(robot, s);
+		return canProvideMoleculesFor(missing);
+	}
+
+	public static boolean canProvideMoleculesFor(final Map<Molecule, Integer> missing) {
+		for(final Integer value : missing.values()) {
+			if(value>0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	public Playfield derive(final int distanceTo) {
+		while(distanceTo>0) {
+			final PlayfieldDeriver returned = (PlayfieldDeriver) new PlayfieldDeriver()
+					.withRobots(robots)
+					.withProjects(projects)
+					.withSamples(samples);
+			returned.addAllAvailable(getAvailable());
+			returned.derive();
+			return returned.derive(distanceTo-1);
+		}
+		return this;
+	}
+
+	public boolean canService(final Robot my) {
+		final Playfield derived = derive(my.target.distanceTo(Module.MOLECULES));
+		return !derived.samplesWithMolecules(my).isEmpty();
+	}
+
+	public List<Sample> findUnservicable(final Robot my) {
+		final Playfield derived = derive(my.target.distanceTo(Module.MOLECULES));
+		return derived.samplesWithoutMolecules(my);
 	}
 }

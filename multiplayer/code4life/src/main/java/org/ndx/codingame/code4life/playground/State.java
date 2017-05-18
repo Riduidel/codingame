@@ -1,0 +1,12 @@
+package org.ndx.codingame.code4life.playground;
+
+public enum State {
+	INITIAL,
+	NOT_ENOUGH_SAMPLES,
+	LOADED_SAMPLES,
+	UNKNOWN_SAMPLES,
+	DIAGNOSED_SAMPLES,
+	KNOWN_SAMPLES,
+	SERVICABLE,
+	PROCESSING;
+}

@@ -1,36 +1,45 @@
 package org.ndx.codingame.code4life.entities;
 
-import java.util.List;
-
-import org.ndx.codingame.code4life.actions.Goto;
-import org.ndx.codingame.code4life.playground.Playfield;
-import org.ndx.codingame.gaming.actions.Action;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum Module {
-	START_POS, SAMPLES, DIAGNOSIS, MOLECULES, LABORATORY;
+	START_POS(),
+	SAMPLES(to(START_POS, 2)),
+	DIAGNOSIS(to(START_POS, 2), to(SAMPLES, 3)),
+	MOLECULES(to(START_POS, 2), to(SAMPLES, 3), to(DIAGNOSIS, 3)),
+	LABORATORY(to(START_POS, 2), to(SAMPLES, 3), to(DIAGNOSIS, 4), to(MOLECULES, 3));
 
-	public Action computeMoveOf(final Robot my, final Playfield playfield) {
-		final List<Sample> mySamples = playfield.getSamplesOf(my);
-		switch(this) {
-		case START_POS:
-			return new Goto(Module.SAMPLES);
-		default:
-			return computeMoveOf(my, playfield, mySamples);
+	private static Map.Entry<Module, Integer> to(final Module other, final int distance) {
+		return new AbstractMap.SimpleEntry(other, distance);
+	}
+
+	private Map<String, Integer> distances;
+
+	private Module(final Map.Entry<Module, Integer>... inputDistances) {
+		distances = new HashMap<>();
+		for (final Map.Entry<Module, Integer> d : inputDistances) {
+			distances.put(d.getKey().name(), d.getValue());
 		}
 	}
 
-	public Action computeMoveOf(final Robot my, final Playfield playfield, final List<Sample> mySamples) {
-		switch(this) {
-		case DIAGNOSIS:
-			return playfield.computeMoveOnDiagnosis(my, mySamples);
-		case LABORATORY:
-			return playfield.computeMoveOnLaboratory(my, mySamples);
-		case MOLECULES:
-			return playfield.computeMoveOnMolecules(my, mySamples);
-		case SAMPLES:
-			return playfield.computeMoveOnSamples(my, mySamples);
-		default:
-			return new Goto(Module.SAMPLES);
+	/**
+	 * Distance (in turns) between two modules
+	 *
+	 * @param other
+	 * @return
+	 */
+	public int distanceTo(final Module other) {
+		return distanceTo(other, other.name());
+	}
+	private int distanceTo(final Module other, final String name) {
+		if (distances.containsKey(name)) {
+			return distances.get(name);
+		} else if (other.distances.containsKey(this)) {
+			return other.distanceTo(this);
+		} else {
+			return 0;
 		}
 	}
 }
