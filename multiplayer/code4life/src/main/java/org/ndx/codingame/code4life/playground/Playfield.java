@@ -54,7 +54,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	}
 
 	@Override
-	public StringBuilder build() {
+	public StringBuilder build(final String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, robots, List.class,
 				Robot.class, "r"));
@@ -69,7 +69,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.addAllAvailable(MoleculeStore.toMap(")
 		.append(MoleculeStore.moleculeMapToArguments(getAvailable())).append("));\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
-		.append("assertThat(p.computeMoves()).isNotEmpty();\n");
+		.append("assertThat(p.computeMoves()).isNotEqualTo(\"").append(effectiveCommand).append("\");\n");
 		return returned;
 	}
 

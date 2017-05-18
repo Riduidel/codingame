@@ -23,9 +23,9 @@ public class Playfield {
 	private Collection<Human> humans = new ArrayList<>();
 	private Collection<Zombie> zombies = new ArrayList<>();
 	private Ash ash;
-	
+
 	public Playfield() {
-		
+
 	}
 
 	public Playfield(final List<Human> humans, final List<Zombie> zombies, final Ash ash) {
@@ -46,23 +46,23 @@ public class Playfield {
 		zombies.add(entity);
 	}
 
-	public String toUnitTestString() {
-		return new ToUnitTestStringBuilder("can_find_move").build(this::fillTest);
+	public String toUnitTestString(final String effectiveCommand) {
+		return new ToUnitTestStringBuilder("can_find_move").build(this::fillTest, effectiveCommand);
 	}
-	
+
 	public StringBuilder fillTest() {
 		final StringBuilder returned = new StringBuilder();
 		final String PLAYFIELD = "playfield";
 		final List<Entity> entities = new ArrayList<>(humans);
 		entities.addAll(zombies);
-		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, 
-				entities, 
-				Playfield.class, 
-				Object.class, 
+		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX,
+				entities,
+				Playfield.class,
+				Object.class,
 				Playfield.class, PLAYFIELD, "add"));
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
-			.append(PLAYFIELD).append(".add(")
-			.append(ash.toUnitTestConstructor(ToUnitTestHelpers.CONTENT_PREFIX)).append(");\n");
+		.append(PLAYFIELD).append(".add(")
+		.append(ash.toUnitTestConstructor(ToUnitTestHelpers.CONTENT_PREFIX)).append(");\n");
 		return returned;
 	}
 
@@ -99,10 +99,10 @@ public class Playfield {
 		final List<Human> nextHumans = humans.stream()
 				.map((human)-> human.advanceOneTurn())
 				.collect(Collectors.toList())
-						;
+				;
 		final List<Zombie> nextZombies = zombies.stream()
-			.map((zombie) -> advanceZombie(zombie, nextHumans))
-			.collect(Collectors.toList());
+				.map((zombie) -> advanceZombie(zombie, nextHumans))
+				.collect(Collectors.toList());
 		return new Playfield(nextHumans, nextZombies, ash);
 	}
 
@@ -110,8 +110,8 @@ public class Playfield {
 		final SortedMap<Double, Human> sortedTargets = toAdvance.byDistanceTo(targets);
 		final List<Double> distances = new ArrayList<>(sortedTargets.keySet());
 		distances.stream()
-			.filter((d) -> d<Zombie.SPEED)
-			.forEach((d) -> targets.remove(sortedTargets.remove(d)));
+		.filter((d) -> d<Zombie.SPEED)
+		.forEach((d) -> targets.remove(sortedTargets.remove(d)));
 		if(sortedTargets.isEmpty()) {
 			return new Zombie(toAdvance.getId(), new Vector(toAdvance.getPosition(), toAdvance.getPosition()));
 		} else {
@@ -120,7 +120,7 @@ public class Playfield {
 			final Segment segmentToTarget = Geometry.from(toAdvance.getPosition()).segmentTo(realTarget.getPosition());
 			final ContinuousPoint firstPoint = segmentToTarget.pointAtDistance(Zombie.SPEED, segmentToTarget.first);
 			final ContinuousPoint secondPoint = segmentToTarget.pointAtDistance(
-					Math.min(Zombie.SPEED*2, toAdvance.getPosition().distance2To(realTarget.getPosition())), 
+					Math.min(Zombie.SPEED*2, toAdvance.getPosition().distance2To(realTarget.getPosition())),
 					segmentToTarget.first);
 			return new Zombie(toAdvance.getId(), new Vector(firstPoint, secondPoint));
 		}
@@ -128,8 +128,8 @@ public class Playfield {
 
 	@Override
 	public String toString() {
-		return String.format("Playfield [\n===========humans===========\n%s\n===========zombies===========\n%s]", 
-				humans.stream().map((h)->h.toString()).collect(Collectors.joining("\n")), 
+		return String.format("Playfield [\n===========humans===========\n%s\n===========zombies===========\n%s]",
+				humans.stream().map((h)->h.toString()).collect(Collectors.joining("\n")),
 				zombies.stream().map((h)->h.toString()).collect(Collectors.joining("\n")));
 	}
 }

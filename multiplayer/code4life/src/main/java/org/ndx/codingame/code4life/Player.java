@@ -71,8 +71,9 @@ public class Player {
 			}
 			playfield.withSamples(samples);
 
-			System.err.println(ToUnitTestStringBuilder.canComputeAt(playfield));
-			System.out.println(playfield.computeMoves());
+			final String effectiveCommand = playfield.computeMoves();
+			System.err.println(ToUnitTestStringBuilder.canComputeAt(playfield, effectiveCommand));
+			System.out.println(effectiveCommand);
 		}
 	}
 }

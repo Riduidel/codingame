@@ -45,7 +45,7 @@ public class Playfield implements ToUnitTestFiller {
 
 
 	@Override
-	public StringBuilder build() {
+	public StringBuilder build(String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, entities, List.class, Entity.class, "entities"));
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield playfield = new Playfield();\n");

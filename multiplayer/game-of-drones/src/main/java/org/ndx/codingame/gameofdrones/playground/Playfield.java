@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.ndx.codingame.gameofdrones.entities.Drone;
 import org.ndx.codingame.gameofdrones.entities.Zone;
-import org.ndx.codingame.gaming.actions.Action;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestStringBuilder;
@@ -27,35 +26,35 @@ public class Playfield implements ToUnitTestFiller {
 	private int owner;
 	private final List<Zone> zones = new ArrayList<>();
 	private final List<Drone> drones = new ArrayList<>();
-	
+
 	/**
 	 * Override moves from standard derivation.
 	 * This map is typically populated from {@link #computeMovesPerDrones()} actions.
 	 */
-	private Map<Drone, MoveToPoint> derivationOverride = new HashMap<>();
-	
+	private final Map<Drone, MoveToPoint> derivationOverride = new HashMap<>();
+
 	public Playfield() {
-		
+
 	}
-	
+
 	/**
 	 * Test constructor streamlining most of construction operations
 	 * @param zones
 	 * @param drones
 	 */
-	public Playfield(int owner, final List<Zone> zones, final List<Drone> drones) {
+	public Playfield(final int owner, final List<Zone> zones, final List<Drone> drones) {
 		this();
 		this.owner = owner;
 		addAllZones(zones);
 		addAllDrones(drones);
 	}
-	
-	public String toUnitTestString() {
-		return new ToUnitTestStringBuilder("can_find_moves").build(this);
+
+	public String toUnitTestString(final String effectiveCommand) {
+		return new ToUnitTestStringBuilder("can_find_moves").build(this, effectiveCommand);
 	}
 
 	@Override
-	public StringBuilder build() {
+	public StringBuilder build(final String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, zones, List.class, Zone.class, "z"));
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, drones, List.class, Drone.class, "d"));
@@ -66,7 +65,7 @@ public class Playfield implements ToUnitTestFiller {
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("assertThat(playfield.computeMoves()).isNotEmpty();\n");
 		return returned;
 	}
-	
+
 	public void addAllZones(final List<Zone> toAdd) {
 		zones.addAll(toAdd);
 	}
@@ -89,13 +88,13 @@ public class Playfield implements ToUnitTestFiller {
 	public String computeMoves() {
 		final Map<Drone, MoveToPoint> actionPerDrone = computeMovesPerDrones();
 		return actionPerDrone.values().stream()
-			.map(a -> a.toCommandString())
-			.collect(Collectors.joining("\n"));
+				.map(a -> a.toCommandString())
+				.collect(Collectors.joining("\n"));
 	}
 
 
 	Map<Drone, MoveToPoint> computeMovesPerDrones() {
-		for(Drone d : drones) {
+		for(final Drone d : drones) {
 			if(d.owner==owner) {
 				derivationOverride.put(d, computeMoveFor(d));
 			}
@@ -110,11 +109,11 @@ public class Playfield implements ToUnitTestFiller {
 	 */
 	private MoveToPoint computeMoveFor(final Drone d) {
 		final Optional<ContinuousPoint> byDistanceToDrone = zones.stream()
-			.sorted(new Zone.PositionByDistance2To(d.position))
-			// check if zone is owned at time of drone arrival
-			.filter(z -> !owns(z, (int) d.position.distance2To(z.circle.center)/Drone.SPEED+1))
-			.map(z -> z.circle.center)
-			.findFirst();
+				.sorted(new Zone.PositionByDistance2To(d.position))
+				// check if zone is owned at time of drone arrival
+				.filter(z -> !owns(z, (int) d.position.distance2To(z.circle.center)/Drone.SPEED+1))
+				.map(z -> z.circle.center)
+				.findFirst();
 		if(byDistanceToDrone.isPresent()) {
 			return new MoveToPoint(byDistanceToDrone.get());
 		} else {
@@ -156,21 +155,21 @@ public class Playfield implements ToUnitTestFiller {
 	public Map<Object, Map<Object, Optional<Drone>>> dronesToArray() {
 		return drones.stream()
 				.collect(
-					Collectors.groupingBy((d) -> d.owner,
-						Collectors.groupingBy((d) -> d.number,
-							Collectors.reducing((a, b) -> a))));
+						Collectors.groupingBy((d) -> d.owner,
+								Collectors.groupingBy((d) -> d.number,
+										Collectors.reducing((a, b) -> a))));
 	}
 
 	public Playfield derive() {
 		final List<Drone> nextDrones = drones.stream()
-			.map(d -> d.derive(zones, Optional.ofNullable(derivationOverride.get(d))))
-			.collect(Collectors.toList());
+				.map(d -> d.derive(zones, Optional.ofNullable(derivationOverride.get(d))))
+				.collect(Collectors.toList());
 		final List<Zone> nextZones = zones.stream()
 				.map(z -> z.derive(nextDrones))
 				.collect(Collectors.toList());
 		return new Playfield(owner, nextZones, nextDrones);
 	}
-	
+
 	public Playfield deriveToHorizon() {
 		if(isStabilized()) {
 			return this;
