@@ -43,14 +43,17 @@ public class Servicable extends StatedComputer {
 					}
 				}
 			}
+			// if we reach this line, it means one sample has been browsed without any trouble
 			hasOneFilledSample = true;
 		}
-		// If we have molecules for all samples and still have some room, take some time
-		// to take adversary down
-		if(!my.isFullOfMolecules()) {
-			for(final Molecule m : byRarity) {
-				if(playfield.getAvailable().get(m)>0) {
-					return new ConnectToDistribution(m);
+		if(!playfield.isEndingBefore(my.target.distanceTo(Module.LABORATORY)+toService.size()+1)) {
+			// If we have molecules for all samples and still have some room, take some time
+			// to take adversary down
+			if(!my.isFullOfMolecules()) {
+				for(final Molecule m : byRarity) {
+					if(playfield.getAvailable().get(m)>0) {
+						return new ConnectToDistribution(m);
+					}
 				}
 			}
 		}

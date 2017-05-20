@@ -37,6 +37,11 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	protected final List<Sample> samples = new ArrayList<>();
 	protected final List<Project> projects = new ArrayList<>();
 	private final Map<Integer, List<Sample>> samplesByOwner = new HashMap<>();
+	private final int turn;
+
+	public Playfield(final int i) {
+		turn = i;
+	}
 
 	public Playfield withProjects(final List<Project> projects) {
 		this.projects.addAll(projects);
@@ -62,7 +67,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 				Sample.class, "s"));
 		returned.append(ToUnitTestHelpers.declaredFilledContainer(ToUnitTestHelpers.CONTENT_PREFIX, projects, List.class,
 				Project.class, "c"));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield();\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield(").append(turn).append(");\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.withRobots(r)\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withSamples(s)\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withProjects(c)\n");
@@ -238,7 +243,9 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("Playfield [");
-		builder.append("getAvailable()=");
+		builder.append("getTurn()=");
+		builder.append(turn);
+		builder.append(", getAvailable()=");
 		builder.append(getAvailable());
 		builder.append(",\nprojects=[");
 		builder.append(projects.stream().map(Project::toString).collect(Collectors.joining(",\n\t", "\n\t", "]")));
@@ -257,11 +264,13 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 			for(final Molecule m : Molecule.values()) {
 				totalMoleculesLoaded += robot.getAvailable().get(m);
 				final int missingMolecule = missingFromRobot.get(m);
-				if(missingMolecule>0) 
+				if(missingMolecule>0) {
 					totalMoleculesLoaded+=missingMolecule;
+				}
 			}
-			if(totalMoleculesLoaded>Constants.MAX_MOLECULES)
+			if(totalMoleculesLoaded>Constants.MAX_MOLECULES) {
 				return false;
+			}
 		}
 		return returned;
 	}
@@ -276,7 +285,7 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	}
 	public Playfield derive(final int distanceTo) {
 		while(distanceTo>0) {
-			final PlayfieldDeriver returned = (PlayfieldDeriver) new PlayfieldDeriver()
+			final PlayfieldDeriver returned = (PlayfieldDeriver) new PlayfieldDeriver(turn+1)
 					.withRobots(robots)
 					.withProjects(projects)
 					.withSamples(samples);
@@ -295,5 +304,13 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	public List<Sample> findUnservicable(final Robot my) {
 		final Playfield derived = derive(my.target.distanceTo(Module.MOLECULES));
 		return derived.samplesWithoutMolecules(my);
+	}
+
+	public int getTurn() {
+		return turn;
+	}
+
+	public boolean isEndingBefore(final int turns) {
+		return turn+turns+1>=Constants.MAX_TURN;
 	}
 }

@@ -1,6 +1,7 @@
 package org.ndx.codingame.code4life.playground;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ndx.codingame.code4life.entities.MoleculeStore.toMap;
 
 import java.util.Arrays;
 
@@ -10,11 +11,11 @@ import org.ndx.codingame.code4life.entities.Molecule;
 import org.ndx.codingame.code4life.entities.Robot;
 import org.ndx.codingame.code4life.entities.Sample;
 
-public class PlayfieldDeriverTest extends Playfield {
+public class PlayfieldDeriverTest  {
 
 	@Test
 	public void instances_are_different() {
-		final Playfield tested = new Playfield();
+		final Playfield tested = new Playfield(1);
 		tested.withRobots(Arrays.asList(
 				// First robot never impacts environment
 				new Robot(Module.LABORATORY.name(), 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	),
@@ -31,7 +32,7 @@ public class PlayfieldDeriverTest extends Playfield {
 	}
 	@Test
 	public void can_let_robot_get_sample() {
-		final Playfield tested = new Playfield();
+		final Playfield tested = new Playfield(1);
 		tested.withRobots(Arrays.asList(
 				// First robot never impacts environment
 				new Robot(Module.SAMPLES.name(), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	),
@@ -48,7 +49,7 @@ public class PlayfieldDeriverTest extends Playfield {
 
 	@Test
 	public void can_let_robot_analyze_sample() {
-		final Playfield tested = new Playfield();
+		final Playfield tested = new Playfield(1);
 		tested.withRobots(Arrays.asList(
 				// First robot never impacts environment
 				new Robot(Module.DIAGNOSIS.name(), 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	),
@@ -83,7 +84,7 @@ public class PlayfieldDeriverTest extends Playfield {
 
 	@Test
 	public void can_let_robot_get_molecules() {
-		final Playfield tested = new Playfield();
+		final Playfield tested = new Playfield(1);
 		tested.withRobots(Arrays.asList(
 				// First robot never impacts environment
 				new Robot(Module.MOLECULES.name(), 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	),
@@ -114,7 +115,7 @@ public class PlayfieldDeriverTest extends Playfield {
 
 	@Test
 	public void can_let_robot_drop_to_lab() {
-		final Playfield tested = new Playfield();
+		final Playfield tested = new Playfield(1);
 		tested.withRobots(Arrays.asList(
 				// First robot never impacts environment
 				new Robot(Module.LABORATORY.name(), 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	),

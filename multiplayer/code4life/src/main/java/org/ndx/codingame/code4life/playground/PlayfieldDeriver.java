@@ -14,6 +14,10 @@ import org.ndx.codingame.code4life.entities.Sample;
 
 public class PlayfieldDeriver extends Playfield {
 
+	public PlayfieldDeriver(final int i) {
+		super(i);
+	}
+
 	void derive() {
 		final List<Robot> mutators = new ArrayList<>(robots);
 		robots.clear();

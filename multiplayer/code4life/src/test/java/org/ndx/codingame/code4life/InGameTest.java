@@ -32,7 +32,7 @@ public class InGameTest {
 		samples.add(new Sample(4, -1, 0, "E", 1, 2, 2, 0, 1, 0));
 		samples.add(new Sample(5, -1, 0, "C", 1, 1, 1, 0, 1, 2));
 		samples.add(new Sample(6, -1, 0, "D", 1, 1, 1, 1, 0, 1));
-		final Playfield playfield = new Playfield();
+		final Playfield playfield = new Playfield(1);
 		playfield.withRobots(robots);
 		playfield.withSamples(samples);
 		playfield.addAllAvailable(MoleculeStore.toMap(0, 2, 6, 6, 6));
@@ -55,7 +55,7 @@ public class InGameTest {
 		projects.add(new Project(4, 0, 0, 0, 4));
 		projects.add(new Project(0, 0, 4, 4, 0));
 		projects.add(new Project(3, 3, 3, 0, 0));
-		final Playfield playfield = new Playfield();
+		final Playfield playfield = new Playfield(1);
 		playfield.withRobots(robots);
 		playfield.withSamples(samples);
 		playfield.withProjects(projects);
@@ -79,7 +79,7 @@ public class InGameTest {
 		projects.add(new Project(4, 0, 0, 0, 4));
 		projects.add(new Project(0, 0, 4, 4, 0));
 		projects.add(new Project(3, 3, 3, 0, 0));
-		final Playfield playfield = new Playfield();
+		final Playfield playfield = new Playfield(1);
 		playfield.withRobots(robots);
 		playfield.withSamples(samples);
 		playfield.withProjects(projects);
@@ -100,7 +100,7 @@ public class InGameTest {
 		projects.add(new Project(0, 0, 4, 4, 0));
 		projects.add(new Project(4, 0, 0, 0, 4));
 		projects.add(new Project(3, 3, 0, 0, 3));
-		final Playfield playfield = new Playfield();
+		final Playfield playfield = new Playfield(1);
 		playfield.withRobots(robots);
 		playfield.withSamples(samples);
 		playfield.withProjects(projects);
@@ -123,7 +123,7 @@ public class InGameTest {
 		c.add(new Project(3, 3, 0, 0, 3));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(0, 0, 0, 4, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 0, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("CONNECT 1");
 	}
@@ -143,7 +143,7 @@ public class InGameTest {
 		c.add(new Project(4, 4, 0, 0, 0));
 		c.add(new Project(3, 0, 0, 3, 3));
 		c.add(new Project(3, 3, 3, 0, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 0, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isEqualTo("GOTO MOLECULES");
 	}
@@ -164,7 +164,7 @@ public class InGameTest {
 		c.add(new Project(0, 4, 4, 0, 0));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(0, 0, 3, 3, 3));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 0, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("CONNECT 2");
 	}
@@ -187,7 +187,7 @@ public class InGameTest {
 		c.add(new Project(0, 4, 4, 0, 0));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(0, 0, 3, 3, 3));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 0, 1, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("GOTO DIAGNOSIS");
 	}
@@ -214,7 +214,7 @@ public class InGameTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(4, 4, 0, 0, 0));
 		c.add(new Project(4, 0, 0, 0, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 0, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("GOTO MOLECULES");
 	}
@@ -234,7 +234,7 @@ public class InGameTest {
 		c.add(new Project(3, 0, 0, 3, 3));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(4, 0, 0, 0, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 1, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty();
 	}
@@ -256,7 +256,7 @@ public class InGameTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 0, 4, 4, 0));
 		c.add(new Project(0, 0, 0, 4, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(5, 5, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("CONNECT 8");
 	}
@@ -279,7 +279,7 @@ public class InGameTest {
 		c.add(new Project(4, 4, 0, 0, 0));
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 4, 4, 0, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 5, 0, 2, 5));
 		assertThat(p.computeMoves()).isNotEmpty();
 	}
@@ -299,7 +299,7 @@ public class InGameTest {
 		c.add(new Project(4, 4, 0, 0, 0));
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 4, 4, 0, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)
@@ -320,7 +320,7 @@ public class InGameTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(4, 4, 0, 0, 0));
 		c.add(new Project(3, 3, 0, 0, 3));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)
@@ -342,7 +342,7 @@ public class InGameTest {
 		c.add(new Project(4, 0, 0, 0, 4));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(0, 3, 3, 3, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)
@@ -363,12 +363,31 @@ public class InGameTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(3, 0, 0, 3, 3));
 		c.add(new Project(0, 0, 3, 3, 3));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)
 		.addAllAvailable(MoleculeStore.toMap(1, 5, 3, 0, 4));
 		assertThat(p.computeMoves()).isNotEqualTo("CONNECT 9");
 	}
-
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_compute_at__1495273402590_why_the_hell_do_you_take_a_A() {
+		final List<Robot> r=new ArrayList<>();
+		r.add(new Robot("MOLECULES",	0,	125,	3, 2, 0, 0, 3, 2, 3, 0, 3, 3));
+		r.add(new Robot("SAMPLES",	0,	146,	1, 0, 0, 0, 1, 5, 2, 3, 1, 3));
+		final List<Sample> s=new ArrayList<>();
+		s.add(new Sample(13,	0,	2,	"E",	30,	0, 0, 0, 0, 6));
+		s.add(new Sample(27,	1,	2,	"null",	-1,	-1, -1, -1, -1, -1));
+		s.add(new Sample(15,	-1,	3,	"B",	50,	7, 3, 0, 0, 0));
+		final List<Project> c=new ArrayList<>();
+		c.add(new Project(0, 0, 4, 4, 0));
+		c.add(new Project(0, 0, 3, 3, 3));
+		c.add(new Project(4, 4, 0, 0, 0));
+		final Playfield p = new Playfield(198);
+		p.withRobots(r)
+		.withSamples(s)
+		.withProjects(c)
+		.addAllAvailable(MoleculeStore.toMap(1, 3, 5, 5, 1));
+		assertThat(p.computeMoves()).isNotEqualTo("CONNECT A");
+	}
 }

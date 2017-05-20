@@ -43,7 +43,7 @@ public class PerformanceTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 0, 3, 3, 3));
 		c.add(new Project(3, 3, 0, 0, 3));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(5, 5, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty();
 	}
@@ -64,7 +64,7 @@ public class PerformanceTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 0, 0, 4, 4));
 		c.add(new Project(0, 0, 4, 4, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 4, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty();
 	}
@@ -85,7 +85,7 @@ public class PerformanceTest {
 		c.add(new Project(0, 0, 4, 4, 0));
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(4, 4, 0, 0, 0));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r).withSamples(s).withProjects(c).addAllAvailable(MoleculeStore.toMap(0, 1, 5, 5, 5));
 		assertThat(p.computeMoves()).isNotEmpty();
 	}
@@ -106,7 +106,7 @@ public class PerformanceTest {
 		c.add(new Project(3, 0, 0, 3, 3));
 		c.add(new Project(3, 3, 3, 0, 0));
 		c.add(new Project(4, 0, 0, 0, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)
@@ -128,7 +128,7 @@ public class PerformanceTest {
 		c.add(new Project(0, 3, 3, 3, 0));
 		c.add(new Project(0, 0, 4, 4, 0));
 		c.add(new Project(0, 0, 0, 4, 4));
-		final Playfield p = new Playfield();
+		final Playfield p = new Playfield(1);
 		p.withRobots(r)
 		.withSamples(s)
 		.withProjects(c)

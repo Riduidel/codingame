@@ -31,12 +31,9 @@ public enum Module {
 	 * @return
 	 */
 	public int distanceTo(final Module other) {
-		return distanceTo(other, other.name());
-	}
-	private int distanceTo(final Module other, final String name) {
-		if (distances.containsKey(name)) {
-			return distances.get(name);
-		} else if (other.distances.containsKey(this)) {
+		if (distances.containsKey(other.name())) {
+			return distances.get(other.name());
+		} else if (other.distances.containsKey(name())) {
 			return other.distanceTo(this);
 		} else {
 			return 0;
