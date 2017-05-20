@@ -16,10 +16,11 @@ public class Processing extends StatedComputer {
 	public Processing(final Playfield playfield) {
 		super(playfield);
 	}
+
 	public List<Sample> samplesWithMoleculesSetTo(final Robot my, final boolean expected) {
 		final List<Sample> returned = new ArrayList<>();
-		for(final Sample s: playfield.getSamplesListOf(my)) {
-			if(Playfield.canProvideMoleculesFor(my.findMissingFor(s))==expected) {
+		for (final Sample s : playfield.getSamplesListOf(my)) {
+			if (Playfield.canProvideMoleculesFor(my.findMissingFor(s)) == expected) {
 				returned.add(s);
 			}
 		}
@@ -29,17 +30,23 @@ public class Processing extends StatedComputer {
 	@Override
 	public Action compute(final Robot my) {
 		final List<Sample> processableSamples = samplesWithMoleculesSetTo(my, true);
-		if(processableSamples.isEmpty()) {
-			final Playfield derived = playfield.derive(my.target.distanceTo(Module.DIAGNOSIS)+Module.DIAGNOSIS.distanceTo(Module.MOLECULES));
-			//			if(findInterestingSamplesIn(derived, my, playfield.getSamplesListOf(playfield)).isEmpty()) {
-			return new Goto(Module.SAMPLES);
-			/*			} else {
+		final boolean hasSamples = !playfield.getSamplesListOf(my).isEmpty();
+		if (processableSamples.isEmpty()) {
+			if (hasSamples) {
+				final Playfield derived = playfield.derive(Module.DIAGNOSIS.distanceTo(Module.MOLECULES));
+				if (!findInterestingSamplesIn(derived, my, playfield.getSamplesListOf(my)).isEmpty()) {
+					return new Goto(Module.MOLECULES);
+				}
+			}
+			final Playfield derived = playfield
+					.derive(my.target.distanceTo(Module.DIAGNOSIS) + Module.DIAGNOSIS.distanceTo(Module.MOLECULES));
+			if (!findInterestingSamplesIn(derived, my, playfield.getSamplesListOf(playfield)).isEmpty()) {
 				return new Goto(Module.DIAGNOSIS);
 			}
-			 */		} else {
-				 processableSamples.sort(Sample.BY_DESCENDING_HEALTH);
-				 return new ConnectToLaboratory(processableSamples.get(0));
-			 }
+			return new Goto(Module.SAMPLES);
+		} else {
+			processableSamples.sort(Sample.BY_DESCENDING_HEALTH);
+			return new ConnectToLaboratory(processableSamples.get(0));
+		}
 	}
-
 }

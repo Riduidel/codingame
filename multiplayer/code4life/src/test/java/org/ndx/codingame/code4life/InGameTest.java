@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ndx.codingame.code4life.entities.MoleculeStore;
 import org.ndx.codingame.code4life.entities.Project;
@@ -327,6 +328,7 @@ public class InGameTest {
 		assertThat(p.computeMoves()).isNotEmpty().isNotEqualTo("CONNECT 17");
 	}
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Ignore
 	@Test public void can_compute_at__1495132276135_should_go_to_samples() {
 		final List<Robot> r=new ArrayList<>();
 		r.add(new Robot("LABORATORY",	0,	59,	0, 0, 0, 0, 0, 3, 2, 2, 2, 3));
@@ -347,4 +349,26 @@ public class InGameTest {
 		.addAllAvailable(MoleculeStore.toMap(4, 4, 3, 4, 4));
 		assertThat(p.computeMoves()).isNotEqualTo("GOTO DIAGNOSIS");
 	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_compute_at__1495219580823_should_not_take_sample_9_as_it_requires_too_much_B_molecules() {
+		final List<Robot> r=new ArrayList<>();
+		r.add(new Robot("DIAGNOSIS",	0,	16,	3, 0, 2, 3, 0, 1, 2, 1, 2, 1));
+		r.add(new Robot("SAMPLES",	0,	18,	1, 0, 0, 2, 1, 0, 2, 2, 2, 3));
+		final List<Sample> s=new ArrayList<>();
+		s.add(new Sample(18,	1,	2,	"null",	-1,	-1, -1, -1, -1, -1));
+		s.add(new Sample(19,	1,	2,	"null",	-1,	-1, -1, -1, -1, -1));
+		s.add(new Sample(9,	-1,	3,	"C",	50,	0, 7, 3, 0, 0));
+		s.add(new Sample(12,	-1,	3,	"A",	40,	0, 0, 0, 0, 7));
+		final List<Project> c=new ArrayList<>();
+		c.add(new Project(0, 3, 3, 3, 0));
+		c.add(new Project(3, 0, 0, 3, 3));
+		c.add(new Project(0, 0, 3, 3, 3));
+		final Playfield p = new Playfield();
+		p.withRobots(r)
+		.withSamples(s)
+		.withProjects(c)
+		.addAllAvailable(MoleculeStore.toMap(1, 5, 3, 0, 4));
+		assertThat(p.computeMoves()).isNotEqualTo("CONNECT 9");
+	}
+
 }
