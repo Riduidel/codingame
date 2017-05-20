@@ -189,12 +189,6 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 		return getSamplesListOf(my).size()>=Constants.MAX_SAMPLES;
 	}
 
-	private Map<Molecule, Integer> findMissingFor(final Robot my, final Sample sample) {
-		final Map<Molecule, Integer> missingFromRobot = my.findMissingFor(sample);
-		final Map<Molecule, Integer> missingFromStore = findMissingFor(missingFromRobot);
-		return missingFromStore;
-	}
-
 	public String computeMoves() {
 		final Robot my = robots.get(0);
 		return computeMoveOf(my).toCommandString();
@@ -253,8 +247,25 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 	}
 
 	public boolean canProvideMoleculesFor(final Robot robot, final Sample s) {
-		final Map<Molecule, Integer> missing = findMissingFor(robot, s);
-		return canProvideMoleculesFor(missing);
+		final Map<Molecule, Integer> missingFromRobot = robot.findMissingFor(s);
+		final Map<Molecule, Integer> missingFromStore = findMissingFor(missingFromRobot);
+		final Map<Molecule, Integer> missing = missingFromStore;
+		final boolean returned = canProvideMoleculesFor(missing);
+		if(returned) {
+			// finally, make sure we can put required molecules in robot
+			int totalMoleculesLoaded = 0;
+			for(final Molecule m : Molecule.values()) {
+				totalMoleculesLoaded += robot.getAvailable().get(m);
+				final int missingMolecule = missingFromRobot.get(m);
+				if(missingMolecule>0) {
+					totalMoleculesLoaded+=missingMolecule;
+				}
+			}
+			if(totalMoleculesLoaded>Constants.MAX_MOLECULES) {
+				return false;
+			}
+		}
+		return returned;
 	}
 
 	public static boolean canProvideMoleculesFor(final Map<Molecule, Integer> missing) {
