@@ -19,7 +19,7 @@ public class NotEnough extends StatedComputer {
 	 */
 	@Override
 	public Action compute(final Robot my) {
-		int totalExpertise = MoleculeStore.totalCostOf(my.expertise);
+		int totalExpertise = MoleculeStore.totalOf(my.expertise);
 		for(final Sample s : playfield.getSamplesListOf(my)) {
 			totalExpertise -= s.rank*Constants.RANK_FACTOR;
 		}

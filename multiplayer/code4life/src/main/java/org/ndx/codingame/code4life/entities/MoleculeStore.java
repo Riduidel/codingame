@@ -50,7 +50,7 @@ public class MoleculeStore {
 		return returned;
 	}
 
-	public static int totalCostOf(final Map<Molecule, Integer> cost) {
+	public static int totalOf(final Map<Molecule, Integer> cost) {
 		int returned = 0;
 		for(final Integer i : cost.values()) {
 			returned+=i;

@@ -257,13 +257,11 @@ public class Playfield extends MoleculeStore implements ToUnitTestFiller {
 			for(final Molecule m : Molecule.values()) {
 				totalMoleculesLoaded += robot.getAvailable().get(m);
 				final int missingMolecule = missingFromRobot.get(m);
-				if(missingMolecule>0) {
+				if(missingMolecule>0) 
 					totalMoleculesLoaded+=missingMolecule;
-				}
 			}
-			if(totalMoleculesLoaded>Constants.MAX_MOLECULES) {
+			if(totalMoleculesLoaded>Constants.MAX_MOLECULES)
 				return false;
-			}
 		}
 		return returned;
 	}
