@@ -24,8 +24,7 @@ public class Servicable extends StatedComputer {
 	@Override
 	public Action compute(final Robot my) {
 		final Deque<Molecule> byRarity = playfield.moleculesByRarity();
-
-		final SortedSet<Sample> toService = new TreeSet<>(Sample.BY_DESCENDING_HEALTH);
+		final SortedSet<Sample> toService = new TreeSet<>(interestComparator);
 		toService.addAll(playfield.getSamplesListOf(my));
 		Map<Molecule, Integer> usable = new EnumMap<>(my.getAvailable());
 		for(final Sample s : toService) {

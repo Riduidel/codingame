@@ -29,7 +29,7 @@ public abstract class StatedComputer {
 	}
 
 	protected final Playfield playfield;
-	private final Comparator<Sample> interestComparator;
+	protected final Comparator<Sample> interestComparator;
 
 	public StatedComputer(final Playfield playfield) {
 		this.playfield = playfield;

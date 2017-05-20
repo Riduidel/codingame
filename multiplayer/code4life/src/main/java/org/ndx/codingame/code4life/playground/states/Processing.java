@@ -45,7 +45,7 @@ public class Processing extends StatedComputer {
 			}
 			return new Goto(Module.SAMPLES);
 		} else {
-			processableSamples.sort(Sample.BY_DESCENDING_HEALTH);
+			processableSamples.sort(interestComparator);
 			return new ConnectToLaboratory(processableSamples.get(0));
 		}
 	}
