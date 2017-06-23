@@ -11,6 +11,7 @@ public class Direction extends DiscretePoint {
 	public static final Direction LEFT = new Direction(-1, 0, "LEFT");
 	public static final Direction RIGHT = new Direction(1, 0, "RIGHT");
 	public static final Direction UP = new Direction(0, -1, "UP");
+
 	public static final List<Direction> DIRECTIONS = Collections.unmodifiableList(Arrays.asList(
 			UP,
 			RIGHT,
@@ -18,7 +19,7 @@ public class Direction extends DiscretePoint {
 			DOWN
 			));
 	public static final List<Direction> DIRECTIONS_AND_STAY;
-	
+
 	static {
 		final List<Direction> toUse = new ArrayList<>();
 		toUse.addAll(DIRECTIONS);
@@ -32,7 +33,7 @@ public class Direction extends DiscretePoint {
 		super(x, y);
 		this.name = name;
 	}
-	
+
 	@Override
 	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
 		final StringBuilder returned = new StringBuilder();
