@@ -63,16 +63,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
  			<plugin>
-				<groupId>${project.groupId}</groupId>
+				<groupId>org.framagit.ndx.codingame</groupId>
 				<artifactId>codingame-simpleclass-maven-plugin</artifactId>
-				<version>${project.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>assemble</goal>
-						</goals>
-					</execution>
-				</executions>
+
 			</plugin>
 		</plugins>
 	</build>

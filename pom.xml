@@ -124,6 +124,18 @@
 						</dependency>
 					</dependencies>
 				</plugin>
+				<plugin>
+					<groupId>org.framagit.ndx.codingame</groupId>
+					<artifactId>codingame-simpleclass-maven-plugin</artifactId>
+					<version>1.0.2-SNAPSHOT</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -149,5 +161,6 @@
 		<module>multiplayer/game-of-drones</module>
 		<module>multiplayer/coders-of-the-carribean</module>
 		<module>multiplayer/code4life</module>
+		<module>multiplayer/wondev-woman</module>
 	</modules>
 </project>
