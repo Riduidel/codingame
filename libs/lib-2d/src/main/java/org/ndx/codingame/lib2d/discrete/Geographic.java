@@ -10,6 +10,13 @@ public abstract class Geographic {
 	public static final Direction SOUTH = new Direction(0, 1, "SOUTH");
 	public static final Direction EAST = new Direction(1, 0, "EAST");
 	public static final Direction WEST = new Direction(-1, 0, "WEST");
+
+	public static final Direction NORTHEAST = NORTH.move(EAST, "NORTHEAST");
+	public static final Direction NORTHWEST = NORTH.move(WEST, "NORTHWEST");
+	public static final Direction SOUTHEAST = SOUTH.move(EAST, "SOUTHEAST");
+	public static final Direction SOUTHWEST = SOUTH.move(WEST, "SOUTHWEST");
+
+
 	public static final List<Direction> DIRECTIONS = Collections.unmodifiableList(Arrays.asList(
 			NORTH,
 			SOUTH,
@@ -28,10 +35,10 @@ public abstract class Geographic {
 		DIRECTIONS_AND_STAY = Collections.unmodifiableList(toUse);
 		toUse = new ArrayList<>();
 		toUse.addAll(DIRECTIONS);
-		toUse.add(NORTH.move(EAST));
-		toUse.add(NORTH.move(WEST));
-		toUse.add(SOUTH.move(EAST));
-		toUse.add(SOUTH.move(WEST));
-		DIRECTIONS_AND_DIAGONALS = toUse;
+		toUse.add(NORTHEAST);
+		toUse.add(NORTHWEST);
+		toUse.add(SOUTHEAST);
+		toUse.add(SOUTHWEST);
+		DIRECTIONS_AND_DIAGONALS = Collections.unmodifiableList(toUse);
 	}
 }

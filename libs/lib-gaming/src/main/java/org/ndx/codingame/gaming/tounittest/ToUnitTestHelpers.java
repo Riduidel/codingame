@@ -62,7 +62,7 @@ public class ToUnitTestHelpers {
 			while(iterator.hasNext()) {
 				final ConstructableInUnitTest element = iterator.next();
 				returned.append(prefix).append("\t").append(element.toUnitTestConstructor(prefix));
-				if(!iterator.hasNext()) {
+				if(iterator.hasNext()) {
 					returned.append(",");
 				}
 				returned.append("\n");

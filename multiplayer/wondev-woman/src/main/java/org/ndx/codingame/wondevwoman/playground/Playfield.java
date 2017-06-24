@@ -1,13 +1,17 @@
 package org.ndx.codingame.wondevwoman.playground;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
+import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
+import org.ndx.codingame.wondevwoman.Constants;
 import org.ndx.codingame.wondevwoman.actions.Dual;
 import org.ndx.codingame.wondevwoman.entities.Content;
 import org.ndx.codingame.wondevwoman.entities.ContentVisitor;
@@ -36,7 +40,7 @@ public class Playfield extends Playground<Content> implements ToUnitTestFiller {
 		public void endVisitRow(final int y) {
 			returned.append("\"");
 			if(y<height-1) {
-				returned.append(" +");
+				returned.append(",");
 			}
 			returned.append("\n");
 		}
@@ -50,6 +54,9 @@ public class Playfield extends Playground<Content> implements ToUnitTestFiller {
 		public Character visitHole(final Hole hole) {
 			return '.';
 		}
+	}
+	public static Playfield from(final String...rows) {
+		return from(Arrays.asList(rows));
 	}
 
 	public static Playfield from(final List<String> rows) {
@@ -111,11 +118,68 @@ public class Playfield extends Playground<Content> implements ToUnitTestFiller {
 				;
 	}
 
+	private class ScoreDual implements Comparator<Dual> {
+
+		private final Gamer gamer;
+
+		public ScoreDual(final Gamer gamer) {
+			this.gamer = gamer;
+		}
+
+		@Override
+		public int compare(final Dual o1, final Dual o2) {
+			return (int) Math.signum(scoreDual(gamer, o2)-scoreDual(gamer, o1));
+		}
+
+	}
+
 	public Dual computeMoveOf(final Gamer gamer) {
-		return actions.stream()
+		final List<Dual> returned = actions.stream()
 				.filter((a) -> a.playerIndex==gamer.index)
-				.findFirst()
-				.get();
+				.sorted(new ScoreDual(gamer))
+				.collect(Collectors.toList());
+		return returned.get(0);
+	}
+
+	public int scoreDual(final Gamer gamer, final Dual dual) {
+		// Compute position of move
+		final DiscretePoint position = move(gamer, dual);
+		final int positionScore = countAvailablePositions(position);
+		final Content content = get(position);
+		final int heightPosition = content.accept(new ContentVisitor<Integer>() {
+
+			@Override
+			public Integer visitFloor(final Floor floor) {
+				return floor.height>Constants.MAX_FLOOR ? Integer.MIN_VALUE : ((Floor) content).height;
+			}
+
+			@Override
+			public Integer visitHole(final Hole hole) {
+				return Integer.MIN_VALUE;
+			}
+		});
+
+		return positionScore + heightPosition*2;
+	}
+
+	/**
+	 * Just count number of free position
+	 * @param position
+	 * @return
+	 */
+	private int countAvailablePositions(final DiscretePoint position) {
+		return (int) Dual.DIRECTIONS.values().stream()
+				.map((p) -> p.move(position))
+				.filter((p) -> contains(p))
+				.map((p) -> get(p))
+				.filter((p) -> p instanceof Floor)
+				.map((p) -> (Floor) p)
+				.filter((p) -> p.height<=Constants.MAX_FLOOR)
+				.count();
+	}
+
+	private DiscretePoint move(final Gamer gamer, final Dual dual) {
+		return gamer.position.moveOf(dual.move(), gamer.position);
 	}
 
 	@Override
@@ -129,10 +193,10 @@ public class Playfield extends Playground<Content> implements ToUnitTestFiller {
 				Dual.class, "actions"));
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = Playfield.from(\n");
 		returned.append(playfieldToString());
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(")\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(");\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.withMy(my)\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withEnemy(enemy)\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withActions(actions)\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t.withActions(actions);\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
 		.append("assertThat(p.computeMoves()).isNotEqualTo(\"").append(effectiveCommand).append("\");\n");
 		return returned;

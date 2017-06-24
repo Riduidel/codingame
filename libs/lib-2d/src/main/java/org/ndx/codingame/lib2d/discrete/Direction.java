@@ -41,6 +41,9 @@ public class Direction extends DiscretePoint {
 		return returned;
 	}
 
+	public <Type> ScoredDirection<Type> move(final DiscretePoint position, final String name) {
+		return new ScoredDirection<>(x+position.x, y+position.y, name);
+	}
 	public <Type> ScoredDirection<Type> move(final DiscretePoint position) {
 		return new ScoredDirection<>(x+position.x, y+position.y, name);
 	}
