@@ -10,6 +10,7 @@ import org.ndx.codingame.codevszombies.entities.Ash;
 import org.ndx.codingame.codevszombies.entities.Entity;
 import org.ndx.codingame.codevszombies.entities.Human;
 import org.ndx.codingame.codevszombies.entities.Zombie;
+import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestStringBuilder;
 import org.ndx.codingame.lib2d.Geometry;
@@ -17,7 +18,7 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Segment;
 import org.ndx.codingame.lib2d.shapes.Vector;
 
-public class Playfield {
+public class Playfield implements ToUnitTestFiller {
 	public static final int WIDTH = 16000;
 	public static final int HEIGHT = 9000;
 	private Collection<Human> humans = new ArrayList<>();
@@ -47,10 +48,12 @@ public class Playfield {
 	}
 
 	public String toUnitTestString(final String effectiveCommand) {
-		return new ToUnitTestStringBuilder("can_find_move").build(this::fillTest, effectiveCommand);
+		return new ToUnitTestStringBuilder("can_find_move").build(this, effectiveCommand);
 	}
 
-	public StringBuilder fillTest() {
+
+	@Override
+	public StringBuilder build(final String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
 		final String PLAYFIELD = "playfield";
 		final List<Entity> entities = new ArrayList<>(humans);

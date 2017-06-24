@@ -1,15 +1,12 @@
 package org.ndx.codingame.wondevwoman.entities;
 
-import java.util.Collection;
-import java.util.List;
-
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
-import org.ndx.codingame.wondevwoman.actions.LegalAction;
-import org.ndx.codingame.wondevwoman.playground.Playfield;
 
-public class Gamer {
-	private final DiscretePoint position;
-	private final int index;
+public class Gamer implements ConstructableInUnitTest {
+	private static final String CLASS_NAME = Gamer.class.getSimpleName();
+	public final DiscretePoint position;
+	public final int index;
 
 	public Gamer(final DiscretePoint position, final int i) {
 		super();
@@ -21,11 +18,12 @@ public class Gamer {
 		this(new DiscretePoint(x, y), i);
 	}
 
-	public String compute(final Playfield playfield, final List<Gamer> enemy, final Collection<LegalAction> actions) {
-		return actions.stream()
-				.filter((a) -> a.playerIndex==index)
-				.findFirst()
-				.get()
-				.toCommandString();
+	@Override
+	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
+		return new StringBuilder("new ").append(CLASS_NAME).append("(")
+				.append(position.x).append(", ")
+				.append(position.y).append(", ")
+				.append(index).append(")")
+				;
 	}
 }
