@@ -20,10 +20,21 @@ public class Gamer implements ConstructableInUnitTest {
 
 	@Override
 	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
-		return new StringBuilder("new ").append(CLASS_NAME).append("(")
+		return new StringBuilder("g(")
 				.append(position.x).append(", ")
 				.append(position.y).append(", ")
 				.append(index).append(")")
 				;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("Gamer [position=");
+		builder.append(position);
+		builder.append(", index=");
+		builder.append(index);
+		builder.append("]");
+		return builder.toString();
 	}
 }

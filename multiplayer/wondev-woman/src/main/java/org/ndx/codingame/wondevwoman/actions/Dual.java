@@ -1,8 +1,8 @@
 package org.ndx.codingame.wondevwoman.actions;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class Dual implements ConstructableInUnitTest, Action {
 	}
 	private static final String CLASS_NAME = Dual.class.getSimpleName();
 
-	public final Collection<String> actions;
+	public final List<String> actions;
 	public final int playerIndex;
 	public final String moveKey;
 	public final String buildKey;
@@ -58,7 +58,7 @@ public class Dual implements ConstructableInUnitTest, Action {
 
 	@Override
 	public StringBuilder toUnitTestConstructor(final String multilinePrefix) {
-		return new StringBuilder("new ").append(CLASS_NAME).append("(")
+		return new StringBuilder("d(")
 				.append("\"").append(actionsToString()).append("\", ")
 				.append(playerIndex).append(", ")
 				.append("\"").append(moveKey).append("\"").append(", ")
@@ -73,5 +73,9 @@ public class Dual implements ConstructableInUnitTest, Action {
 
 	public DiscretePoint build() {
 		return DIRECTIONS.get(buildKey);
+	}
+
+	public boolean isPush() {
+		return "PUSH".equals(actions.get(0));
 	}
 }
