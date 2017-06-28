@@ -1,109 +1,100 @@
 package org.ndx.codingame.wondevwoman;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ndx.codingame.wondevwoman.TestUtils.g;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.Required;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.ndx.codingame.wondevwoman.actions.Dual;
+import org.ndx.codingame.wondevwoman.actions.B;
+import org.ndx.codingame.wondevwoman.actions.WonderAction;
 import org.ndx.codingame.wondevwoman.entities.Gamer;
-import org.ndx.codingame.wondevwoman.playground.Playfield;
+import org.ndx.codingame.wondevwoman.playground.Gaming;
 
 public class InGameTest {
+	private static final int PERCENTILE = 60;
+	private static final int THREAD_COUNT = 1;
+	private static final int INVOCATION_COUNT = 1;
 
-	private Gamer g(final int i, final int j, final int k) {
-		return new Gamer(i, j, k);
+	@BeforeClass
+	public static void waitForVisualVM() {
+		System.out.println("Waiting for profiler");
+		final long start = System.currentTimeMillis();
+		while(System.currentTimeMillis()-start<60_000) {
+			try {
+				Thread.sleep(100);
+			} catch (final InterruptedException e) {
+			}
+		}
+		System.out.println("Starting now");
 	}
 
-	private Dual d(final String string, final int i, final String string2, final String string3) {
-		return new Dual(string,i, string2, string3);
-	}
-
-	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT)
-	// @Required(percentile99=PERCENTILE)
 	@Test
 	public void just_to_always_keep_assertj_in_imports() {
 		assertThat(true).isNotEqualTo(false);
 	}
-	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_compute_at__1498411732665() {
+	@PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_compute_at__1498478452261() {
 		final List<Gamer> my = Arrays.asList(
-				g(2, 5, 0),
-				g(3, 3, 1)
+				g(5, 3, 0),
+				g(4, 4, 1)
 				);
 		final List<Gamer> enemy = Arrays.asList(
-				g(2, 3, 0),
-				g(3, 4, 1)
+				g(5, 4, 0),
+				g(-1, -1, 1)
 				);
-		final List<Dual> actions = Arrays.asList(
-				d("MOVE&BUILD", 0, "E", "E"),
-				d("MOVE&BUILD", 0, "E", "NE"),
-				d("MOVE&BUILD", 0, "E", "W"),
-				d("MOVE&BUILD", 0, "NW", "N"),
-				d("MOVE&BUILD", 0, "NW", "NW"),
-				d("MOVE&BUILD", 0, "NW", "S"),
-				d("MOVE&BUILD", 0, "NW", "SE"),
-				d("MOVE&BUILD", 0, "NW", "SW"),
-				d("MOVE&BUILD", 0, "NW", "W"),
-				d("MOVE&BUILD", 0, "W", "E"),
-				d("MOVE&BUILD", 0, "W", "N"),
-				d("MOVE&BUILD", 0, "W", "NW"),
-				d("MOVE&BUILD", 0, "W", "W"),
-				d("MOVE&BUILD", 1, "E", "E"),
-				d("MOVE&BUILD", 1, "E", "N"),
-				d("MOVE&BUILD", 1, "E", "NE"),
-				d("MOVE&BUILD", 1, "E", "NW"),
-				d("MOVE&BUILD", 1, "E", "S"),
-				d("MOVE&BUILD", 1, "E", "SE"),
-				d("MOVE&BUILD", 1, "E", "W"),
-				d("MOVE&BUILD", 1, "N", "E"),
-				d("MOVE&BUILD", 1, "N", "N"),
-				d("MOVE&BUILD", 1, "N", "NE"),
-				d("MOVE&BUILD", 1, "N", "NW"),
-				d("MOVE&BUILD", 1, "N", "S"),
-				d("MOVE&BUILD", 1, "N", "SE"),
-				d("MOVE&BUILD", 1, "N", "W"),
-				d("MOVE&BUILD", 1, "NE", "E"),
-				d("MOVE&BUILD", 1, "NE", "N"),
-				d("MOVE&BUILD", 1, "NE", "NW"),
-				d("MOVE&BUILD", 1, "NE", "S"),
-				d("MOVE&BUILD", 1, "NE", "SE"),
-				d("MOVE&BUILD", 1, "NE", "SW"),
-				d("MOVE&BUILD", 1, "NE", "W"),
-				d("MOVE&BUILD", 1, "NW", "E"),
-				d("MOVE&BUILD", 1, "NW", "N"),
-				d("MOVE&BUILD", 1, "NW", "NE"),
-				d("MOVE&BUILD", 1, "NW", "NW"),
-				d("MOVE&BUILD", 1, "NW", "SE"),
-				d("MOVE&BUILD", 1, "NW", "SW"),
-				d("MOVE&BUILD", 1, "NW", "W"),
-				d("MOVE&BUILD", 1, "SE", "E"),
-				d("MOVE&BUILD", 1, "SE", "N"),
-				d("MOVE&BUILD", 1, "SE", "NE"),
-				d("MOVE&BUILD", 1, "SE", "NW"),
-				d("MOVE&BUILD", 1, "SE", "S"),
-				d("MOVE&BUILD", 1, "SE", "SE"),
-				d("MOVE&BUILD", 1, "SE", "SW"),
-				d("PUSH&BUILD", 0, "NE", "E"),
-				d("PUSH&BUILD", 0, "NE", "NE"),
-				d("PUSH&BUILD", 1, "S", "S"),
-				d("PUSH&BUILD", 1, "S", "SE"),
-				d("PUSH&BUILD", 1, "W", "NW"),
-				d("PUSH&BUILD", 1, "W", "SW"),
-				d("PUSH&BUILD", 1, "W", "W")
+		final List<WonderAction> actions = Arrays.asList(
+				B.g(0).m("N").b("N"),
+				B.g(0).m("N").b("NW"),
+				B.g(0).m("N").b("S"),
+				B.g(0).m("N").b("W"),
+				B.g(0).m("NW").b("E"),
+				B.g(0).m("NW").b("N"),
+				B.g(0).m("NW").b("NE"),
+				B.g(0).m("NW").b("NW"),
+				B.g(0).m("NW").b("SE"),
+				B.g(0).m("NW").b("SW"),
+				B.g(1).m("NW").b("NE"),
+				B.g(1).m("NW").b("S"),
+				B.g(1).m("NW").b("SE"),
+				B.g(1).m("NW").b("SW"),
+				B.g(1).m("NW").b("W"),
+				B.g(1).m("S").b("E"),
+				B.g(1).m("S").b("N"),
+				B.g(1).m("S").b("NW"),
+				B.g(1).m("S").b("W"),
+				B.g(1).m("SE").b("NW"),
+				B.g(1).m("SE").b("W"),
+				B.g(1).m("SW").b("E"),
+				B.g(1).m("SW").b("N"),
+				B.g(1).m("SW").b("NE"),
+				B.g(1).m("SW").b("NW"),
+				B.g(1).m("SW").b("W"),
+				B.g(1).m("W").b("E"),
+				B.g(1).m("W").b("N"),
+				B.g(1).m("W").b("NW"),
+				B.g(1).m("W").b("S"),
+				B.g(1).m("W").b("SE"),
+				B.g(1).m("W").b("SW"),
+				B.g(1).m("W").b("W"),
+				B.g(0).p("S").b("S"),
+				B.g(0).p("S").b("SW")
 				);
-		final Playfield p = Playfield.from(
+		final Gaming g = Gaming.from(
+				"000000",
+				"000000",
+				"00..00",
 				"0.00.0",
-				".0000.",
-				"001100",
-				"013210",
-				"004010",
+				"000000",
 				"000000"
 				);
-		p.withMy(my)
+		g.withMy(my)
 		.withEnemy(enemy)
 		.withActions(actions);
-		assertThat(p.computeMoves()).startsWith("PUSH&BUILD 1 W");
+		assertThat(g.computeMoves()).isNotEqualTo("MOVE&BUILD 0 N N");
 	}
 }
