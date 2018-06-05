@@ -9,7 +9,7 @@ macro_rules! parse_input {
 ///////////////////////////////////// PRIMES NUMBERS COMPUTER ////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 struct Primes {
-    // Contain all primes up to a given value built from the primes_upto fonction
+   // Contain all primes up to a given value built from the primes_upto fonction
     PRIMES:Cell<Vec<i32>>,
     // Contain for each number upto the given value the potential for this number to be a prime
     NUMBERS:Cell<Vec<bool>>
@@ -23,28 +23,27 @@ impl Primes {
         }
     }
     fn extend_numbers_up_to(&mut self, upper_bound:i32) {
-        let CURRENT_NUMBERS = self.NUMBERS.get_mut();
-        while (CURRENT_NUMBERS.len() as i32)<=upper_bound {
-            CURRENT_NUMBERS.push(true)
+        let current_numbers = self.NUMBERS.get_mut();
+        while (current_numbers.len() as i32)<=upper_bound {
+            current_numbers.push(true)
         }
     }
 
     fn cribling_numbers_up_to(&mut self, upper_bound:i32) {
-        let CURRENT_NUMBERS = self.NUMBERS.get_mut();
-        let CURRENT_PRIMES = self.PRIMES.get_mut();
-        let mut numbers_len:i32 = CURRENT_NUMBERS.len() as i32;
+        let current_numbers = self.NUMBERS.get_mut();
+        let current_primes = self.PRIMES.get_mut();
         // Then go from the max prime found in PRIMES upto sqrt of that value
-        let first_prime = *CURRENT_PRIMES.as_slice().last().unwrap_or(&2i32);
+        let first_prime = *current_primes.as_slice().last().unwrap_or(&2i32);
         let mut to_test:Vec<i32> = vec![];
         // Do not forget to take again already known primes in order to eliminate "new" multiples
-        to_test.extend(CURRENT_PRIMES.iter());
+        to_test.extend(current_primes.iter());
         to_test.extend(first_prime..(upper_bound+1));
         for potential_prime in to_test {
-            if CURRENT_NUMBERS[potential_prime as usize] {
+            if current_numbers[potential_prime as usize] {
                 for multiplier in 2..(upper_bound/potential_prime+1) {
                     let number = potential_prime*multiplier;
-                    if (number as usize)<CURRENT_NUMBERS.len() {
-                        CURRENT_NUMBERS[(potential_prime*multiplier) as usize] = false;
+                    if (number as usize)<current_numbers.len() {
+                        current_numbers[(potential_prime*multiplier) as usize] = false;
                     }
                 }
             }
@@ -52,14 +51,14 @@ impl Primes {
     }
 
     fn store_primes(&mut self, upper_bound:i32) {
-        let CURRENT_NUMBERS = self.NUMBERS.get_mut();
-        let CURRENT_PRIMES = self.PRIMES.get_mut();
-        let first_prime = *CURRENT_PRIMES.as_slice().last().unwrap_or(&2i32);
+        let current_numbers = self.NUMBERS.get_mut();
+        let current_primes = self.PRIMES.get_mut();
+        let first_prime = *current_primes.as_slice().last().unwrap_or(&2i32);
         // Now we have eliminated all non-primes, add the primes to the primes vec
         for number in first_prime..(upper_bound+1) {
-            if CURRENT_NUMBERS[number as usize] {
-            	if !CURRENT_PRIMES.contains(&number) {
-	                CURRENT_PRIMES.push(number);
+            if current_numbers[number as usize] {
+            	if !current_primes.contains(&number) {
+	                current_primes.push(number);
             	}
             }
         }
@@ -69,7 +68,7 @@ impl Primes {
     /// This function uses classical Erathostenes Sieve
     /// https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
     pub fn upto(&mut self, upper_bound:i32)->Vec<i32> {
-        let mut numbers_len:i32 = self.NUMBERS.get_mut().len() as i32;
+        let numbers_len:i32 = self.NUMBERS.get_mut().len() as i32;
         if numbers_len<upper_bound {
             self.extend_numbers_up_to(upper_bound);
             self.cribling_numbers_up_to(upper_bound);
@@ -79,6 +78,7 @@ impl Primes {
     }
 	
 	fn reduce_to_prime_factors(&mut self, number:i32)->Vec<i32> {
+//        eprintln!("reducing {} to prime factors", number);
 		let mut returned:Vec<i32> = vec![];
 		let primes = self.upto(number);
 		let mut primes_iter = primes.iter();
@@ -116,18 +116,22 @@ struct Fraction {
 impl Fraction {
     fn find_signum(self)->i32 {
         let mut signum = 1;
-        if(self.integer_part!=0) {
+        if self.integer_part!=0 {
             signum = self.integer_part.signum();
         } else {
             signum = signum*self.numerator.signum()*self.denominator.signum();
         }
         return signum;
     }
+    
     fn reduce(self, PRIMES:&mut Primes)->Fraction {
-    	let mut numerator_primes = PRIMES.reduce_to_prime_factors(self.numerator);
-//    	eprintln!("{} can be separated into {:?}", self.numerator, numerator_primes);
+        if self.denominator==0 || self.numerator==0 {
+            return self;
+        }
+    	let numerator_primes = PRIMES.reduce_to_prime_factors(self.numerator);
+    	eprintln!("{} can be separated into {:?}", self.numerator, numerator_primes);
     	let mut denominator_primes = PRIMES.reduce_to_prime_factors(self.denominator);
-//    	eprintln!("{} can be separated into {:?}", self.denominator, denominator_primes);
+    	eprintln!("{} can be separated into {:?}", self.denominator, denominator_primes);
     	let mut new_numerator = vec![];
     	for number in numerator_primes {
     		if denominator_primes.contains(&number) {
@@ -140,19 +144,22 @@ impl Fraction {
         return Fraction {
         	signum:self.signum,
             integer_part:self.integer_part,
-            numerator:if new_numerator.len()==0 { 0 } else { new_numerator.iter().fold(1, |acc, n| acc * n) },
+            numerator:if new_numerator.len()==0 { 1 } else { new_numerator.iter().fold(1, |acc, n| acc * n) },
             denominator:denominator_primes.iter().fold(1, |acc, n| acc * n)
         }
     }
     /// From a "classical" fraction, generates a fraction with the integer part isolated
     fn separate(self)->Fraction {
-        if(self.integer_part!=0) {
+        if self.integer_part!=0 {
             return self;
         }
         let signum = self.find_signum();
         // Now come the hard part
         let mut next_numerator = self.numerator.abs();
-        let mut next_denominator = self.denominator.abs();
+        let next_denominator = self.denominator.abs();
+        if self.denominator==0 {
+            return self;
+        }
         let mut next_integer_part = 0;
         while next_denominator<=next_numerator {
             next_numerator = next_numerator-next_denominator;
@@ -167,6 +174,7 @@ impl Fraction {
     }
     fn simplify(self, PRIMES:&mut Primes)->Fraction {
         let separated = self.separate();
+//        eprintln!("separated {} into {:?}", self.to_string(), separated);
         return separated.reduce(PRIMES);
     }
 }
@@ -205,7 +213,7 @@ impl From<String> for Fraction {
         // Splitting a string is as easy as invoking the split method on string
         // But beware, it gives an iterator, NOT an array
         // See https://stackoverflow.com/a/26643821/15619
-        let mut split:Vec<&str> = item.split("/").collect();
+        let split:Vec<&str> = item.split("/").collect();
         Fraction {
         	signum:1,
             integer_part:0,
@@ -216,18 +224,18 @@ impl From<String> for Fraction {
     }
 }
 
-
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
 fn main() {
+    #![allow(non_snake_case)]
     let mut PRIMES = Primes::new();
     let mut input_line = String::new();
     io::stdin().read_line(&mut input_line).unwrap();
     let n = parse_input!(input_line, i32);
     let mut tested = vec![];
-    for i in 0..n as usize {
+    for _i in 0..n as usize {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let x_y = input_line.trim().to_string();
@@ -240,4 +248,15 @@ fn main() {
         eprintln!("{} reduced to {:?}", number, reduced);
         println!("{}", reduced.to_string());
     }
- }
+}
+
+fn simplify(number:String)->String {
+    #![allow(non_snake_case)]
+    let mut PRIMES = Primes::new();
+    let fraction = Fraction::from(number.to_string());
+    let reduced = fraction.simplify(&mut PRIMES);
+	return reduced.to_string();	
+}
+
+#[cfg(test)]
+mod test;

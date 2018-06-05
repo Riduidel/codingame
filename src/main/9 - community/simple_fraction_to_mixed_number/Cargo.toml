@@ -3,4 +3,8 @@ name = "simple_fraction_to_mixed_number"
 version = "0.1.0"
 authors = ["Nicolas Delsaux <nicolas.delsaux@gmx.fr>"]
 
+[[bin]]
+name = "codingame"
+path = "src/simple_fraction_to_mixed_number.rs"
+
 [dependencies]
