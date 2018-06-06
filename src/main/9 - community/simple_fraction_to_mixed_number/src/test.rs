@@ -39,6 +39,21 @@ fn negative_numerator_works() {
 }
 
 #[test]
+fn medium_numerator_works() {
+    simplify("7919/7907".to_string(), "1 12/7907".to_string());
+}
+
+#[test]
+fn quite_big_numerator_works() {
+    simplify("7919/123341".to_string(), "7919/123341".to_string());
+}
+
+#[test]
 fn big_numerator_works() {
     simplify("9784128/9994708".to_string(), "2446032/2498677".to_string());
+}
+
+#[test]
+fn big_big_numerator_works() {
+    simplify("9999999/-9999999".to_string(), "-1".to_string());
 }
