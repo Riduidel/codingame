@@ -1,5 +1,6 @@
 use std::io;
 
+
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
@@ -12,6 +13,21 @@ struct Fraction {
     pub denominator:i32
 }
 
+// I don't even understand that shit !
+// In fact, it's the software implementation of Euclid's algorithm.
+// it requires a to be greater than b
+mod euclid {
+    use std::cmp::Ordering;
+    pub fn gcd(m:i32, n:i32)->i32 {
+        assert!(m > 0 && n > 0);
+    
+        match m.cmp(&n) {
+            Ordering::Equal => m,
+            Ordering::Less => gcd(m, n-m),
+            Ordering::Greater => gcd(m-n, n),
+            }
+    }
+}
 impl Fraction {
     fn find_signum(self)->i32 {
         let mut signum = 1;
@@ -28,13 +44,7 @@ impl Fraction {
             return self;
         }
         // Now reduce fraction
-        let mut best_reducer:i32 = 0;
-        for reducer in 2..(self.denominator/2+1) {
-            if self.numerator%reducer==0 &&
-                self.denominator%reducer==0 {
-                    best_reducer = reducer;
-            }
-        }
+        let best_reducer:i32 = euclid::gcd(self.numerator, self.denominator);
         if best_reducer>0 {
             return Fraction {
                 signum:self.signum,
