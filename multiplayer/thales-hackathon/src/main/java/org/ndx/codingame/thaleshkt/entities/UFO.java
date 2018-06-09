@@ -61,7 +61,8 @@ public class UFO implements ConstructableInUnitTest {
 				}
 			}
 		}
-		return String.format("%d %d 100", (int) destination.x, (int) destination.y);
+		// Always boost, since the game engine will make sure I use it correctly
+		return String.format("%d %d BOOST", (int) destination.x, (int) destination.y);
 	}
 
 }
