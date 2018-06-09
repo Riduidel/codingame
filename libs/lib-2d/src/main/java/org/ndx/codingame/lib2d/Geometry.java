@@ -140,6 +140,10 @@ public class Geometry {
 		return new ContinuousPoint(point.x, point.y);
 	}
 
+	public static DiscretePoint discrete(final ContinuousPoint point) {
+		return new DiscretePoint((int) point.x, (int) point.y);
+	}
+
 	public static ContinuousPoint barycenterOf(final Collection<? extends ContinuousPoint> points) {
 		double x = 0,
 				y = 0;

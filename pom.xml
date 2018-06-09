@@ -162,5 +162,6 @@
 		<module>multiplayer/coders-of-the-carribean</module>
 		<module>multiplayer/code4life</module>
 		<module>multiplayer/wondev-woman</module>
+		<module>multiplayer/thales-hackathon</module>
 	</modules>
 </project>
