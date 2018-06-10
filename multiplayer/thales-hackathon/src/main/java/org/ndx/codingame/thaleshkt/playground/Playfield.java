@@ -22,13 +22,13 @@ public class Playfield implements ToUnitTestFiller {
 	public StringBuilder build(final String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
 		returned.append(status.toUnitTestConstructor(ToUnitTestHelpers.CONTENT_PREFIX));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield();\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.my.first = ").append(my.first.toUnitTestConstructor("")).append(";\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.my.second = ").append(my.second.toUnitTestConstructor("")).append(";\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(my.flag.toUnitTestConstructor("p.my.flag = "));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.enemy.first = ").append(adversary.first.toUnitTestConstructor("")).append(";\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.enemy.second = ").append(adversary.second.toUnitTestConstructor("")).append(";\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(adversary.flag.toUnitTestConstructor("p.enemy.flag = "));
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield(status);\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(my.first.toUnitTestConstructor("p.my.first = ")).append(";\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(my.second.toUnitTestConstructor("p.my.second = ")).append(";\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(my.flag.toUnitTestConstructor("p.my.flag = ")).append(";\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(adversary.first.toUnitTestConstructor("p.adversary.first = ")).append(";\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(adversary.second.toUnitTestConstructor("p.adversary.second = ")).append(";\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(adversary.flag.toUnitTestConstructor("p.adversary.flag = ")).append(";\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
 		.append("assertThat(p.compute()).isNotEqualTo(\"")
 		.append(effectiveCommand.replace(
