@@ -4,8 +4,11 @@ import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
 import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Circle;
+import org.ndx.codingame.thaleshkt.Constants;
+import org.ndx.codingame.thaleshkt.actions.Move;
 import org.ndx.codingame.thaleshkt.playground.Participant;
 import org.ndx.codingame.thaleshkt.playground.Playfield;
+import org.ndx.codingame.thaleshkt.status.CanBoost;
 import org.ndx.codingame.thaleshkt.status.MySide;
 
 public class UFO implements ConstructableInUnitTest {
@@ -16,7 +19,7 @@ public class UFO implements ConstructableInUnitTest {
 	private ContinuousPoint destination;
 
 	public UFO(int x, int y, int vx, int vy, int flag) {
-		this.position = new Circle(new ContinuousPoint(x, y), 400);
+		this.position = new Circle(new ContinuousPoint(x, y), Constants.UFO_RADIUS);
 		this.speed = new ContinuousPoint(vx, vy);
 		this.hasFlag = flag!=0;
 	}
@@ -33,10 +36,13 @@ public class UFO implements ConstructableInUnitTest {
 				.append(")");
 	}
 
-	public String compute(Playfield playfield) {
+	public Move compute(Playfield playfield) {
+		Move returned;
 		if(hasFlag) {
 			// Just aim for position with same y, but on our side
-			destination = Geometry.at(playfield.status.get(MySide.class).my.edge.first.x, position.center.y);
+			returned = new Move(Geometry.at(playfield.status.get(MySide.class).my.edge.first.x, position.center.y),
+					100,
+					playfield.status.get(CanBoost.class).first.canBoost());
 		} else {
 			// Aim for nearest flag
 			ContinuousPoint myFlag = playfield.getPositionOfFlag(Participant.MY);
@@ -59,9 +65,11 @@ public class UFO implements ConstructableInUnitTest {
 					}
 				}
 			}
+			returned = new Move(destination, Math.min(100, 
+					(int) position.center.distance2To(destination)-Constants.UFO_RADIUS),
+					playfield.status.get(CanBoost.class).first.canBoost());
 		}
-		// Always boost, since the game engine will make sure I use it correctly
-		return String.format("%d %d BOOST", (int) destination.x, (int) destination.y);
+		destination = returned.destination;
+		return returned;
 	}
-
 }

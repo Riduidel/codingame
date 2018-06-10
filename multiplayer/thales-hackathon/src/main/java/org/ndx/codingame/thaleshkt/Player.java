@@ -7,6 +7,7 @@ import org.ndx.codingame.thaleshkt.entities.Flag;
 import org.ndx.codingame.thaleshkt.entities.UFO;
 import org.ndx.codingame.thaleshkt.playground.Playfield;
 import org.ndx.codingame.thaleshkt.playground.Side;
+import org.ndx.codingame.thaleshkt.status.CanBoost;
 import org.ndx.codingame.thaleshkt.status.MySide;
 import org.ndx.codingame.thaleshkt.status.ThalesStatus;
 
@@ -20,6 +21,7 @@ public class Player {
 		Scanner in = new Scanner(System.in);
 
 		ThalesStatus status = new ThalesStatus(); 
+		status.set(new CanBoost());
 		// game loop
 		while (true) {
 			Playfield play = new Playfield(status);
