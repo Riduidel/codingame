@@ -14,12 +14,12 @@ import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.fantastic.status.TeamStatus;
 
 public class InGameTest {
 	@Test public void do_not_aim_same_target() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(0);
 		final List<Entity> playing=new ArrayList<>();
@@ -41,7 +41,7 @@ public class InGameTest {
 		assertThat(actions.get(0)).isNotEqualTo(actions.get(1));
 	}
 	@Test public void can_find_actions_in_1480781999197() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(9);
 		final List<Entity> playing=new ArrayList<>();
@@ -62,7 +62,7 @@ public class InGameTest {
 		assertThat(actions).hasSize(2);
 	}
 	@Test public void can_find_actions_in_1480787390621() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(27);
 		final List<Entity> playing=new ArrayList<>();
@@ -85,7 +85,7 @@ public class InGameTest {
 		assertThat(actions.get(1)).doesNotStartWith("ACCIO");
 	}
 	@Test public void can_find_actions_in_1480793421339() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(21);
 		final List<Entity> playing=new ArrayList<>();
@@ -105,7 +105,7 @@ public class InGameTest {
 	}
 
 	@Test public void can_find_actions_in_1480794842241() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(0);
 		Snaffle s7;
@@ -128,7 +128,7 @@ public class InGameTest {
 		assertThat(actions.get(0)).isNotEqualTo(Actions.moveTo(s7));
 	}
 	@Test public void can_find_actions_in_1480797429586() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(8);
 		final List<Entity> playing=new ArrayList<>();
@@ -150,7 +150,7 @@ public class InGameTest {
 		assertThat(actions.get(1)).startsWith("THROW");
 	}
 	@Test public void can_find_actions_in_1480850751124() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(1);
 			status.setMagic(12);
 		final List<Entity> playing=new ArrayList<>();
@@ -171,7 +171,7 @@ public class InGameTest {
 		assertThat(actions).hasSize(2);
 	}
 	@Test public void can_find_actions_in_1480861742428() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(2);
 		Snaffle s4;
@@ -197,7 +197,7 @@ public class InGameTest {
 	}
 
 	@Test public void can_find_actions_in_1480869369850() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(1);
 			status.setMagic(5);
 		final List<Entity> playing=new ArrayList<>();
@@ -214,7 +214,7 @@ public class InGameTest {
 		assertThat(actions).hasSize(2);
 	}
 	@Test public void throw_directly_in_goal() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(10);
 		final List<Entity> playing=new ArrayList<>();
@@ -237,7 +237,7 @@ public class InGameTest {
 		assertThat(Playground.goals.get(1).intersectionWith(throwed.direction.toLine())).isNotEmpty();
 	}
 	@Test public void can_find_actions_in_1480874912326() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(1);
 			status.setMagic(5);
 		final List<Entity> playing=new ArrayList<>();
@@ -258,7 +258,7 @@ public class InGameTest {
 		assertThat(actions).hasSize(2);
 	}
 	@Test public void can_find_actions_in_1481890909782() {
-		final Status status = new Status();
+		final FantasticStatus status = new FantasticStatus();
 			status.setTeam(0);
 			status.setMagic(5);
 		final List<Entity> playing=new ArrayList<>();

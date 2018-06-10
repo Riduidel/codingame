@@ -9,7 +9,7 @@ import org.ndx.codingame.fantastic.actions.ActionVisitor;
 import org.ndx.codingame.fantastic.entities.Bludger;
 import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public class ObliviateSpell extends AbstractSpell<Bludger> {
 
@@ -27,7 +27,7 @@ public class ObliviateSpell extends AbstractSpell<Bludger> {
 	}
 
 	@Override
-	public boolean conflictsWith(final Status status, final Action current) {
+	public boolean conflictsWith(final FantasticStatus status, final Action current) {
 		return current.accept(new SpellConflictAdapter(status, this) {
 			
 			@Override
@@ -43,7 +43,7 @@ public class ObliviateSpell extends AbstractSpell<Bludger> {
 	}
 
 	@Override
-	public void updateStatus(final Status status) {
+	public void updateStatus(final FantasticStatus status) {
 		super.updateStatus(status);
 		status.get(ObliviateStatus.class).applyOn(target);
 	}

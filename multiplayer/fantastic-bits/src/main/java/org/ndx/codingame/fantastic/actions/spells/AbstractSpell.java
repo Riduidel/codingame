@@ -2,7 +2,7 @@ package org.ndx.codingame.fantastic.actions.spells;
 
 import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.entities.Entity;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public abstract class AbstractSpell<Type extends Entity> implements Action {
 
@@ -22,7 +22,7 @@ public abstract class AbstractSpell<Type extends Entity> implements Action {
 	}
 
 	@Override
-	public void updateStatus(final Status status) {
+	public void updateStatus(final FantasticStatus status) {
 		status.setMagic(status.getMagic()-cost);
 	}
 

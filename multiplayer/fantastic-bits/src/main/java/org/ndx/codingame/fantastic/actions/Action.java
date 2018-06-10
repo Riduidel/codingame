@@ -1,15 +1,15 @@
 package org.ndx.codingame.fantastic.actions;
 
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public interface Action {
 	double getScore();
 
-	boolean conflictsWith(Status status, Action current);
+	boolean conflictsWith(FantasticStatus status, Action current);
 	
 	<Type> Type accept(ActionVisitor<Type> visitor);
 
 	String toCommand();
 
-	void updateStatus(Status status);
+	void updateStatus(FantasticStatus status);
 }

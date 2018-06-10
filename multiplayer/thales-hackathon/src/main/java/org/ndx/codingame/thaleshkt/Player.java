@@ -7,6 +7,8 @@ import org.ndx.codingame.thaleshkt.entities.Flag;
 import org.ndx.codingame.thaleshkt.entities.UFO;
 import org.ndx.codingame.thaleshkt.playground.Playfield;
 import org.ndx.codingame.thaleshkt.playground.Side;
+import org.ndx.codingame.thaleshkt.status.MySide;
+import org.ndx.codingame.thaleshkt.status.ThalesStatus;
 
 /**
  * Auto-generated code below aims at helping you parse the standard input
@@ -17,18 +19,17 @@ public class Player {
 	public static void main(String args[]) {
 		Scanner in = new Scanner(System.in);
 
-		Side my = null;
+		ThalesStatus status = new ThalesStatus(); 
 		// game loop
 		while (true) {
-			Playfield play = new Playfield();
+			Playfield play = new Playfield(status);
 			// Position de notre drapeau
 			play.my.flag = new Flag(in.nextInt(), in.nextInt());
 			// Position du drapeau adversaire
 			play.adversary.flag = new Flag(in.nextInt(), in.nextInt());
-			if (my==null) {
-				my = play.findMySide();
+			if(!status.containsKey(MySide.class)) {
+				status.set(new MySide(play.findMySide()));
 			}
-			play.side = my;
 			// Position de MES bonhommes
 			play.my.first = new UFO(
 					// Position

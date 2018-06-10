@@ -8,7 +8,7 @@ import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public abstract class AbstractSpellBuilder<Type extends Entity> {
 	private final int cost;
@@ -17,7 +17,7 @@ public abstract class AbstractSpellBuilder<Type extends Entity> {
 		this.cost = cost;
 	}
 
-	protected Collection<Action> testOn(final Entities entities, final Status status, final Wizard wizard,
+	protected Collection<Action> testOn(final Entities entities, final FantasticStatus status, final Wizard wizard,
 			final Type entity, final SpellStatus spellStatus) {
 		final Collection<Action> returned = new ArrayList<>();
 		status.setIfNeeded(spellStatus);
@@ -30,5 +30,5 @@ public abstract class AbstractSpellBuilder<Type extends Entity> {
 		return returned;
 	}
 
-	protected abstract Optional<Action> doTestOn(Entities entities, Status status, Wizard wizard, Type entity);
+	protected abstract Optional<Action> doTestOn(Entities entities, FantasticStatus status, Wizard wizard, Type entity);
 }

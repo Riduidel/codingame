@@ -13,6 +13,7 @@
 		<module>lib-gaming</module>
 		<module>lib-gaming-2d</module>
 		<module>lib-graph</module>
+		<module>lib-status</module>
 	</modules>
 	<build>
 		<plugins>

@@ -11,7 +11,7 @@ import org.ndx.codingame.fantastic.entities.Bludger;
 import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public class ObliviateSpellBuilder extends AbstractSpellBuilder<Bludger> {
 
@@ -19,12 +19,12 @@ public class ObliviateSpellBuilder extends AbstractSpellBuilder<Bludger> {
 		super(Constants.MAGIC_OBLIVIATE_COST);
 	}
 
-	public Collection<? extends Action> testOn(final Entities entities, final Status status, final Wizard wizard, final Bludger bludger) {
+	public Collection<? extends Action> testOn(final Entities entities, final FantasticStatus status, final Wizard wizard, final Bludger bludger) {
 		return testOn(entities, status, wizard, bludger, new ObliviateStatus());
 	}
 
 	@Override
-	protected Optional<Action> doTestOn(final Entities entities, final Status status, final Wizard wizard, final Bludger entity) {
+	protected Optional<Action> doTestOn(final Entities entities, final FantasticStatus status, final Wizard wizard, final Bludger entity) {
 		final List<Wizard> myTeamisNearBludger = entities.getAllWizards().stream()
 				.sorted(new Entity.ByDistanceTo(entity))
 				.limit(2)

@@ -11,6 +11,11 @@
 		<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>lib-status</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>lib-2d</artifactId>
 			<version>${project.version}</version>
 		</dependency>

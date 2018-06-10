@@ -10,7 +10,7 @@ import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.fantastic.status.TeamStatus;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Segment;
@@ -21,12 +21,12 @@ public class FlipendoSpellBuilder extends AbstractSpellBuilder<Entity>{
 		super(Constants.MAGIC_FLIPENDO_COST);
 	}
 
-	public Collection<? extends Action> testOn(final Entities entities, final Status status, final Wizard wizard, final Entity entity) {
+	public Collection<? extends Action> testOn(final Entities entities, final FantasticStatus status, final Wizard wizard, final Entity entity) {
 		return testOn(entities, status, wizard, entity, new FlipendoStatus());
 	}
 
 	@Override
-	protected Optional<Action> doTestOn(final Entities entities, final Status status, final Wizard wizard, final Entity entity) {
+	protected Optional<Action> doTestOn(final Entities entities, final FantasticStatus status, final Wizard wizard, final Entity entity) {
 		final Segment attacked = status.get(TeamStatus.class).getAttacked();
 		final List<ContinuousPoint> wizards = entities.getAllWizards().stream()
 			.map(w -> w.position)

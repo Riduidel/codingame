@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ndx.codingame.fantastic.entities.Entity;
-import org.ndx.codingame.fantastic.status.StatusElement;
+import org.ndx.codingame.libstatus.StatusElement;
 
 public class SpellStatus implements StatusElement {
 	private Map<Entity, Integer> entities = new HashMap<>();
@@ -37,6 +37,11 @@ public class SpellStatus implements StatusElement {
 				entities.remove(entity);
 			}
 		}
+	}
+
+	@Override
+	public StringBuilder toUnitTestConstructor(String multilinePrefix) {
+		throw new UnsupportedOperationException("NOT EXPECTED TO BE USED !");
 	}
 
 

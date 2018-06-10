@@ -12,15 +12,15 @@ import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.EntityVisitor;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public class ActionListBuilder implements EntityVisitor<List<Action>> {
 
 	private final Wizard wizard;
-	private final Status status;
+	private final FantasticStatus status;
 	private final Entities entities;
 
-	public ActionListBuilder(final Entities allEntities, final Status status, final Wizard w) {
+	public ActionListBuilder(final Entities allEntities, final FantasticStatus status, final Wizard w) {
 		entities = allEntities;
 		this.status = status;
 		wizard = w;

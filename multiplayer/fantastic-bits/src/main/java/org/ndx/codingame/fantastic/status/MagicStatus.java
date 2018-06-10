@@ -1,5 +1,7 @@
 package org.ndx.codingame.fantastic.status;
 
+import org.ndx.codingame.libstatus.StatusElement;
+
 public class MagicStatus implements StatusElement {
 	int magic;
 
@@ -13,5 +15,12 @@ public class MagicStatus implements StatusElement {
 	
 	public void cast(int spellCost) {
 		magic-=spellCost;
+	}
+
+	@Override
+	public StringBuilder toUnitTestConstructor(String multilinePrefix) {
+		StringBuilder returned = new StringBuilder();
+		returned.append("new MagicStatus(").append(magic).append(")");
+		return returned;
 	}
 }

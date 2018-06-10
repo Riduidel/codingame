@@ -6,6 +6,7 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Circle;
 import org.ndx.codingame.thaleshkt.playground.Participant;
 import org.ndx.codingame.thaleshkt.playground.Playfield;
+import org.ndx.codingame.thaleshkt.status.MySide;
 
 public class UFO implements ConstructableInUnitTest {
 
@@ -33,11 +34,9 @@ public class UFO implements ConstructableInUnitTest {
 	}
 
 	public String compute(Playfield playfield) {
-		double targetX;
-		double targetY;
 		if(hasFlag) {
 			// Just aim for position with same y, but on our side
-			destination = Geometry.at(playfield.side.edge.first.x, position.center.y);
+			destination = Geometry.at(playfield.status.get(MySide.class).my.edge.first.x, position.center.y);
 		} else {
 			// Aim for nearest flag
 			ContinuousPoint myFlag = playfield.getPositionOfFlag(Participant.MY);

@@ -22,15 +22,17 @@ public class InGameTest {
 
 	@BeforeClass
 	public static void waitForVisualVM() {
-		System.out.println("Waiting for profiler");
-		final long start = System.currentTimeMillis();
-		while(System.currentTimeMillis()-start<60_000) {
-			try {
-				Thread.sleep(100);
-			} catch (final InterruptedException e) {
+		if(Boolean.parseBoolean(System.getProperty("PROFILING", "false"))) {
+			System.out.println("Waiting for profiler");
+			final long start = System.currentTimeMillis();
+			while(System.currentTimeMillis()-start<60_000) {
+				try {
+					Thread.sleep(100);
+				} catch (final InterruptedException e) {
+				}
 			}
+			System.out.println("Starting now");
 		}
-		System.out.println("Starting now");
 	}
 
 	@Test

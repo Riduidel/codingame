@@ -10,7 +10,7 @@ import org.ndx.codingame.fantastic.entities.Entities;
 import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.fantastic.status.TeamStatus;
 
 /**
@@ -25,7 +25,7 @@ public class Player {
 
         final List<Entity> playing = new ArrayList<>();
         final List<Wizard> myTeam = new ArrayList<>();
-        final Status status = new Status();
+        final FantasticStatus status = new FantasticStatus();
         status.setTeam(myTeamId);
         status.setCaptain(0);
         // game loop
@@ -72,7 +72,7 @@ public class Player {
         }
     }
 
-	private static void chooseCaptain(final Status status, final List<Wizard> myTeam) {
+	private static void chooseCaptain(final FantasticStatus status, final List<Wizard> myTeam) {
 		final Wizard myCaptain = myTeam.get(0);
 		final Wizard wingman = myTeam.get(1);
 		if(myCaptain.isBetween(wingman, status.get(TeamStatus.class).getAttacked())) {

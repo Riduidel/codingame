@@ -4,11 +4,15 @@ import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.thaleshkt.Constants;
+import org.ndx.codingame.thaleshkt.status.ThalesStatus;
 
 public class Playfield implements ToUnitTestFiller {
 	public final Team my = new Team();
 	public final Team adversary = new Team();
-	public Side side;
+	public final ThalesStatus status;
+	public Playfield(ThalesStatus status) {
+		this.status = status;
+	}
 	public String compute() {
 		return my.compute(this);
 	}
@@ -17,6 +21,7 @@ public class Playfield implements ToUnitTestFiller {
 	}
 	public StringBuilder build(final String effectiveCommand) {
 		final StringBuilder returned = new StringBuilder();
+		returned.append(status.toUnitTestConstructor(ToUnitTestHelpers.CONTENT_PREFIX));
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("Playfield p = new Playfield();\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.my.first = ").append(my.first.toUnitTestConstructor("")).append(";\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.my.second = ").append(my.second.toUnitTestConstructor("")).append(";\n");
@@ -24,7 +29,6 @@ public class Playfield implements ToUnitTestFiller {
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.enemy.first = ").append(adversary.first.toUnitTestConstructor("")).append(";\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.enemy.second = ").append(adversary.second.toUnitTestConstructor("")).append(";\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append(adversary.flag.toUnitTestConstructor("p.enemy.flag = "));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("p.side = Side."+side.name()+";\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX)
 		.append("assertThat(p.compute()).isNotEqualTo(\"")
 		.append(effectiveCommand.replace(
@@ -32,9 +36,6 @@ public class Playfield implements ToUnitTestFiller {
 				"\\n\"+\n"+ToUnitTestHelpers.CONTENT_PREFIX+"\""))
 		.append("\");\n");
 		return returned;
-	}
-	public Side getSide() {
-		return side;
 	}
 	
 	public ContinuousPoint getPositionOfFlag(Participant p) {

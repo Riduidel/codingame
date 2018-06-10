@@ -9,7 +9,7 @@ import org.ndx.codingame.fantastic.entities.Entity;
 import org.ndx.codingame.fantastic.entities.EntityVisitor;
 import org.ndx.codingame.fantastic.entities.Snaffle;
 import org.ndx.codingame.fantastic.entities.Wizard;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
@@ -77,7 +77,7 @@ public class Playground {
 		}
 	};
 
-	public static String toUnitTestString(final Status status, final List<Entity> playing, final List<Wizard> myTeam) {
+	public static String toUnitTestString(final FantasticStatus status, final List<Entity> playing, final List<Wizard> myTeam) {
 		final String METHOD_PREFIX = "\t\t\t"; 
 		final String CONTENT_PREFIX = METHOD_PREFIX+"\t";
 		final StringBuilder returned = new StringBuilder();

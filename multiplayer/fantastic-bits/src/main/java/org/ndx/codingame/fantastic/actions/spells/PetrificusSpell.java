@@ -5,7 +5,7 @@ import org.ndx.codingame.fantastic.Playground;
 import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.actions.ActionVisitor;
 import org.ndx.codingame.fantastic.entities.Entity;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.lib2d.shapes.Segment;
 
 public class PetrificusSpell extends AbstractSpell {
@@ -27,7 +27,7 @@ public class PetrificusSpell extends AbstractSpell {
 	}
 
 	@Override
-	public boolean conflictsWith(final Status status, final Action current) {
+	public boolean conflictsWith(final FantasticStatus status, final Action current) {
 		return current.accept(new SpellConflictAdapter(status, this) {
 			@Override
 			protected Boolean doVisit(final PetrificusSpell accioSpell) {
@@ -42,7 +42,7 @@ public class PetrificusSpell extends AbstractSpell {
 	}
 
 	@Override
-	public void updateStatus(final Status status) {
+	public void updateStatus(final FantasticStatus status) {
 		super.updateStatus(status);
 		status.get(FlipendoStatus.class).applyOn(target);
 	}

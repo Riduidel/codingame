@@ -1,13 +1,13 @@
 package org.ndx.codingame.fantastic.actions.spells;
 
 import org.ndx.codingame.fantastic.actions.ActionAdapter;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 
 public abstract class SpellConflictAdapter extends ActionAdapter<Boolean>{
-	private final Status status;
+	private final FantasticStatus status;
 	private final AbstractSpell source;
 
-	public SpellConflictAdapter(final Status status, final AbstractSpell source) {
+	public SpellConflictAdapter(final FantasticStatus status, final AbstractSpell source) {
 		super(false);
 		this.status = status;
 		this.source = source;

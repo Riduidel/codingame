@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import org.ndx.codingame.fantastic.actions.Action;
 import org.ndx.codingame.fantastic.actions.ActionListBuilder;
 import org.ndx.codingame.fantastic.actions.OrderActions;
-import org.ndx.codingame.fantastic.status.Status;
+import org.ndx.codingame.fantastic.status.FantasticStatus;
 import org.ndx.codingame.fantastic.status.TeamStatus;
 import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
@@ -31,7 +31,7 @@ public class Entities {
 		}
 		
 	}
-	public final Status status;
+	public final FantasticStatus status;
 
 	private final List<Entity> entities;
 	private final List<Wizard> myTeam;
@@ -40,7 +40,7 @@ public class Entities {
 	private final Map<Class<? extends Entity>, Map<ContinuousPoint, ? extends Entity>> positionsOf = new HashMap<>();
 	private final Collection<Entity> allEntities;
 
-	public Entities(final Status status, final List<Entity> entities, final List<Wizard> myTeam, final Segment attacking, final Segment defending) {
+	public Entities(final FantasticStatus status, final List<Entity> entities, final List<Wizard> myTeam, final Segment attacking, final Segment defending) {
 		this.status = status;
 		this.entities = entities;
 		this.myTeam = myTeam;
