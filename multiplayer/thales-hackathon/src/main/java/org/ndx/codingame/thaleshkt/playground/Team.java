@@ -21,7 +21,7 @@ public class Team {
 	public Team(Participant p) {
 		this.participant = p;
 	}
-	public String compute(Playfield playfield) {
+	public Collection<Move> compute(Playfield playfield) {
 		Collection<Move> moves;
 		if(first.hasFlag) {
 			moves = Arrays.asList(first.computeComeback(playfield),
@@ -48,8 +48,6 @@ public class Team {
 			moves = shortestMove.get(key);
 		}
 		// Don't forget to update boost status accordingly
-		return moves.stream()
-				.map(m -> m.toString())
-				.collect(Collectors.joining("\n")); 
+		return moves;
 	}
 }

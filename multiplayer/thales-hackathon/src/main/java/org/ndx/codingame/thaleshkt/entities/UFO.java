@@ -63,11 +63,10 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 		return returned;
 	}
 
-	public Move computeAttack(Playfield playfield) {
+	public Move computeCapture(Playfield playfield) {
 		AbstractEntity adversaryFlagEntity = playfield.getFlagOwner(Participant.ADVERSARY);
 		ContinuousPoint adversaryFlag = adversaryFlagEntity.position.center;
-		int thrust = Math.min(100, 
-				(int) (position.center.distance2To(adversaryFlag)-Constants.UFO_RADIUS));
+		int thrust = computeThrust(adversaryFlag);
 		return new GoToAdversaryFlag(this, adversaryFlag, thrust,
 				thrust==100 ? playfield.status.get(CanBoost.class).first.canBoost() : false);
 	}
@@ -96,11 +95,12 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 				return new PursuitCapturedFlag(UFO.this, destination, computeThrust(destination),
 						playfield.status.get(CanBoost.class).first.canBoost());
 			}
-			private int computeThrust(ContinuousPoint destination) {
-				return Math.min(100, 
-						(int) position.center.distance2To(destination)-Constants.UFO_RADIUS);
-			}
 		});
+	}
+
+	private int computeThrust(ContinuousPoint destination) {
+		return Math.max(0,  Math.min(100, 
+				(int) position.center.distance2To(destination)-Constants.UFO_RADIUS));
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 
 	public Map<MoveType, Move> computeMoves(Playfield playfield) {
 		Map<MoveType, Move> returned = new HashMap<>();
-		returned.put(MoveType.ATTACK, computeAttack(playfield));
+		returned.put(MoveType.ATTACK, computeCapture(playfield));
 		returned.put(MoveType.DEFENSE, computeDefense(playfield));
 		return returned;
 	}

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.tounittest.ToUnitTestFiller;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
@@ -17,6 +18,7 @@ import org.ndx.codingame.thaleshkt.entities.AbstractEntity;
 import org.ndx.codingame.thaleshkt.entities.EntityVisitor;
 import org.ndx.codingame.thaleshkt.entities.Flag;
 import org.ndx.codingame.thaleshkt.entities.UFO;
+import org.ndx.codingame.thaleshkt.status.CanBoost;
 import org.ndx.codingame.thaleshkt.status.ThalesStatus;
 
 public class Playfield implements ToUnitTestFiller {
@@ -28,7 +30,16 @@ public class Playfield implements ToUnitTestFiller {
 		this.status = status;
 	}
 	public String compute() {
-		return my.compute(this);
+		Collection<Move> computed = my.compute(this);
+		return computed.stream()
+				.map(this::updateBoost)
+				.map(Move::toString)
+				.collect(Collectors.joining("\n")); 
+
+	}
+	private Move updateBoost(Move m) {
+		status.get(CanBoost.class).update(m);
+		return m;
 	}
 	public Side findMySide() {
 		return my.flag.position.center.x<Constants.WIDTH/2 ? Side.LEFT : Side.RIGHT;
