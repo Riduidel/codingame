@@ -2,6 +2,7 @@ package org.ndx.codingame.lib2d.shapes;
 
 import java.util.Comparator;
 
+import org.ndx.codingame.lib2d.Algebra;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 
 public class Vector extends Segment {
@@ -51,5 +52,21 @@ public class Vector extends Segment {
 	@Override
 	protected Line create(final ContinuousPoint targetPosition, final ContinuousPoint secondTarget) {
 		return new Vector(targetPosition, secondTarget);
+	}
+
+	/**
+	 * Compute how much times this vector fits in the one built from origin to the given point.
+	 * This point is supposed to be on the supporting line ! 
+	 * @param p
+	 * @return
+	 */
+	public double numberOfTimesTo(ContinuousPoint p) {
+		double x = p.getX();
+		double y = p.getY();
+		if(first.equals(second) || Algebra.isZero(first.distance2To(second))) {
+			return Double.POSITIVE_INFINITY;
+		} else {
+			return new Segment(first, p).length()/length();
+		}
 	}
 }

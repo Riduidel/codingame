@@ -5,12 +5,10 @@ import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Circle;
 import org.ndx.codingame.thaleshkt.Constants;
 
-public class Flag implements ConstructableInUnitTest {
-
-	public final Circle position;
+public class Flag extends AbstractEntity implements ConstructableInUnitTest {
 
 	public Flag(int flagX, int flagY) {
-		this.position = new Circle(new ContinuousPoint(flagX, flagY), Constants.FLAG_RADIUS);
+		super(flagX, flagY, Constants.FLAG_RADIUS);
 	}
 
 	@Override
@@ -19,7 +17,12 @@ public class Flag implements ConstructableInUnitTest {
 				.append("new Flag(")
 				.append((int) position.center.x).append(", ")
 				.append((int) position.center.y)
-				.append(");");
+				.append(")");
+	}
+
+	@Override
+	public <Type> Type accept(EntityVisitor<Type> visitor) {
+		return visitor.visitFlag(this);
 	}
 
 }

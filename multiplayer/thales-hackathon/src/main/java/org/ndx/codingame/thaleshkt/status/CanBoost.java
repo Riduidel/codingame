@@ -46,4 +46,15 @@ public class CanBoost implements StatusElement {
 		first.advanceOneTurn();
 		second.advanceOneTurn();
 	}
+
+	public void update(Move returned) {
+		switch(returned.moving.gamer) {
+		case FIRST:
+			first.update(returned);
+			break;
+		case SECOND:
+			second.update(returned);
+			break;
+		}
+	}
 }

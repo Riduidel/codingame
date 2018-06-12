@@ -3,7 +3,7 @@ package org.ndx.codingame.thaleshkt;
 import org.ndx.codingame.lib2d.continuous.ContinuousPoint;
 import org.ndx.codingame.lib2d.shapes.Segment;
 
-public class Constants {
+public interface Constants {
 
 	public static final int WIDTH = 10_000;
 	public static final int HEIGHT = 8_000;

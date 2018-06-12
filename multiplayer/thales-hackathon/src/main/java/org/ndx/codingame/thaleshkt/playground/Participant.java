@@ -11,7 +11,7 @@ public enum Participant {
 			return playfield.adversary;
 		}
 	},
-	ENEMY {
+	ADVERSARY {
 		@Override
 		public Team getParticipant(Playfield playfield) {
 			return playfield.adversary;
