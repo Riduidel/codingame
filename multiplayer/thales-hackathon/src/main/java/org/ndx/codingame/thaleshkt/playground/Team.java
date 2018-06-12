@@ -1,10 +1,12 @@
 package org.ndx.codingame.thaleshkt.playground;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.ndx.codingame.thaleshkt.actions.Move;
 import org.ndx.codingame.thaleshkt.actions.MoveType;
@@ -20,14 +22,13 @@ public class Team {
 		this.participant = p;
 	}
 	public String compute(Playfield playfield) {
-		Move firstMove;
-		Move secondMove;
+		Collection<Move> moves;
 		if(first.hasFlag) {
-			firstMove = first.computeComeback(playfield);
-			secondMove = second.computeDefense(playfield);
+			moves = Arrays.asList(first.computeComeback(playfield),
+					second.computeDefense(playfield));
 		} else if (second.hasFlag) {
-			firstMove = first.computeDefense(playfield);
-			secondMove = second.computeComeback(playfield);
+			moves = Arrays.asList(first.computeDefense(playfield),
+					second.computeComeback(playfield));
 		} else {
 			Map<MoveType, Move> firstMovesMap = first.computeMoves(playfield);
 			Map<MoveType, Move> secondMovesMap = second.computeMoves(playfield);
@@ -44,11 +45,11 @@ public class Team {
 				shortestMove.put(totalDistance, Arrays.asList(f, s));
 			}
 			Double key = shortestMove.firstKey();
-			List<Move> selected = shortestMove.get(key);
-			firstMove = selected.get(0);
-			secondMove = selected.get(1);
+			moves = shortestMove.get(key);
 		}
 		// Don't forget to update boost status accordingly
-		return firstMove.toString()+"\n"+secondMove.toString();  
+		return moves.stream()
+				.map(m -> m.toString())
+				.collect(Collectors.joining("\n")); 
 	}
 }
