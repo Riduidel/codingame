@@ -66,7 +66,21 @@ public class Vector extends Segment {
 		if(first.equals(second) || Algebra.isZero(first.distance2To(second))) {
 			return Double.POSITIVE_INFINITY;
 		} else {
-			return new Segment(first, p).length()/length();
+			Segment colinear = new Segment(first, p);
+			double returned = colinear.length()/length();
+			if(coeffs.isVerticalLine()) {
+				if(Math.signum(p.x-first.x)!=Math.signum(second.x-first.x)) {
+					return -1*returned;
+				} else {
+					return returned;
+				}
+			} else {
+				if(Math.signum(p.y-first.y)!=Math.signum(second.y-first.y)) {
+					return -1*returned;
+				} else {
+					return returned;
+				}
+			}
 		}
 	}
 }
