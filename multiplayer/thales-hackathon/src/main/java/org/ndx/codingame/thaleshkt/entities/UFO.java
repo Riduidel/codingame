@@ -83,10 +83,7 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 			public Move visitFlag(Flag flag) {
 				ContinuousPoint flagCenter = playfield.my.flag.position.center;
 				ContinuousPoint asDefender = flagCenter.moveOf(playfield.status.get(MySide.class).my.asDefender);
-				ContinuousPoint destination = Geometry.barycenterOf(Arrays.asList(asDefender,
-						playfield.adversary.first.position.center,
-						playfield.adversary.second.position.center));
-				return new DefendFlag(UFO.this, destination, computeThrust(destination),
+				return new DefendFlag(UFO.this, asDefender, computeThrust(asDefender),
 						false);
 			}
 			@Override
@@ -99,8 +96,9 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 	}
 
 	private int computeThrust(ContinuousPoint destination) {
-		return Math.max(0,  Math.min(100, 
-				(int) position.center.distance2To(destination)-Constants.UFO_RADIUS));
+		return 100;
+//		return Math.max(0,  Math.min(100, 
+//				(int) position.center.distance2To(destination)-Constants.UFO_RADIUS));
 	}
 
 	@Override
@@ -120,5 +118,11 @@ public class UFO extends AbstractEntity implements ConstructableInUnitTest {
 		returned.put(MoveType.ATTACK, computeCapture(playfield));
 		returned.put(MoveType.DEFENSE, computeDefense(playfield));
 		return returned;
+	}
+
+	@Override
+	public String toString() {
+		return "UFO [participant=" + participant + ", gamer=" + gamer + ", speed=" + speed + ", hasFlag=" + hasFlag
+				+ ", position=" + position + "]";
 	}
 }

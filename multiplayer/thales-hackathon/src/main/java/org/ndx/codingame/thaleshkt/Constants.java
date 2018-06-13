@@ -11,6 +11,7 @@ public interface Constants {
 	public static final Segment LEFT_EDGE = new Segment(new ContinuousPoint(0, 0), new ContinuousPoint(0, HEIGHT));
 	public static final int UFO_RADIUS = 400;
 	public static final int FLAG_RADIUS = 150;
+	public static final double BOOST_POWER = 500;
 
 
 }

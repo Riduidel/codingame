@@ -32,10 +32,14 @@ public class Playfield implements ToUnitTestFiller {
 	public String compute() {
 		Collection<Move> computed = my.compute(this);
 		return computed.stream()
+				.map(this::updateCollisions)
 				.map(this::updateBoost)
 				.map(Move::toString)
 				.collect(Collectors.joining("\n")); 
 
+	}
+	private Move updateCollisions(Move m) {
+		return m.resolveCollisions(this);
 	}
 	private Move updateBoost(Move m) {
 		status.get(CanBoost.class).update(m);
@@ -103,7 +107,7 @@ public class Playfield implements ToUnitTestFiller {
 	 */
 	public SortedSet<Collision> computeCollisionsOf(Move move) {
 		TreeSet<Collision> returned = new TreeSet<>();
-		Vector moveLineOfThrust = move.moving.lineOfThrust();
+		Vector moveLineOfThrust = move.lineOfThrust();
 		for(UFO u : movingEntities()) {
 			if(u!=move.moving) {
 				Vector otherLineOfThrust = u.lineOfThrust();

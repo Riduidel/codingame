@@ -40,8 +40,8 @@ public class Team {
 			for(List<MoveType> actions : crossed) {
 				Move f = firstMovesMap.get(actions.get(0));
 				Move s = secondMovesMap.get(actions.get(1));
-				double totalDistance = f.moving.position.center.distance2To(f.destination) +
-						s.moving.position.center.distance2To(s.destination);
+				double totalDistance = f.lineOfThrust().second.distance2To(f.destination) +
+						s.lineOfThrust().second.distance2To(s.destination);
 				shortestMove.put(totalDistance, Arrays.asList(f, s));
 			}
 			Double key = shortestMove.firstKey();

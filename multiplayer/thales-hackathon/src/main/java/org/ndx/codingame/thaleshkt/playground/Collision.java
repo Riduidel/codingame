@@ -1,16 +1,16 @@
 package org.ndx.codingame.thaleshkt.playground;
 
-import org.ndx.codingame.thaleshkt.entities.AbstractEntity;
+import org.ndx.codingame.thaleshkt.entities.UFO;
 
 public class Collision implements Comparable<Collision>{
-	public final AbstractEntity colliding;
+	public final UFO colliding;
 	/**
 	 * Number of turns in which collision should occur
 	 */
 	public final int turns;
 	
 	
-	public Collision(AbstractEntity colliding, int turns) {
+	public Collision(UFO colliding, int turns) {
 		super();
 		this.colliding = colliding;
 		this.turns = turns;
