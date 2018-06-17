@@ -1,0 +1,6 @@
+[package]
+name = "code_of_kutulu"
+version = "0.1.0"
+authors = ["Nicolas Delsaux <nicolas.delsaux@gmx.fr>"]
+
+[dependencies]
