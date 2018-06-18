@@ -49,14 +49,36 @@ struct Playground<Content : Clone> {
     content:Box<Vec<Vec<Content>>>
 }
 
+trait PlaygroundVisitor<Content:Clone, Returned> {
+    fn start_visit_playground(&mut self, visited:&Playground<Content>) {}
+    fn end_visit_playground(&mut self, visited:&Playground<Content>) -> Returned {
+        panic!("The end_visit_playground method SHOULD be implemented!");
+    }
+    fn start_visit_row(&mut self, line_index:usize, line:&Vec<Content>) {}
+    fn visit_cell(&mut self, column_index:usize, line_index:usize, content:&Content) {}
+    fn end_visit_row(&mut self, line_index:usize, line:&Vec<Content>) {}
+}
+
 /// This is the generic implementation of a playground, which is derived in each case
 impl <'playground_lifetime, Content:Clone> Playground<Content> {
 
+    fn accept<'visit_lifetime, Returned, Visitor:PlaygroundVisitor<Content, Returned>>
+        (&'visit_lifetime self, visitor:&mut Visitor) -> Returned {
+        visitor.start_visit_playground(self);
+        for (line_index, line) in self.content.iter().enumerate() {
+            visitor.start_visit_row(line_index, line);
+            for (column_index, c) in line.iter().enumerate() {
+                visitor.visit_cell(column_index, line_index, c);
+            }
+            visitor.end_visit_row(line_index, line);
+        }
+        return visitor.end_visit_playground(self);
+    }
+
     fn set(&mut self, x:usize, y:usize, value:Content) {
-        let line = self.content
-            .get_mut(y as usize)
-            .expect(&format!("I tried to read line {} in a playground of height {}", y, self.height));
-        line[x as usize] = value;
+        if let Some(line) = self.content.get_mut(y) {
+            line[x] = value;
+        }
     }
 
     fn get<'get_lifetime>(&'get_lifetime self, x:usize, y:usize)-> &'get_lifetime Content {
@@ -73,19 +95,29 @@ impl <'playground_lifetime, Content:Clone> Playground<Content> {
 /******************************************************************************************/
 /******************************** STATIC PLAYGROUND ELEMENTS ******************************/
 /******************************************************************************************/
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 enum Static {
     Wall,
     Spawn,
     Empty
 }
 
-impl Static {
-    fn parse(c:char)->Static {
-        match c {
+impl From<char> for Static {
+    fn from(item: char) -> Self {
+        match item {
             '#' => Static::Wall,
             'w' => Static::Spawn,
             _ => Static::Empty
+        }
+    }
+}
+
+impl ToString for Static {
+    fn to_string(&self) -> String {
+        match *self {
+            Static::Wall => "#".to_string(),
+            Static::Spawn => "w".to_string(),
+            Static::Empty => " ".to_string()
         }
     }
 }
@@ -105,29 +137,66 @@ impl <'static_playground_lifetime> Playground<Static> {
         return Playground { width:width, height:height, content:Box::new(content) };
     }
 
-    fn set_char(mut self, x:usize, y:usize, c:char) {
-        self.set(x, y, Static::parse(c));
-    }
-
-    fn fill(mut self, lines:Vec<String>) {
+    fn fill(&mut self, lines:Vec<String>) {
         for (line_index, line) in lines.iter().enumerate() {
-            for (column_index, c) in line.chars().enumerate() {
-                self.clone().set_char(column_index, line_index, c);
+            if let Some(line_vec) = self.content.get_mut(line_index) {
+                for (column_index, c) in line.chars().enumerate() {
+                    line_vec[column_index] = Static::from(c);
+                }
             }
+        }
+    }
+}
+
+struct Filler {
+    prefix:Box<String>,
+    text:Box<String>,
+    width:usize,
+    height:usize
+}
+
+impl Filler {
+    fn on(playground:&Playground<Static>, prefix:&str) -> String {
+        let mut filler = Filler {
+            width:playground.width,
+            height:playground.height,
+            prefix:Box::new(prefix.to_string()),
+            text:Box::new("".to_owned())
+        };
+        return playground.accept(&mut filler);
+    }
+}
+
+impl PlaygroundVisitor<Static, String> for Filler {
+    fn start_visit_playground(&mut self, visited:&Playground<Static>) {
+        self.text.push_str(&self.prefix);
+        self.text.push_str(&format!("let tested = Playground::new({}, {});\n", visited.width, visited.height).to_owned());
+        self.text.push_str(&self.prefix);
+        self.text.push_str(&format!("tested.fill(vec![\n"));
+    }
+    fn end_visit_playground(&mut self, visited:&Playground<Static>) -> String {
+        self.text.push_str(&self.prefix);
+        self.text.push_str("\t]);\n");
+        return *self.text.clone();
+    }
+    fn start_visit_row(&mut self, line_index:usize, line:&Vec<Static>) {
+        self.text.push_str(&self.prefix);
+        self.text.push_str("\t\"");
+    }
+    fn visit_cell(&mut self, column_index:usize, line_index:usize, content:&Static) {
+        self.text.push_str(&content.to_string());
+    }
+    fn end_visit_row(&mut self, line_index:usize, line:&Vec<Static>) {
+        self.text.push_str("\",");
+        if line_index<self.height {
+            self.text.push_str("\n");
         }
     }
 }
 
 impl ToUnitTest for Playground<Static> {
     fn to_unit_test(&self, prefix:&str) -> String {
-        let mut returned = CODE_PREFIX.to_owned();
-        returned.push_str(&format!("let tested = Playground::new({}, {});\n", self.width, self.height).to_owned());
-        returned.push_str(prefix);
-        returned.push_str("tested.fill(vec![\n");
-        returned.push_str(prefix);
-        returned.push_str("\t");
-        returned.push_str("]);\n");
-        return returned;
+        return Filler::on(self, prefix);
     }
 }
 
@@ -142,7 +211,7 @@ fn main() {
     let mut input_line = String::new();
     io::stdin().read_line(&mut input_line).unwrap();
     let height = parse_input!(input_line, i32);
-    let playground:Playground<Static> = Playground::new(width as usize, height as usize);
+    let mut playground:Playground<Static> = Playground::new(width as usize, height as usize);
     let mut lines = vec![];
     for _ in 0..height as usize {
         let mut input_line = String::new();
@@ -150,7 +219,7 @@ fn main() {
         let line = input_line.trim_right().to_string();
         lines.push(line);
     }
-    playground.clone().fill(lines);
+    playground.fill(lines);
     let mut input_line = String::new();
     io::stdin().read_line(&mut input_line).unwrap();
     let inputs = input_line.split(" ").collect::<Vec<_>>();
@@ -184,3 +253,6 @@ fn main() {
         println!("WAIT"); // MOVE <x> <y> | WAIT
     }
 }
+
+#[cfg(test)]
+mod test;
