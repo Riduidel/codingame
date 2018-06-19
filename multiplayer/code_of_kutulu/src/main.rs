@@ -1,4 +1,5 @@
 use std::io;
+use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 macro_rules! parse_input {
@@ -8,8 +9,8 @@ macro_rules! parse_input {
 /******************************************************************************************/
 /********************************** UNIT TEST GENERATOR ***********************************/
 /******************************************************************************************/
-const FUNCTION_PREFIX:&'static str = "\t";
-const CODE_PREFIX:&'static str = "\t\t";
+const FUNCTION_PREFIX:&'static str = "";
+const CODE_PREFIX:&'static str = "\t";
 
 fn current_time_millis() -> i64 {
     let current_time = SystemTime::now();
@@ -21,20 +22,51 @@ fn current_time_millis() -> i64 {
 }
 trait ToUnitTest {
     /// This function should not be overwriten by trait implementors
-    fn can_compute_at(&self) -> String {
+    fn can_compute_at(&self, assert:&String) -> String {
         let mut function = "".to_owned();
         function.push_str(FUNCTION_PREFIX);
         function.push_str("#[test]\n");
         function.push_str(FUNCTION_PREFIX);
         function.push_str(&format!("fn can_compute_at_{:?}() {{\n", current_time_millis()));
         function.push_str(&*self.to_unit_test(CODE_PREFIX));
+        function.push_str(assert);
         function.push_str(FUNCTION_PREFIX);
-        function.push_str("}}\n");
+        function.push_str("}\n");
         return function;
     }
 
     fn to_unit_test(&self, prefix:&str) -> String {
         panic!(format!("ToUnitTest::to_unit_test SHOULD be overwritten by implementors of ToUnitTest"));
+    }
+}
+
+/******************************************************************************************/
+/************************************** A POINT *******************************************/
+/******************************************************************************************/
+#[derive(Debug, Copy, Clone)]
+struct Point {
+    x:i32,
+    y:i32
+}
+
+
+impl Point {
+    fn directions()->Vec<Point> {
+        return vec![
+            Point { x:-1, y:0 },
+            Point { x:1, y:0 },
+            Point { x:0, y:1 },
+            Point { x:0, y:-1 },
+        ];
+    }
+    fn move_of(&self, other:&Point) -> Point {
+        return self.move_of_offset(other.x, other.y);
+    }
+    fn move_of_offset(&self, x:i32, y:i32) -> Point {
+        return Point {
+            x:self.x + x,
+            y:self.y + y,
+        }
     }
 }
 
@@ -61,6 +93,16 @@ trait PlaygroundVisitor<Content:Clone, Returned> {
 
 /// This is the generic implementation of a playground, which is derived in each case
 impl <'playground_lifetime, Content:Clone> Playground<Content> {
+    fn new(width:usize, height:usize, default_value:Content)-> Playground<Content> {
+        // Build the vector
+        let mut content:Vec<Vec<Content>> = vec![];
+        for _ in 0..height {
+            let row:Vec<Content> = vec![default_value.clone(); width as usize];
+            content.push(row);
+        }
+        // Then create the struct
+        return Playground { width:width, height:height, content:Box::new(content) };
+    }
 
     fn accept<'visit_lifetime, Returned, Visitor:PlaygroundVisitor<Content, Returned>>
         (&'visit_lifetime self, visitor:&mut Visitor) -> Returned {
@@ -81,6 +123,10 @@ impl <'playground_lifetime, Content:Clone> Playground<Content> {
         }
     }
 
+    fn set_at(&mut self, point:Point, value:Content) {
+        self.set(point.x as usize, point.y as usize, value);
+    }
+
     fn get<'get_lifetime>(&'get_lifetime self, x:usize, y:usize)-> &'get_lifetime Content {
         let line = self.content
             .get(y as usize)
@@ -90,12 +136,22 @@ impl <'playground_lifetime, Content:Clone> Playground<Content> {
             .nth(x)
             .expect(&format!("Cannot read content from ({};{})", x, y));
     }
+
+    fn contains(&self, point:&Point)->bool {
+        return
+            point.x>=0 && (point.x as usize)<self.width &&
+            point.y>=0 && (point.y as usize)<self.height;
+    }
+
+    fn get_at<'get_at_lifetime>(&'get_at_lifetime self, point:&Point)-> &'get_at_lifetime Content {
+        return self.get(point.x as usize, point.y as usize);
+    }
 }
 
 /******************************************************************************************/
 /******************************** STATIC PLAYGROUND ELEMENTS ******************************/
 /******************************************************************************************/
-#[derive(Debug, Clone, Copy)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 enum Static {
     Wall,
     Spawn,
@@ -126,17 +182,6 @@ impl ToString for Static {
 /********************************* DEDICATED PLAYGROUND IMPL ******************************/
 /******************************************************************************************/
 impl <'static_playground_lifetime> Playground<Static> {
-    fn new(width:usize, height:usize)-> Playground<Static> {
-        // Build the vector
-        let mut content:Vec<Vec<Static>> = vec![];
-        for _ in 0..height {
-            let row:Vec<Static> = vec![Static::Empty; width as usize];
-            content.push(row);
-        }
-        // Then create the struct
-        return Playground { width:width, height:height, content:Box::new(content) };
-    }
-
     fn fill(&mut self, lines:Vec<String>) {
         for (line_index, line) in lines.iter().enumerate() {
             if let Some(line_vec) = self.content.get_mut(line_index) {
@@ -145,6 +190,12 @@ impl <'static_playground_lifetime> Playground<Static> {
                 }
             }
         }
+    }
+    fn allow(&self, point:&Point) -> bool {
+        if self.contains(point) {
+            return *self.get_at(point)==Static::Empty;
+        }
+        return false;
     }
 }
 
@@ -170,7 +221,7 @@ impl Filler {
 impl PlaygroundVisitor<Static, String> for Filler {
     fn start_visit_playground(&mut self, visited:&Playground<Static>) {
         self.text.push_str(&self.prefix);
-        self.text.push_str(&format!("let playground = Playground::new({}, {});\n", visited.width, visited.height).to_owned());
+        self.text.push_str(&format!("let mut playground = Playground::new({}, {}, Static::Empty);\n", visited.width, visited.height).to_owned());
         self.text.push_str(&self.prefix);
         self.text.push_str(&format!("playground.fill(vec![\n"));
     }
@@ -187,7 +238,7 @@ impl PlaygroundVisitor<Static, String> for Filler {
         self.text.push_str(&content.to_string());
     }
     fn end_visit_row(&mut self, line_index:usize, line:&Vec<Static>) {
-        self.text.push_str("\"");
+        self.text.push_str("\".to_string()");
         if line_index<self.height-1 {
         self.text.push_str(",");
         }
@@ -220,6 +271,17 @@ impl Game {
             wanderer_life_time: wanderer_life_time
         }
     }
+
+    fn allow(&self, point:&Point) -> bool {
+        return self.playground.allow(point);
+    }
+    fn find_moves_at(&self, point:Point) -> Vec<Point> {
+        Point::directions().iter()
+            .map(|d| point.move_of(d))
+            .filter(|p| self.allow(p))
+            .collect()
+    }
+
 }
 
 impl ToUnitTest for Game {
@@ -239,6 +301,7 @@ impl ToUnitTest for Game {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum EntityType {
     EXPLORER,
     WANDERER
@@ -261,6 +324,7 @@ impl ToString for EntityType {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct Entity {
     entity_type:EntityType,
     id:i32,
@@ -272,6 +336,18 @@ struct Entity {
     param1:i32,
     /// Explorer: ignore for this league | Minion: id  of the explorer targeted by this minion. -1 if no target (occurs only on spawn)
     param2:i32
+}
+
+impl From<Entity> for Point {
+    fn from(item: Entity) -> Self {
+        Point {x: item.x, y: item.y }
+    }
+}
+
+impl <'from> From<&'from Entity> for Point {
+    fn from(item: &'from Entity) -> Self {
+        Point {x: item.x, y: item.y }
+    }
 }
 
 impl ToUnitTest for Entity {
@@ -291,16 +367,83 @@ impl ToUnitTest for Entity {
     }
 }
 
+#[derive(Clone)]
 struct Round {
     game: Game,
-    entities:Vec<Entity>
+    entities:Box<Vec<Entity>>,
+    entities_playground:Playground<Option<Entity>>
 }
+
+const GROUP_RANGE:i32=2;
 
 impl Round {
     fn new(game:Game, entities:Vec<Entity>) -> Round {
-        return Round { game: game, entities: entities };
+        let mut entities_playground:Playground<Option<Entity>> = Playground::new(game.playground.width, game.playground.height, None);
+        for entity in entities.clone() {
+            entities_playground.set_at(Point::from(entity), Some(entity));
+        }
+        return Round { game: game, 
+            entities: Box::new(entities),
+            entities_playground: entities_playground
+        };
+    }
+
+    fn find_my_explorers(&self) -> &[Entity] {
+        return &self.entities[0..1];
+    }
+
+    fn change_score_around(returned:&mut Playground<i32>, point:Point, distance:i32, score:i32) {
+        for x in -distance..distance {
+            for y in -distance..distance {
+                let moved = point.move_of_offset(x, y);
+                if returned.contains(&moved) {
+                    let new_score = returned.get_at(&moved)+score;
+                    returned.set_at(moved, new_score);
+                }
+            }
+        }
+    }
+
+    fn compute_scores(&self) -> Playground<i32> {
+        let mut returned:Playground<i32> = Playground::new(self.game.playground.width, self.game.playground.height, 0);
+        let my = self.find_my_explorers();
+        for entity in self.entities.iter() {
+            if !my.contains(entity) {
+                let current_position:Point = entity.into();
+                match entity.entity_type {
+                    EntityType::WANDERER => {
+                        Round::change_score_around(&mut returned, current_position, GROUP_RANGE, -100);
+                    },
+                    EntityType::EXPLORER => {
+                        Round::change_score_around(&mut returned, current_position, GROUP_RANGE, 5);
+                    }
+                }
+            }
+        }
+        return returned;
+    }
+
+    fn compute(&self) -> String {
+        let my = self.find_my_explorers();
+        let mut returned = "".to_string();
+        let scores = self.compute_scores();
+        for explorer in my {
+            let positions = self.game.find_moves_at(Point::from(explorer));
+            let mut scored:BTreeMap<i32, Point> = BTreeMap::new();
+            for p in positions.iter() {
+                let local_score = scores.get_at(p);
+                scored.insert(*local_score, *p);
+            }
+            match scored.iter().next() {
+                Some(entry) => returned.push_str(&format!("MOVE {} {} Score is {}", entry.1.x, entry.1.y, entry.0)),
+                None => returned.push_str("WAIT I don't know what to do")
+            }
+        }
+    	eprintln!("{}", self.can_compute_at(&format!("\tassert!(round.compute()!=\"{}\");\n", returned)));
+        return returned;
     }
 }
+
 impl ToUnitTest for Round {
     fn to_unit_test(&self, prefix:&str) -> String {
         let mut returned = "".to_string();
@@ -319,7 +462,7 @@ impl ToUnitTest for Round {
         returned.push_str(prefix);
         returned.push_str("\t];\n");
         returned.push_str(prefix);
-        returned.push_str("let round = Round::new(game, entities);");
+        returned.push_str("let round = Round::new(game, entities);\n");
         return returned;
     }
 }
@@ -335,7 +478,7 @@ fn main() {
     let mut input_line = String::new();
     io::stdin().read_line(&mut input_line).unwrap();
     let height = parse_input!(input_line, i32);
-    let mut playground:Playground<Static> = Playground::new(width as usize, height as usize);
+    let mut playground:Playground<Static> = Playground::new(width as usize, height as usize, Static::Empty);
     let mut lines = vec![];
     for _ in 0..height as usize {
         let mut input_line = String::new();
@@ -386,8 +529,7 @@ fn main() {
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
 
-    	eprintln!("{}", round.can_compute_at());
-        println!("WAIT"); // MOVE <x> <y> | WAIT
+        println!("{}", round.compute()); // MOVE <x> <y> | WAIT
     }
 }
 
