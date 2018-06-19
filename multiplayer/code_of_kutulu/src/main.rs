@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[macro_use]
+extern crate spectral;
+
 use std::io;
 use std::collections::BTreeMap;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -67,6 +71,10 @@ impl Point {
             x:self.x + x,
             y:self.y + y,
         }
+    }
+
+    fn distance1_to(&self, other:&Point) -> i32 {
+        return (self.x-other.x).abs()+(self.y-other.y).abs();
     }
 }
 
@@ -392,12 +400,13 @@ impl Round {
         return &self.entities[0..1];
     }
 
-    fn change_score_around(returned:&mut Playground<i32>, point:Point, distance:i32, score:i32) {
-        for x in -distance..distance {
-            for y in -distance..distance {
+    fn change_score_around(returned:&mut Playground<i32>, point:Point, score:i32, erosion:i32) {
+        let distance = returned.width as i32;
+        for x in -1*distance..distance {
+            for y in -1*distance..distance {
                 let moved = point.move_of_offset(x, y);
                 if returned.contains(&moved) {
-                    let new_score = returned.get_at(&moved)+score;
+                    let new_score = returned.get_at(&moved)+score-erosion*moved.distance1_to(&point);
                     returned.set_at(moved, new_score);
                 }
             }
@@ -412,10 +421,10 @@ impl Round {
                 let current_position:Point = entity.into();
                 match entity.entity_type {
                     EntityType::WANDERER => {
-                        Round::change_score_around(&mut returned, current_position, GROUP_RANGE, -100);
+                        Round::change_score_around(&mut returned, current_position, -10000, -100);
                     },
                     EntityType::EXPLORER => {
-                        Round::change_score_around(&mut returned, current_position, GROUP_RANGE, 5);
+                        Round::change_score_around(&mut returned, current_position, 100, 1);
                     }
                 }
             }
@@ -434,12 +443,12 @@ impl Round {
                 let local_score = scores.get_at(p);
                 scored.insert(*local_score, *p);
             }
-            match scored.iter().next() {
+            match scored.iter().rev().next() {
                 Some(entry) => returned.push_str(&format!("MOVE {} {} Score is {}", entry.1.x, entry.1.y, entry.0)),
                 None => returned.push_str("WAIT I don't know what to do")
             }
         }
-    	eprintln!("{}", self.can_compute_at(&format!("\tassert!(round.compute()!=\"{}\");\n", returned)));
+       	eprintln!("{}", self.can_compute_at(&format!("\tassert!(round.compute()!=\"{}\");\n", returned)));
         return returned;
     }
 }
