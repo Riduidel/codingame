@@ -448,7 +448,7 @@ impl Round {
                 None => returned.push_str("WAIT I don't know what to do")
             }
         }
-       	eprintln!("{}", self.can_compute_at(&format!("\tassert!(round.compute()!=\"{}\");\n", returned)));
+       	eprintln!("{}", self.can_compute_at(&format!("\tassert!(!round.compute().starts_with(\"{}\"));\n", returned)));
         return returned;
     }
 }
