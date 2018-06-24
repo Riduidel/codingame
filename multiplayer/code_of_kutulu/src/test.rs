@@ -37,7 +37,8 @@ fn just_go_away_when_wanderer_come() {
 		"##                ##".to_string(),
 		"####################".to_string()
 		]);
-	let game = Game::new(playground, 3, 1, 3, 40);
+	let mut game = Game::new(playground, 3, 1, 3, 40);
+	game.construct_possible_moves();
 	let entities = vec![
 		Entity { entity_type:EXPLORER, id:0, x:8, y:7, param0:139, param1:2, param2:3 },
 		Entity { entity_type:EXPLORER, id:1, x:11, y:7, param0:199, param1:2, param2:3 },

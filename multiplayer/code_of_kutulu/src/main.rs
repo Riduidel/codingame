@@ -39,7 +39,7 @@ trait ToUnitTest {
         return function;
     }
 
-    fn to_unit_test(&self, prefix:&str) -> String {
+    fn to_unit_test(&self, _prefix:&str) -> String {
         panic!(format!("ToUnitTest::to_unit_test SHOULD be overwritten by implementors of ToUnitTest"));
     }
 }
@@ -90,13 +90,13 @@ struct Playground<Content : Clone> {
 }
 
 trait PlaygroundVisitor<Content:Clone, Returned> {
-    fn start_visit_playground(&mut self, visited:&Playground<Content>) {}
-    fn end_visit_playground(&mut self, visited:&Playground<Content>) -> Returned {
+    fn start_visit_playground(&mut self, _visited:&Playground<Content>) {}
+    fn end_visit_playground(&mut self, _visited:&Playground<Content>) -> Returned {
         panic!("The end_visit_playground method SHOULD be implemented!");
     }
-    fn start_visit_row(&mut self, line_index:usize, line:&Vec<Content>) {}
-    fn visit_cell(&mut self, column_index:usize, line_index:usize, content:&Content) {}
-    fn end_visit_row(&mut self, line_index:usize, line:&Vec<Content>) {}
+    fn start_visit_row(&mut self, _line_index:usize, _line:&Vec<Content>) {}
+    fn visit_cell(&mut self, _column_index:usize, _line_index:usize, _content:&Content) {}
+    fn end_visit_row(&mut self, _line_index:usize, _line:&Vec<Content>) {}
 }
 
 /// This is the generic implementation of a playground, which is derived in each case
@@ -233,19 +233,19 @@ impl PlaygroundVisitor<Static, String> for Filler {
         self.text.push_str(&self.prefix);
         self.text.push_str(&format!("playground.fill(vec![\n"));
     }
-    fn end_visit_playground(&mut self, visited:&Playground<Static>) -> String {
+    fn end_visit_playground(&mut self, _visited:&Playground<Static>) -> String {
         self.text.push_str(&self.prefix);
         self.text.push_str("\t]);\n");
         return *self.text.clone();
     }
-    fn start_visit_row(&mut self, line_index:usize, line:&Vec<Static>) {
+    fn start_visit_row(&mut self, _line_index:usize, _line:&Vec<Static>) {
         self.text.push_str(&self.prefix);
         self.text.push_str("\t\"");
     }
-    fn visit_cell(&mut self, column_index:usize, line_index:usize, content:&Static) {
+    fn visit_cell(&mut self, _column_index:usize, _line_index:usize, content:&Static) {
         self.text.push_str(&content.to_string());
     }
-    fn end_visit_row(&mut self, line_index:usize, line:&Vec<Static>) {
+    fn end_visit_row(&mut self, line_index:usize, _line:&Vec<Static>) {
         self.text.push_str("\".to_string()");
         if line_index<self.height-1 {
         self.text.push_str(",");
@@ -260,9 +260,37 @@ impl ToUnitTest for Playground<Static> {
     }
 }
 
+struct MoveFinder {
+    source: Playground<Static>,
+    returned: Playground<Option<Vec<Point>>>
+}
+impl PlaygroundVisitor<Static, Playground<Option<Vec<Point>>>> for MoveFinder {
+    fn start_visit_playground(&mut self, _visited:&Playground<Static>) {
+    }
+
+    fn end_visit_playground(&mut self, _visited:&Playground<Static>) -> Playground<Option<Vec<Point>>> {
+        return self.returned.clone();
+    }
+    fn visit_cell(&mut self, column_index:usize, line_index:usize, _content:&Static) {
+        let p = Point {x:column_index as i32, y:line_index as i32 };
+        if self.source.allow(&p) {
+            let moves:Vec<Point> = Point::directions().iter()
+                .map(|d| p.move_of(d))
+                .filter(|p| self.source.allow(p))
+                .collect();
+            self.returned.set_at(p, Some(moves));
+        } else {
+            self.returned.set_at(p, None);
+        }
+    }
+    fn start_visit_row(&mut self, _line_index:usize, _line:&Vec<Static>) {}
+    fn end_visit_row(&mut self, _line_index:usize, _line:&Vec<Static>) {}
+}
+
 #[derive(Clone)]
 struct Game {
     playground:Playground<Static>,
+    possible_moves_cache:Playground<Option<Vec<Point>>>,
     sanity_loss_lonely:i32,
     sanity_loss_group:i32,
     wanderer_spawn_time:i32,
@@ -271,8 +299,10 @@ struct Game {
 
 impl Game {
     fn new(playground:Playground<Static>, sanity_loss_lonely:i32, sanity_loss_group:i32, wanderer_spawn_time:i32, wanderer_life_time:i32) -> Game {
+        let p = playground.clone();
         return Game {
             playground: playground,
+            possible_moves_cache: Playground::new(p.width, p.height, None),
             sanity_loss_lonely: sanity_loss_lonely,
             sanity_loss_group: sanity_loss_group,
             wanderer_spawn_time: wanderer_spawn_time,
@@ -283,13 +313,17 @@ impl Game {
     fn allow(&self, point:&Point) -> bool {
         return self.playground.allow(point);
     }
-    fn find_moves_at(&self, point:Point) -> Vec<Point> {
-        Point::directions().iter()
-            .map(|d| point.move_of(d))
-            .filter(|p| self.allow(p))
-            .collect()
+
+    fn construct_possible_moves(&mut self) {
+        self.possible_moves_cache = self.playground.accept(&mut MoveFinder { 
+            source: self.playground.clone(), 
+            returned: self.possible_moves_cache.clone()
+        });
     }
 
+    fn find_moves_at(&self, point:&Point) -> Vec<Point> {
+        return self.possible_moves_cache.get_at(point).clone().unwrap();
+    }
 }
 
 impl ToUnitTest for Game {
@@ -299,12 +333,14 @@ impl ToUnitTest for Game {
         returned.push_str(&prefix);
         returned.push_str(
             &format!(
-                "let game = Game::new(playground, {}, {}, {}, {});\n",
+                "let mut game = Game::new(playground, {}, {}, {}, {});\n",
                 self.sanity_loss_lonely,
                 self.sanity_loss_group,
                 self.wanderer_spawn_time,
                 self.wanderer_life_time
             ));
+        returned.push_str(&prefix);
+        returned.push_str("game.construct_possible_moves();\n");
         return returned;
     }
 }
@@ -359,7 +395,7 @@ impl <'from> From<&'from Entity> for Point {
 }
 
 impl ToUnitTest for Entity {
-    fn to_unit_test(&self, prefix:&str) -> String {
+    fn to_unit_test(&self, _prefix:&str) -> String {
         let mut returned = "".to_string();
         returned.push_str(
             &format!("Entity {{ entity_type:{}, id:{}, x:{}, y:{}, param0:{}, param1:{}, param2:{} }}",
@@ -437,7 +473,7 @@ impl Round {
         let mut returned = "".to_string();
         let scores = self.compute_scores();
         for explorer in my {
-            let positions = self.game.find_moves_at(Point::from(explorer));
+            let positions = self.game.find_moves_at(&Point::from(explorer));
             let mut scored:BTreeMap<i32, Point> = BTreeMap::new();
             for p in positions.iter() {
                 let local_score = scores.get_at(p);
@@ -503,15 +539,15 @@ fn main() {
     let sanity_loss_group = parse_input!(inputs[1], i32); // how much sanity you lose every turn when near another player, always 1 until wood 1
     let wanderer_spawn_time = parse_input!(inputs[2], i32); // how many turns the wanderer take to spawn, always 3 until wood 1
     let wanderer_life_time = parse_input!(inputs[3], i32); // how many turns the wanderer is on map after spawning, always 40 until wood 1
-    let game = Game::new(playground, sanity_loss_lonely, sanity_loss_group, wanderer_spawn_time, wanderer_life_time);
-
+    let mut game = Game::new(playground, sanity_loss_lonely, sanity_loss_group, wanderer_spawn_time, wanderer_life_time);
+    game.construct_possible_moves();
     // game loop
     loop {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let entity_count = parse_input!(input_line, i32); // the first given entity corresponds to your explorer
         let mut entities:Vec<Entity> = vec![];
-        for i in 0..entity_count as usize {
+        for _i in 0..entity_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
             let inputs = input_line.split(" ").collect::<Vec<_>>();
