@@ -163,6 +163,7 @@ impl <'playground_lifetime, Content:Clone> Playground<Content> {
 enum Static {
     Wall,
     Spawn,
+    Shelter,
     Empty
 }
 
@@ -171,6 +172,7 @@ impl From<char> for Static {
         match item {
             '#' => Static::Wall,
             'w' => Static::Spawn,
+            'U' => Static::Shelter,
             _ => Static::Empty
         }
     }
@@ -181,6 +183,7 @@ impl ToString for Static {
         match *self {
             Static::Wall => "#".to_string(),
             Static::Spawn => "w".to_string(),
+            Static::Shelter => "U".to_string(),
             Static::Empty => " ".to_string()
         }
     }
@@ -201,7 +204,11 @@ impl <'static_playground_lifetime> Playground<Static> {
     }
     fn allow(&self, point:&Point) -> bool {
         if self.contains(point) {
-            return *self.get_at(point)==Static::Empty;
+            match *self.get_at(point) {
+                Static::Empty => return true,
+                Static::Shelter => return true,
+                _ => return false
+            }
         }
         return false;
     }
@@ -348,13 +355,24 @@ impl ToUnitTest for Game {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum EntityType {
     EXPLORER,
-    WANDERER
+    WANDERER,
+    EFFECT_PLAN,
+    EFFECT_LIGHT,
+    EFFECT_SHELTER,
+    EFFECT_YELL,
+    SLASHER,
 }
 impl From<String> for EntityType {
     fn from(item:String) -> Self {
         match item.as_ref() {
             "EXPLORER" => EntityType::EXPLORER,
-            _ => EntityType::WANDERER
+            "WANDERER" => EntityType::WANDERER,
+            "EFFECT_PLAN" => EntityType::EFFECT_PLAN,
+            "EFFECT_LIGHT" => EntityType::EFFECT_LIGHT,
+            "EFFECT_SHELTER" => EntityType::EFFECT_SHELTER,
+            "EFFECT_YELL" => EntityType::EFFECT_YELL,
+            "SLASHER" => EntityType::SLASHER,
+            _ => EntityType::EXPLORER
         }
     }
 }
@@ -363,7 +381,13 @@ impl ToString for EntityType {
     fn to_string(&self) -> String {
         match *self {
             EntityType::EXPLORER => "EXPLORER".to_string(),
-            EntityType::WANDERER => "WANDERER".to_string()
+            EntityType::WANDERER => "WANDERER".to_string(),
+            EntityType::EFFECT_PLAN => "EFFECT_PLAN".to_string(),
+            EntityType::EFFECT_LIGHT => "EFFECT_LIGHT".to_string(),
+            EntityType::EFFECT_SHELTER => "EFFECT_SHELTER".to_string(),
+            EntityType::EFFECT_YELL => "EFFECT_YELL".to_string(),
+            EntityType::SLASHER => "SLASHER".to_string(),
+            _ => "".to_string()
         }
     }
 }
@@ -456,12 +480,16 @@ impl Round {
             if !my.contains(entity) {
                 let current_position:Point = entity.into();
                 match entity.entity_type {
-                    EntityType::WANDERER => {
-                        Round::change_score_around(&mut returned, current_position, -10000, -100);
-                    },
                     EntityType::EXPLORER => {
                         Round::change_score_around(&mut returned, current_position, 100, 1);
                     }
+                    EntityType::WANDERER => {
+                        Round::change_score_around(&mut returned, current_position, -10000, -100);
+                    },
+                    EntityType::SLASHER => {
+                        Round::change_score_around(&mut returned, current_position, -10_000_000, -1_000);
+                    },
+                    _ => {}
                 }
             }
         }
@@ -570,7 +598,7 @@ fn main() {
         }
         // One new reference of round is generated each ... well ... round, so game is no more owned
         // I guess there should be a borrow thing
-        let mut round = Round::new(game.clone(), entities);
+        let round = Round::new(game.clone(), entities);
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
 
