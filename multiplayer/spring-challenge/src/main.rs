@@ -389,7 +389,13 @@ fn main() {
         let moves = playground_at_turn.compute_pacs_moves(&pacs);
         eprintln!("{}", to_test(&playground_at_turn, &pacs, &moves));
 
-        moves.iter().for_each(|m| println!("{}", m));
+        let commands = moves.iter()
+            .fold(String::new(), |a, b| if a.len()>0 {
+                a + "|" + &b
+            } else {
+                b.to_owned()
+            });
+        println!("{}", commands);
     }
 }
 
