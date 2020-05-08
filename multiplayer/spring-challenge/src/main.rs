@@ -1,6 +1,7 @@
 use std::io;
 use std::fmt;
 use std::time::SystemTime;
+use std::time::Instant;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
@@ -171,29 +172,27 @@ impl Playground {
         return score;
     }
 
-    fn move_pac_on(&self, possible_pac:Pac)->Option<(Playground, Pac, i32)> {
+    fn move_pac_on(&self, possible_pac:Pac)->Option<Derivator> {
         let mut possible_pac = possible_pac;
         possible_pac.position = self.recompute_position_according_to_bounds(&possible_pac.position);
-        let mut future = self.clone();
-        if future.can_have_pac_at(&possible_pac) {
+        if self.can_have_pac_at(&possible_pac) {
+            let mut future = self.clone();
             // Don't forget to change pac cell! (and to score accordingly)
             let score = future.with_pac_on(&possible_pac);
-            return Some((future, possible_pac, score));
+            return Some(Derivator {playground:future, pac:possible_pac, score, derived:vec![], best_score:0});
         } else {
             return None;
         }
     }
 
     fn compute_pac_move(&self, pac:&Pac)->String {
-        let mut sorted_tuples = Point::directions().iter()
-            .map(|direction| self.move_pac_on(pac.move_of(direction)))
-            .filter(|option| option.is_some())
-            .map(|option| option.unwrap())
-            .collect::<Vec<(Playground, Pac, i32)>>();
-        sorted_tuples.sort_by(|a, b| b.2.cmp(&a.2));
-        let best_tuple:&(Playground, Pac, i32) = &sorted_tuples[0];
-        // then go to nearest small pill
-        format!("MOVE {} {} {}", pac.pac_id, best_tuple.1.position.col, best_tuple.1.position.row)
+        let mut sorted_tuples = Derivator::derivators_from(&self, pac);
+        for derivation in &mut sorted_tuples {
+            derivation.compute_at_depth(7);
+        }
+        sorted_tuples.sort_by(|a, b| b.best_score.cmp(&a.best_score));
+        let best_tuple:&Derivator = &sorted_tuples[0];
+        format!("MOVE {} {} {}", pac.pac_id, best_tuple.pac.position.col, best_tuple.pac.position.row)
     }
 
     fn compute_pacs_moves(&self, pacs:&Vec<Pac>)->Vec<String> {
@@ -214,6 +213,47 @@ impl fmt::Display for Playground {
         fmt::Result::Ok(())
     }
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// Playground derivation structs  //////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+struct Derivator {
+    playground:Playground,
+    pac:Pac,
+    score:i32,
+    best_score:i32,
+    derived:Vec<Derivator>
+}
+
+impl Derivator {
+    fn compute_at_depth(&mut self, depth:i32) {
+        if depth>0 {
+            if self.derived.is_empty() {
+                self.derived = Derivator::derivators_from(&self.playground, &self.pac);
+            }
+            let mut best_score = 0;
+            for derivation in &mut self.derived {
+                derivation.compute_at_depth(depth -1);
+                best_score = best_score.max(derivation.best_score);
+            }
+            self.best_score = self.score * depth * 100 + best_score;
+        } else {
+            self.best_score = self.score;
+        }
+    }
+    fn derivators_from(playground:&Playground, pac:&Pac)->Vec<Derivator> {
+        let mut returned = vec![];
+        for direction in Point::directions() {
+            let possible_pac = pac.move_of(&direction);
+            let derivator = playground.move_pac_on(possible_pac);
+            match derivator {
+                Some(d) => returned.push(d),
+                _ => {}
+            }
+        }
+        return returned;
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Pacs  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,7 +288,11 @@ fn to_test(playground:&Playground, pacs:&Vec<Pac>, commands:&Vec<String>)->Strin
         let (_playground, at_turn) = Playground::parse(\"{}\");
         let pacs = vec![{}];
 
+        let now = Instant::now();
         let effective_moves = at_turn.compute_pacs_moves(&pacs);
+        let elapsed = now.elapsed();
+        println!(\"Elapsed: {{:#?}}\", elapsed);
+
         let expected_moves = vec![{}];
         for i in 0..effective_moves.len() {{
             assert_ne!(effective_moves[i], expected_moves[i])
@@ -354,30 +398,29 @@ fn main() {
 mod tests {
     use super::*;
 
+
 	#[test]
-    fn test_move_at_1588879197() {
-        let (_playground, at_turn) = Playground::parse("###################################
-#...#....O#.#...#.#...#.#O....#...#
-#.#.#.###.#.#.#.#.#.#.#.#.###.#.#.#
-#.#.....#.#...#.....#...#.#.....#.#
-#.#####.#.#.###.###.###.#.#.#####.#
-#.......   .....#.#.......  ......#
-###.###.#.#.###.#.#.###.#.#.###.###
-........#.#...#.#.#.#...#.#........
-###.#####.###.#.#.#.#.###.#####.###
-###.......#...O.....O...#.......###
-###.###.#.#.###.#.#.###.#.#.###.###
-#...#...#...###.#.#.###...#...#...#
-#.#.#.#.###.###.###.###.###.#.#.#.#
-#.#...#.#.................#.#...#.#
-###.#.#.#.#.#.###.###.#.#.#.#.#.###
-###.#.#...#.#...#.#...#.#...#.#.###
-###################################
+    fn test_move_at_1588946109() {
+        let (_playground, at_turn) = Playground::parse("#################################
+###...#.#...#...#...#...#.#...###
+#####.#.#.#####.#.#####.#.#.#####
+#.#.....#.O.#.......#.O.#.....#.#
+#.#.#.#.###.#.#.#.#.#.###.#.#.#.#
+#...#.#.......#...#.......#.#...#
+###.#.#.###.#.#.#.#.#.###.#.#.###
+#O....#.#.....#...#.....#.#....O#
+#.#.###.#.###.#####.###.#.###.#.#
+#.#.....#.#   ....... #.#.....#.#
+###.###.#.# ###.#.### #.#.###.###
+#################################
 ");
-        let pacs = vec![Pac { pac_id: 0, mine: true, position: Point { col: 10, row: 5 }, type_id: "NEUTRAL".to_owned(), speed_turns_left: 0, ability_cooldown: 0 },
-		Pac { pac_id: 0, mine: false, position: Point { col: 26, row: 5 }, type_id: "NEUTRAL".to_owned(), speed_turns_left: 0, ability_cooldown: 0 }];
+        let pacs = vec![Pac { pac_id: 0, mine: true, position: Point { col: 21, row: 9 }, type_id: "NEUTRAL".to_owned(), speed_turns_left: 0, ability_cooldown: 0 },
+		Pac { pac_id: 0, mine: false, position: Point { col: 13, row: 9 }, type_id: "NEUTRAL".to_owned(), speed_turns_left: 0, ability_cooldown: 0 }];
+        let now = Instant::now();
         let effective_moves = at_turn.compute_pacs_moves(&pacs);
-        let expected_moves = vec!["MOVE 0 15 10"];
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:#?}", elapsed);
+        let expected_moves = vec!["MOVE 0 21 10"];
         for i in 0..effective_moves.len() {
             assert_ne!(effective_moves[i], expected_moves[i])
         }
