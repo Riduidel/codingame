@@ -31,72 +31,72 @@ class PlayerTest {
 					index);
 		}
 		base.init();
-		base.advanceOneTurn();
+//		base.advanceOneTurn();
 		return base;
 	}
-
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Disabled @Test public void can_find_move_1589274747869() {
+	@Disabled @Test public void can_find_action_at_turn_94_1589298843610() {
 		Playfield tested = read(Arrays.asList(
 			"#################################",
-			"###.# #     # ##### #     # # ###",
-			"###.# # ##### ##### ##### # # ###",
-			"# #   #       #   #       #   # #",
-			"# # ### ##### # # # ##### ### # #",
+			"### # #     # ##### #     # # ###",
+			"### # # ##### ##### ##### # # ###",
+			"#?#   #       # ? #       #   # #",
+			"#?# ### ##### # # # ##### ### # #",
 			"#         #           #         #",
-			"### # # # # ### # ### # # # # ###",
+			"### # # # #?### # ### # # # # ###",
 			"      # #     # # #     # #      ",
 			"##### # # ### # # # ### # # #####",
-			"#     # #   # #   # #   # #     #",
-			"# # ### ### # # # # # ### ### # #",
-			"# #             #             # #",
-			"# ##### ### ### #.### ### ##### #",
-			"#       #   #   #.O #   #       #",
-			"##### # # # # # #.# # # # # #####",
+			"#???? # #   # #   # #   # #     #",
+			"#?#?### ### # # # # # ### ### # #",
+			"#?#             #             # #",
+			"#?##### ### ### # ### ### ##### #",
+			"#?????? #   #   # O?#   #       #",
+			"#####?# #?# # # # #?# #?# # #####",
 			"#################################"
 			));
 		Pac
-			my_p0 = new Pac(17, 4, 0, true, Type.ROCK, 0, 0),
-			my_p1 = new Pac(3, 7, 1, true, Type.PAPER, 0, 0),
-			his_p1 = new Pac(17, 7, 1, false, Type.PAPER, 0, 7),
-			my_p2 = new Pac(17, 10, 2, true, Type.SCISSORS, 0, 0);
-		tested.readGameEntities(my_p0, my_p1, his_p1, my_p2);
-		Map<Pac, PacAction> actions = tested.computeActions(382);
-		assertThat(actions.get(my_p2)).isInstanceOf(MoveTo.class)
-			.extracting(action -> ((MoveTo) action).destination)
-			.isEqualTo(new DiscretePoint(17, 11));
+			my_p2 = new Pac(10, 9, 2, true, Type.SCISSORS, 0, 0),
+			my_p1 = new Pac(23, 8, 1, true, Type.PAPER, 0, 0),
+			my_p0 = new Pac(25, 6, 0, true, Type.ROCK, 0, 0);
+		tested.readGameEntities(my_p2, my_p1, my_p0);
+		Map<Pac, PacAction> actions = tested.computeActions(223259);
+		PacAction for_p1 = actions.get(my_p1);
+		assertThat(for_p1).isInstanceOf(MoveTo.class)
+			.extracting(m -> ((MoveTo) m).destination)
+			.isEqualTo(new DiscretePoint(23, 9));
 		assertThat(actions).isNotEmpty();
 	}
-
+	
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_find_move_1589276062872() {
+	@Test public void can_find_action_at_turn_4_1589301719691() {
 		Playfield tested = read(Arrays.asList(
 			"#################################",
-			"### # #     # ##### #    .# # ###",
-			"### # # ##### ##### #####.# # ###",
-			"# #   #       #   #...    #   # #",
-			"# # ### ##### # # # #####.### # #",
-			"#         #           #  .      #",
-			"### # # # # ### # ### # #.# # ###",
-			"      # #     # # #     # #      ",
-			"##### # # ### # # # ### # # #####",
-			"#     # #   # #   # #   # #     #",
-			"# # ### ### # #O#O# # ### ### # #",
-			"# #             #        .    # #",
-			"# ##### ### ### # ### ###.##### #",
-			"#       #   # O # O #   #.      #",
-			"##### # # # # # # # # # #.# #####",
+			"###.# #?????#?#####?#????.#?#?###",
+			"###.# #?#####?#####?#####.#?#?###",
+			"#?#   #???????#???#.   ...#???#?#",
+			"#?# ###?#####?#?#?#?#####.###?#?#",
+			"#.. ......#???????????#??.??????#",
+			"###.#?#?#?#?###?#?###?#?# #?#?###",
+			"???.??#?#?????#?#?#?????# #??????",
+			"#####?#?#?###?#?#?#?###?# #?#####",
+			"#?????#?#???#?#???#?#???# #?????#",
+			"#?#?###?###?#?#O#O#?#?### ###?#?#",
+			"#?#?????????????#????????.????#?#",
+			"#?#####?###?###?#?###?###.#####?#",
+			"#???????#???#?O?#?O?#???#.??????#",
+			"#####?#?#?#?#?#?#?#?#?#?#.#?#####",
 			"#################################"
 			));
 		Pac
-			my_p1 = new Pac(5, 2, 1, true, Type.PAPER, 0, 0),
-			my_p0 = new Pac(25, 3, 0, true, Type.ROCK, 0, 0),
-			my_p2 = new Pac(25, 7, 2, true, Type.SCISSORS, 0, 0);
-		tested.readGameEntities(my_p1, my_p0, my_p2);
-		Map<Pac, PacAction> actions = tested.computeActions(506);
-		assertThat(actions.get(my_p1)).isInstanceOf(MoveTo.class)
+			my_p1 = new Pac(3, 5, 1, true, Type.PAPER, 0, 0),
+			my_p2 = new Pac(25, 6, 2, true, Type.SCISSORS, 0, 0),
+			my_p0 = new Pac(20, 3, 0, true, Type.ROCK, 0, 0);
+		tested.readGameEntities(my_p1, my_p2, my_p0);
+		Map<Pac, PacAction> actions = tested.computeActions(204717);
+		PacAction for_my_p0 = actions.get(my_p0);
+		assertThat(for_my_p0).isInstanceOf(MoveTo.class)
 			.extracting(action -> ((MoveTo) action).destination)
-			.isNotEqualTo(new DiscretePoint(5, 1));
+			.isEqualTo(new DiscretePoint(19, 3));
 		assertThat(actions).isNotEmpty();
-	}	
+	}
 }

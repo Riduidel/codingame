@@ -22,4 +22,9 @@ public class Nothing implements Content {
 	public Content advanceOneTurn() {
 		return this;
 	}
+	
+	@Override
+	public String toString() {
+		return Character.toString('X');
+	}
 }

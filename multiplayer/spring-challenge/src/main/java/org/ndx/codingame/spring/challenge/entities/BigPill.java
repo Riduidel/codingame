@@ -32,4 +32,8 @@ public class BigPill extends AbstractDistinctContent {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL;
 	}
 
+	@Override
+	public String toString() {
+		return Character.toString(CHARACTER);
+	}
 }

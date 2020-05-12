@@ -24,8 +24,11 @@ import org.ndx.codingame.spring.challenge.entities.Ground;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 
 public class Turn extends MutableProxy<Content> implements SpringChallengePlayground {
-	public Turn(SpringChallengePlayground playfield) {
+	private ImmutablePlayground<Integer> bigPillDistances;
+
+	public Turn(SpringChallengePlayground playfield, ImmutablePlayground<Integer> bigPills) {
 		super(playfield);
+		this.bigPillDistances = bigPills;
 	}
 
 	@Override
@@ -51,5 +54,14 @@ public class Turn extends MutableProxy<Content> implements SpringChallengePlaygr
 	@Override
 	public ScoringSystem cacheDistanceMapTo(BigPill pill) {
 		return getSource().cacheDistanceMapTo(pill);
+	}
+
+	public Integer getBigPillScore(Pac pac) {
+		return bigPillDistances.get(pac);
+	}
+
+	@Override
+	public ImmutablePlayground<Integer> getBigPillsDistances() {
+		return bigPillDistances;
 	}
 }

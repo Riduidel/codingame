@@ -31,4 +31,8 @@ public class SmallPill extends AbstractDistinctContent {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL;
 	}
 
+	@Override
+	public String toString() {
+		return Character.toString(CHARACTER);
+	}
 }

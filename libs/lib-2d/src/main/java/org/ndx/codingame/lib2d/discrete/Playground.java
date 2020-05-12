@@ -105,7 +105,7 @@ public class Playground<Content> implements MutablePlayground<Content> {
 		final StringBuilder returned = new StringBuilder();
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				returned.append("\t").append(this.content[y][x]).append(',');
+				returned.append("\t").append(this.get(x, y)).append(',');
 			}
 			returned.append('\n');
 		}

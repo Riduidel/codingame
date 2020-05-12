@@ -14,6 +14,7 @@ import org.ndx.codingame.spring.challenge.playground.Turn;
 public class Player {
 
     public static void main(String args[]) {
+    	int turn = 0;
         Scanner in = new Scanner(System.in);
         int width = in.nextInt(); // size of the grid
         int height = in.nextInt(); // top left corner is (x=0, y=0)
@@ -22,7 +23,7 @@ public class Player {
         }
         Playfield playfield = new Playfield(width, height);
         for (int i = 0; i < height; i++) {
-            playfield.readRow(in.nextLine(), i); // one line of the grid: space " " is floor, pound "#" is wall
+            playfield.readRow(in.nextLine().replace(' ', '?'), i); // one line of the grid: space " " is floor, pound "#" is wall
         }
         playfield.init();
 
@@ -56,7 +57,7 @@ public class Player {
 
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");
-			System.err.println(playfield.toUnitTestString());
+			System.err.println(playfield.toUnitTestString(turn++));
 			System.out.println(playfield.compute());
         }
     }

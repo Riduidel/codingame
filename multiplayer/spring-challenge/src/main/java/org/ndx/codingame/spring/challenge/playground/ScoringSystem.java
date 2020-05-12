@@ -19,7 +19,7 @@ public class ScoringSystem {
 	public ScoringSystem(Content c, ImmutablePlayground<Integer> computeDistancesTo) {
 		this.targetContent = c;
 		this.distances = computeDistancesTo;
-		this.scores = distances.apply(distance -> EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL-distance*distance); 
+		this.scores = distances.apply(distance -> distance==EvolvableConstants.DISTANCE_UNREACHABLE ? 0 : EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL_DISTANCE-distance); 
 	}
 
 }

@@ -23,38 +23,6 @@ import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Wall;
 
 public interface SpringChallengePlayground extends MutablePlayground<Content> {
-	public static final class ToPhysicalString extends ContentAdapter<String> {
-		private ToPhysicalString() {
-			super("X");
-		}
-		@Override
-		public String visitBigPill(BigPill bigPill) {
-			return Character.toString(BigPill.CHARACTER);
-		}
-		@Override
-		public String visitGround(Ground ground) {
-			return Character.toString(Ground.CHARACTER);
-		}
-		/**
-		 * In physical display, pacs are hidden, since they are provided in an other way
-		 */
-		@Override
-		public String visitPac(Pac pac) {
-			return " ";
-		}
-		@Override
-		public String visitSmallPill(SmallPill smallPill) {
-			return Character.toString(SmallPill.CHARACTER);
-		}
-		@Override
-		public String visitWall(Wall wall) {
-			return Character.toString(Wall.CHARACTER);
-		}
-		public String visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
-			return Character.toString(PotentialSmallPill.CHARACTER);
-		};
-	}
-	
 	public default DiscretePoint putBackOnPlayground(DiscretePoint point) {
 		int x = point.x,
 			y = point.y;
@@ -88,7 +56,7 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 			char character = characters[x];
 			Content content = null;
 			switch(character) {
-			case Ground.CHARACTER: content = PotentialSmallPill.instance; break;
+			case Ground.CHARACTER: content = Ground.instance; break;
 			case Wall.CHARACTER: content = Wall.instance; break;
 			case BigPill.CHARACTER: content = new BigPill(x, rowIndex); break;
 			case SmallPill.CHARACTER: content = new SmallPill(x, rowIndex); break;
@@ -96,10 +64,6 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 			}
 			set(x, rowIndex, content);
 		}
-	}
-	
-	public default String toPhysicalString() {
-		return toString(new ToPhysicalString());
 	}
 
 	public default String toString(final ContentVisitor<String> visitor) {
@@ -132,53 +96,6 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 		});
 	}
 
-	public default String toUnitTestString() {
-		final StringBuilder returned = new StringBuilder();
-		
-		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
-		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"@Test public void can_find_move_")
-			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
-		final Collection<String> physical = toStringCollection(new ToPhysicalString());
-		final Iterator<String> physicalIter = physical.iterator();
-		while (physicalIter.hasNext()) {
-			final String row = physicalIter.next();
-			returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"\t\"").append(row).append("\"");
-			if(physicalIter.hasNext()) {
-				returned.append(",");
-			}
-			returned.append("\n");
-		}
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t));\n");
-		List<Pac> pacs = getAll(Pac.class);
-		StringBuffer init = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("Pac\n");
-		StringBuffer usage = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("tested.readGameEntities(");
-		for(int index=0; index<pacs.size(); index++) {
-			if(index>0) {
-				init.append(",\n");
-				usage.append(", ");
-			}
-			Pac pac = pacs.get(index);
-			String name = (pac.mine ? "my" : "his")+"_p"+pac.id;
-			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name)
-				.append(" = new Pac(")
-					.append(pac.x).append(", ")
-					.append(pac.y).append(", ")
-					.append(pac.id).append(", ")
-					.append(pac.mine).append(", ")
-					.append("Type.").append(pac.type).append(", ")
-					.append(pac.speedTurnsLeft).append(", ")
-					.append(pac.abilityCooldown).append(")");
-			usage.append(name);
-		}
-		returned.append(init.append(";\n"));
-		returned.append(usage.append(");\n"));
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Map<Pac, PacAction> actions = tested.computeActions(-1);\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"assertThat(actions).isNotEmpty();\n");
-		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"}\n\n");
-		return returned.toString();
-	}
-
 	public <Type extends Content> List<Type> getAll(Class<Type> class1);
 
 	public List<List<DiscretePoint>> speedPointsAt(DiscretePoint p);
@@ -189,6 +106,8 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 	public ScoringSystem cacheDistanceMapTo(BigPill pill);
 
 	public default Turn readWriteProxy() {
-		return new Turn(this);
+		return new Turn(this, getBigPillsDistances());
 	}
+
+	public ImmutablePlayground<Integer> getBigPillsDistances();
 }

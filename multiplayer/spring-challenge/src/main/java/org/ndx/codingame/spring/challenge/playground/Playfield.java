@@ -2,8 +2,10 @@ package org.ndx.codingame.spring.challenge.playground;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.ndx.codingame.gaming.Delay;
+import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -25,8 +29,43 @@ import org.ndx.codingame.spring.challenge.entities.Ground;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
+import org.ndx.codingame.spring.challenge.entities.Wall;
 
 public class Playfield extends Playground<Content> implements SpringChallengePlayground {
+	public static final class ToPhysicalString extends ContentAdapter<String> {
+		private ToPhysicalString() {
+			super("X");
+		}
+		@Override
+		public String visitBigPill(BigPill bigPill) {
+			return Character.toString(BigPill.CHARACTER);
+		}
+		@Override
+		public String visitGround(Ground ground) {
+			return Character.toString(Ground.CHARACTER);
+		}
+		/**
+		 * In physical display, pacs are hidden, since they are provided in an other way
+		 */
+		@Override
+		public String visitPac(Pac pac) {
+			return " ";
+		}
+		@Override
+		public String visitSmallPill(SmallPill smallPill) {
+			return Character.toString(SmallPill.CHARACTER);
+		}
+		@Override
+		public String visitWall(Wall wall) {
+			return Character.toString(Wall.CHARACTER);
+		}
+		public String visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
+			return Character.toString(PotentialSmallPill.CHARACTER);
+		};
+	}
+	
+
+	
 	private Map<BigPill, ScoringSystem> bigPillsInfos = new HashMap<>();
 	private Playground<Integer> zero;
 	private Playground<List<DiscretePoint>> nextPointsForNormal;
@@ -216,6 +255,9 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 	}
 
 	public void readGameEntities(AbstractDistinctContent... contents) {
+		// Don't forget to restore bigpills and small pills
+		bigPills.addAll(getAll(BigPill.class));
+		smallPills.addAll(getAll(SmallPill.class));
 		for (AbstractDistinctContent c : contents) {
 			set(c, c);
 		}
@@ -243,7 +285,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 	}
 
 	public Map<Pac, PacAction> computeActions(int maximum) {
-		Turn turn = new Turn(this);
+		Turn turn = new Turn(this, getBigPillsDistances());
 		List<Pac> myPacs = getMyPacs();
 		Map<Pac, ActionTree> actionList = new HashMap<>();
 		for (Pac pac : myPacs) {
@@ -276,6 +318,64 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		bigPills.clear();
 		smallPills.clear();
 		pacs.clear();
+	}
+
+	public String toUnitTestString(int turn) {
+		final StringBuilder returned = new StringBuilder();
+		
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"@Test public void can_find_action_at_turn_")
+			.append(turn)
+			.append("_")
+			.append(System.currentTimeMillis()).append("() {\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
+		final Collection<String> physical = toStringCollection(new ToPhysicalString());
+		final Iterator<String> physicalIter = physical.iterator();
+		while (physicalIter.hasNext()) {
+			final String row = physicalIter.next();
+			returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"\t\"").append(row).append("\"");
+			if(physicalIter.hasNext()) {
+				returned.append(",");
+			}
+			returned.append("\n");
+		}
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t));\n");
+		List<Pac> pacs = getMyPacs();
+		StringBuffer init = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("Pac\n");
+		StringBuffer usage = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("tested.readGameEntities(");
+		for(int index=0; index<pacs.size(); index++) {
+			if(index>0) {
+				init.append(",\n");
+				usage.append(", ");
+			}
+			Pac pac = pacs.get(index);
+			String name = (pac.mine ? "my" : "his")+"_p"+pac.id;
+			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name)
+				.append(" = new Pac(")
+					.append(pac.x).append(", ")
+					.append(pac.y).append(", ")
+					.append(pac.id).append(", ")
+					.append(pac.mine).append(", ")
+					.append("Type.").append(pac.type).append(", ")
+					.append(pac.speedTurnsLeft).append(", ")
+					.append(pac.abilityCooldown).append(")");
+			usage.append(name);
+		}
+		returned.append(init.append(";\n"));
+		returned.append(usage.append(");\n"));
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Map<Pac, PacAction> actions = tested.computeActions(-1);\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"assertThat(actions).isNotEmpty();\n");
+		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"}\n\n");
+		return returned.toString();
+	}
+
+	@Override
+	public ImmutablePlayground<Integer> getBigPillsDistances() {
+		ImmutablePlayground<Integer> returned = zero();
+		for(BigPill big : bigPills) {
+			returned = returned.apply(cacheDistanceMapTo(big).scores, (a, b) -> a+b);
+		}
+		return returned;
 	}
 
 }

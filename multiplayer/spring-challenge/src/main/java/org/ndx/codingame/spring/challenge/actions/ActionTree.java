@@ -62,7 +62,7 @@ public class ActionTree {
 		} else {
 			directScore = valueAtTurn.score();
 		}
-//		directScore+=turn.getBigPillScore(pac).get(pac);
+		directScore+=turn.getBigPillScore(pac);
 		int deepnessAdjuster = Math.max(EvolvableConstants.HORIZON_FOR_RANDOM_PATH-deepness, 1);
 		int cumulatedScore = directScore*deepnessAdjuster;
 		if(nextPoints.isEmpty()) {

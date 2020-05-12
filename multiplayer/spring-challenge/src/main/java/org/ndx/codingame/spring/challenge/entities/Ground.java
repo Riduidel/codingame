@@ -18,4 +18,9 @@ public class Ground implements Content {
 	public int score() {
 		return 0;
 	}
+	
+	@Override
+	public String toString() {
+		return Character.toString(CHARACTER);
+	}
 }
