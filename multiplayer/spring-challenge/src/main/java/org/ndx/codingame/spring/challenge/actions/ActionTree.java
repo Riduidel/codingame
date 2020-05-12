@@ -119,7 +119,7 @@ public class ActionTree {
 	}
 
 	public PacAction getFirstAction() {
-		return bestDescendant.withMessage(loop+"");
+		return bestDescendant.withMessage("d="+loop+";");
 	}
 	
 	@Override

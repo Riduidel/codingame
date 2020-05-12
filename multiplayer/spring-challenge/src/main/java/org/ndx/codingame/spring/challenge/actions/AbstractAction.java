@@ -5,7 +5,7 @@ import org.ndx.codingame.spring.challenge.entities.Pac;
 public abstract class AbstractAction implements PacAction {
 	public final Pac pac;
 	
-	protected String message;
+	protected String message = "";
 
 	public AbstractAction(Pac pac) {
 		super();
@@ -13,7 +13,7 @@ public abstract class AbstractAction implements PacAction {
 	}
 	
 	public PacAction withMessage(String message) {
-		this.message = message;
+		this.message += message;
 		return this;
 	}
 }
