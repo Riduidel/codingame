@@ -35,11 +35,11 @@ public class Playground<Content> implements MutablePlayground<Content> {
 		}
 	}
 
-	public Playground(final Playground<Content> playground) {
-		this(playground.width, playground.height);
+	public Playground(final ImmutablePlayground<Content> playground) {
+		this(playground.getWidth(), playground.getHeight());
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				this.content[y][x]=playground.content[y][x];
+				this.content[y][x]=playground.get(x, y);
 			}
 		}
 	}
