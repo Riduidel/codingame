@@ -52,7 +52,7 @@ public class DiscretePoint extends AbstractPoint implements PointBuilder<Discret
 			return true;
 		if (!super.equals(obj))
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof DiscretePoint))
 			return false;
 		DiscretePoint other = (DiscretePoint) obj;
 		if (x != other.x)

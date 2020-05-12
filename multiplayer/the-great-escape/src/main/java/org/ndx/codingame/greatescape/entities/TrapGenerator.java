@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import org.ndx.codingame.greatescape.actions.Trap;
 import org.ndx.codingame.greatescape.playground.DistanceInfo;
 import org.ndx.codingame.greatescape.playground.Playfield;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -21,7 +22,7 @@ import org.ndx.codingame.lib2d.discrete.ScoredDirection;
 public class TrapGenerator extends PlaygroundAdapter<Trap, GameElement>{
 	private static class TrapCollector extends PlaygroundAdapter<SortedSet<Trap>, Trap> {
 		@Override
-		public void startVisit(final Playground<Trap> playground) {
+		public void startVisit(final ImmutablePlayground<Trap> playground) {
 			returned = new TreeSet<>();
 		}
 		
@@ -44,16 +45,16 @@ public class TrapGenerator extends PlaygroundAdapter<Trap, GameElement>{
 	}
 
 	@Override
-	public void startVisit(final Playground<GameElement> playground) {
+	public void startVisit(final ImmutablePlayground<GameElement> playground) {
 		tested = (Playfield) playground;
-		temporary = new Playground<>(playground.width, playground.height);
+		temporary = new Playground<>(playground.getWidth(), playground.getHeight());
 	}
 
 	/**
 	 * Now we have aggregated all traps, let's build a sorted set of them
 	 */
 	@Override
-	public Trap endVisit(final Playground<GameElement> playground) {
+	public Trap endVisit(final ImmutablePlayground<GameElement> playground) {
 		final SortedSet<Trap> allTraps = temporary.accept(new TrapCollector());
 		return allTraps.stream()
 				.filter((t) -> t.putSomewhereValid(tested))

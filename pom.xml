@@ -178,5 +178,6 @@
 		<module>multiplayer/code4life</module>
 		<module>multiplayer/wondev-woman</module>
 		<module>multiplayer/thales-hackathon</module>
+		<module>multiplayer/spring-challenge</module>
 	</modules>
 </project>

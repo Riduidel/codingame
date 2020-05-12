@@ -16,6 +16,7 @@ import org.ndx.codingame.greatescape.entities.Gamer;
 import org.ndx.codingame.greatescape.entities.Nothing;
 import org.ndx.codingame.greatescape.entities.Orientation;
 import org.ndx.codingame.greatescape.entities.Wall;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
@@ -110,7 +111,7 @@ public class Playfield extends Playground<GameElement> {
 			this.me = me;
 		}
 		@Override
-		public void startVisit(final Playground<GameElement> playground) {
+		public void startVisit(final ImmutablePlayground<GameElement> playground) {
 			returned = new StringBuilder();
 			super.startVisit(playground);
 		}
@@ -149,7 +150,7 @@ public class Playfield extends Playground<GameElement> {
 		public static final String GAMER__ME_DEBUG = "G";
 
 		@Override
-		public void startVisit(final Playground<GameElement> playground) {
+		public void startVisit(final ImmutablePlayground<GameElement> playground) {
 			returned = new StringBuilder();
 			super.startVisit(playground);
 		}

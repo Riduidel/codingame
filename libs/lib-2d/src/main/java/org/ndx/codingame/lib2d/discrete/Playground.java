@@ -5,9 +5,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.MutablePlayground;
+import org.ndx.codingame.lib2d.PlaygroundVisitor;
 
 public class Playground<Content> implements MutablePlayground<Content> {
 	private Object[][] content;
@@ -141,5 +144,13 @@ public class Playground<Content> implements MutablePlayground<Content> {
 	}
 	public boolean has(final DiscretePoint point) {
 		return get(point)!=null;
+	}
+	@Override
+	public int getWidth() {
+		return width;
+	}
+	@Override
+	public int getHeight() {
+		return height;
 	}
 }

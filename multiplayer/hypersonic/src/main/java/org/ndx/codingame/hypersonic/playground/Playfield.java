@@ -20,6 +20,7 @@ import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
 import org.ndx.codingame.hypersonic.entities.VirtualBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
@@ -104,8 +105,8 @@ public class Playfield extends Playground<Content> {
 		return accept(new PlaygroundAdapter<Collection<String>, Content>() {
 			private StringBuilder row;
 			@Override
-			public void startVisit(final Playground<Content> playground) {
-				returned = new ArrayList<>(playground.height);
+			public void startVisit(final ImmutablePlayground<Content> playground) {
+				returned = new ArrayList<>(playground.getHeight());
 			}
 			@Override
 			public void startVisitRow(final int y) {
@@ -139,7 +140,7 @@ public class Playfield extends Playground<Content> {
 	public static class ExportGameEntities extends PlaygroundAdapter<Collection<String>, Content> implements ContentVisitor<String> {
 		public ExportGameEntities() {}
 		@Override
-		public void startVisit(final Playground<Content> playground) {
+		public void startVisit(final ImmutablePlayground<Content> playground) {
 			returned = new ArrayList<>();
 		}
 		@Override

@@ -7,6 +7,7 @@ import org.ndx.codingame.hypersonic.entities.Content;
 import org.ndx.codingame.hypersonic.entities.ContentAdapter;
 import org.ndx.codingame.hypersonic.entities.FireThenItem;
 import org.ndx.codingame.hypersonic.entities.Gamer;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
@@ -61,11 +62,11 @@ public class OpportunitiesFinder extends PlaygroundAdapter<Playground<Integer>, 
 	private final int range;
 	private int x;
 	private int y;
-	private Playground<Content> source;
+	private ImmutablePlayground<Content> source;
 	@Override
-	public void startVisit(final Playground<Content> playground) {
+	public void startVisit(final ImmutablePlayground<Content> playground) {
 		source = playground;
-		returned = new Playground<>(playground.width, playground.height, 0);
+		returned = new Playground<>(playground.getWidth(), playground.getHeight(), 0);
 		contentVisitor = new OpportunitiesContentFinder();
 	}
 

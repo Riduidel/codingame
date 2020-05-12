@@ -12,6 +12,7 @@ import org.ndx.codingame.hypersonic.entities.Item;
 import org.ndx.codingame.hypersonic.entities.Nothing;
 import org.ndx.codingame.hypersonic.entities.VirtualBomb;
 import org.ndx.codingame.hypersonic.entities.Wall;
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
@@ -123,9 +124,9 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield, Content> {
 		public Playground<Content> source;
 		public Playfield derived;
 		@Override
-		public void startVisit(final Playground<Content> playground) {
-			source = playground;
-			returned = derived = new Playfield(playground.width, playground.height);
+		public void startVisit(final ImmutablePlayground<Content> playground) {
+			source = (Playfield) playground;
+			returned = derived = new Playfield(playground.getWidth(), playground.getHeight());
 		}
 		@Override
 		public void visit(final int x, final int y, final Content content) {
@@ -134,7 +135,7 @@ public class PlaygroundDeriver extends PlaygroundAdapter<Playfield, Content> {
 			content.accept(cellDeriver);
 		}
 		@Override
-		public Playfield endVisit(final Playground<Content> playground) {
+		public Playfield endVisit(final ImmutablePlayground<Content> playground) {
 			return super.endVisit(playground);
 		}
 	}

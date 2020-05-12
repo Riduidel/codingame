@@ -6,11 +6,13 @@ import static org.ndx.codingame.wondevwoman.TestUtils.g;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ndx.codingame.wondevwoman.actions.B;
 import org.ndx.codingame.wondevwoman.actions.WonderAction;
 import org.ndx.codingame.wondevwoman.entities.Gamer;
 
+@Ignore
 public class PlayfieldActionsComputerTest {
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_compute_correct_move_list_1() {
