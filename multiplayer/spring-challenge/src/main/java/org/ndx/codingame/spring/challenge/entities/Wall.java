@@ -18,4 +18,9 @@ public class Wall implements Content {
 	public int score() {
 		return Integer.MIN_VALUE;
 	}
+
+	@Override
+	public Content advanceOneTurn() {
+		return this;
+	}
 }

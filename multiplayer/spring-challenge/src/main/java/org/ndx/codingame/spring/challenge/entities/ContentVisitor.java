@@ -13,4 +13,6 @@ public interface ContentVisitor<Type> {
 	Type visitSmallPill(SmallPill smallPill);
 	
 	Type visitPac(Pac pac);
+
+	Type visitPotentialSmallPill(PotentialSmallPill potentialSmallPill);
 }

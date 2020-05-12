@@ -18,6 +18,7 @@ import org.ndx.codingame.spring.challenge.entities.ContentVisitor;
 import org.ndx.codingame.spring.challenge.entities.Ground;
 import org.ndx.codingame.spring.challenge.entities.Nothing;
 import org.ndx.codingame.spring.challenge.entities.Pac;
+import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Wall;
 
@@ -49,6 +50,9 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 		public String visitWall(Wall wall) {
 			return Character.toString(Wall.CHARACTER);
 		}
+		public String visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
+			return Character.toString(PotentialSmallPill.CHARACTER);
+		};
 	}
 	
 	public default DiscretePoint putBackOnPlayground(DiscretePoint point) {
@@ -84,10 +88,11 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 			char character = characters[x];
 			Content content = null;
 			switch(character) {
-			case Ground.CHARACTER: content = Ground.instance; break;
+			case Ground.CHARACTER: content = PotentialSmallPill.instance; break;
 			case Wall.CHARACTER: content = Wall.instance; break;
 			case BigPill.CHARACTER: content = new BigPill(x, rowIndex); break;
 			case SmallPill.CHARACTER: content = new SmallPill(x, rowIndex); break;
+			case PotentialSmallPill.CHARACTER: content = PotentialSmallPill.instance; break;
 			}
 			set(x, rowIndex, content);
 		}
@@ -133,7 +138,7 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)\n");
 		returned.append(ToUnitTestHelpers.METHOD_PREFIX+"@Test public void can_find_move_")
 			.append(System.currentTimeMillis()).append("() {\n");
-		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Turn tested = read(Arrays.asList(\n");
+		returned.append(ToUnitTestHelpers.CONTENT_PREFIX+"Playfield tested = read(Arrays.asList(\n");
 		final Collection<String> physical = toStringCollection(new ToPhysicalString());
 		final Iterator<String> physicalIter = physical.iterator();
 		while (physicalIter.hasNext()) {
@@ -183,4 +188,7 @@ public interface SpringChallengePlayground extends MutablePlayground<Content> {
 	public Playground<Integer> zero();
 	public ScoringSystem cacheDistanceMapTo(BigPill pill);
 
+	public default Turn readWriteProxy() {
+		return new Turn(this);
+	}
 }

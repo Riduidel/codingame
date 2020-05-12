@@ -26,4 +26,8 @@ public class ContentAdapter<Type> implements ContentVisitor<Type> {
 	public Type visitPac(Pac pac) {
 		return returnedFromContent;
 	}
+	@Override
+	public Type visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
+		return returnedFromContent;
+	}
 }

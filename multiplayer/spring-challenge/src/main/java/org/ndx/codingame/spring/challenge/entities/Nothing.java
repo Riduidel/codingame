@@ -17,4 +17,9 @@ public class Nothing implements Content {
 	public int score() {
 		return 0;
 	}
+	
+	@Override
+	public Content advanceOneTurn() {
+		return this;
+	}
 }

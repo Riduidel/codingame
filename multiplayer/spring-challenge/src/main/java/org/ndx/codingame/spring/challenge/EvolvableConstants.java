@@ -22,4 +22,5 @@ public class EvolvableConstants {
 	public static final int INTERNAL_SCORE_FOR_TEAMMATE_TOO_FAR = 0;
 	public static final int INTERNAL_SCORE_FOR_ENEMY_PREDATOR = -1000;
 	public static final int INTERNAL_SCORE_FOR_ENEMY_PREY = 1000;
+	public static final int INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL = 1;
 }

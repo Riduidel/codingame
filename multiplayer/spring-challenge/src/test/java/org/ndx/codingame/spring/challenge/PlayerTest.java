@@ -22,28 +22,22 @@ import org.ndx.codingame.spring.challenge.playground.Turn;
 
 
 class PlayerTest {
-	public static Turn read(List<String> rows) {
+	public static Playfield read(List<String> rows) {
 		int height = rows.size();
 		int width = rows.get(0).length();
 		Playfield base = new Playfield(width, height);
 		for(int index=0; index<rows.size(); index++) {
-			base.readRow(rows.get(index)
-					.replace(BigPill.CHARACTER, Ground.CHARACTER) 
-					.replace(SmallPill.CHARACTER, Ground.CHARACTER), 
+			base.readRow(rows.get(index), 
 					index);
 		}
 		base.init();
-		Turn returned = base.readWriteProxy();
-		for(int index=0; index<rows.size(); index++) {
-			returned.readRow(rows.get(index), 
-					index);
-		}
-		return returned;
+		base.advanceOneTurn();
+		return base;
 	}
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Disabled @Test public void can_find_move_1589274747869() {
-		Turn tested = read(Arrays.asList(
+		Playfield tested = read(Arrays.asList(
 			"#################################",
 			"###.# #     # ##### #     # # ###",
 			"###.# # ##### ##### ##### # # ###",
@@ -76,7 +70,7 @@ class PlayerTest {
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
 	@Test public void can_find_move_1589276062872() {
-		Turn tested = read(Arrays.asList(
+		Playfield tested = read(Arrays.asList(
 			"#################################",
 			"### # #     # ##### #    .# # ###",
 			"### # # ##### ##### #####.# # ###",

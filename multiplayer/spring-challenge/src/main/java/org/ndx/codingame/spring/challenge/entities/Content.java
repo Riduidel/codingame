@@ -6,4 +6,8 @@ public interface Content {
 	boolean canBeWalkedOn();
 
 	public int score();
+
+	public default Content advanceOneTurn() {
+		return Ground.instance;
+	}
 }

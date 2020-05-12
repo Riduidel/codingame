@@ -28,7 +28,7 @@ public class Player {
 
         // game loop
         while (true) {
-        	Turn turn = playfield.readWriteProxy();
+        	playfield.advanceOneTurn();
             int myScore = in.nextInt();
             int opponentScore = in.nextInt();
             int visiblePacCount = in.nextInt(); // all your pacs and enemy pacs in sight
@@ -40,7 +40,7 @@ public class Player {
                 String typeId = in.next(); // unused in wood leagues
                 int speedTurnsLeft = in.nextInt(); // unused in wood leagues
                 int abilityCooldown = in.nextInt(); // unused in wood leagues
-                turn.set(x, y, new Pac(x, y, pacId, mine, Type.valueOf(typeId), speedTurnsLeft, abilityCooldown));
+                playfield.set(x, y, new Pac(x, y, pacId, mine, Type.valueOf(typeId), speedTurnsLeft, abilityCooldown));
             }
             int visiblePelletCount = in.nextInt(); // all pellets in sight
             for (int i = 0; i < visiblePelletCount; i++) {
@@ -48,16 +48,16 @@ public class Player {
                 int y = in.nextInt();
                 int value = in.nextInt(); // amount of points this pellet is worth
                 if(value==1) {
-                    turn.set(x, y, new SmallPill(x, y));
+                    playfield.set(x, y, new SmallPill(x, y));
                 } else {
-                    turn.set(x, y, new BigPill(x, y));
+                    playfield.set(x, y, new BigPill(x, y));
                 }
             }
 
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");
-			System.err.println(turn.toUnitTestString());
-			System.out.println(turn.compute());
+			System.err.println(playfield.toUnitTestString());
+			System.out.println(playfield.compute());
         }
     }
 }
