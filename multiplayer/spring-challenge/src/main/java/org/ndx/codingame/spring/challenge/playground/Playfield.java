@@ -3,6 +3,7 @@ package org.ndx.codingame.spring.challenge.playground;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,39 +11,51 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
+import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
-import org.ndx.codingame.spring.challenge.actions.ActionTree;
+import org.ndx.codingame.spring.challenge.actions.MoveTo;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.entities.AbstractDistinctContent;
 import org.ndx.codingame.spring.challenge.entities.BigPill;
 import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.ContentAdapter;
+import org.ndx.codingame.spring.challenge.entities.ContentVisitor;
 import org.ndx.codingame.spring.challenge.entities.Ground;
+import org.ndx.codingame.spring.challenge.entities.Nothing;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Wall;
 
-public class Playfield extends Playground<Content> implements SpringChallengePlayground {
+public class Playfield extends Playground<Content> {
+	private static final int NEXT_POINTS_VIEW_RANGE = Integer.MAX_VALUE;
+	static final int NEXT_POINTS_SPEED = 2;
+	private static final int NEXT_POINTS_NORMAL = 1;
+	static final List<Integer> NEXT_POINTS_LIST = Arrays.asList(
+			NEXT_POINTS_NORMAL,
+			NEXT_POINTS_SPEED,
+			NEXT_POINTS_VIEW_RANGE);
+
 	public static final class ToPhysicalString extends ContentAdapter<String> {
 		private ToPhysicalString() {
 			super("X");
 		}
 		@Override
 		public String visitBigPill(BigPill bigPill) {
-			return Character.toString(BigPill.CHARACTER);
+			return bigPill.toString();
 		}
 		@Override
 		public String visitGround(Ground ground) {
-			return Character.toString(Ground.CHARACTER);
+			return ground.toString();
 		}
 		/**
 		 * In physical display, pacs are hidden, since they are provided in an other way
@@ -53,31 +66,105 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		}
 		@Override
 		public String visitSmallPill(SmallPill smallPill) {
-			return Character.toString(SmallPill.CHARACTER);
+			return smallPill.toString();
 		}
 		@Override
 		public String visitWall(Wall wall) {
-			return Character.toString(Wall.CHARACTER);
+			return wall.toString();
 		}
 		public String visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
-			return Character.toString(PotentialSmallPill.CHARACTER);
+			return potentialSmallPill.toString();
 		};
 	}
 	
 
+	public DiscretePoint putBackOnPlayground(DiscretePoint point) {
+		int x = point.x,
+			y = point.y;
+		if(x<0) {
+			x = getWidth()-1;
+		} else if(x>=getWidth()) {
+			x = 0;
+		}
+		if(y<0) {
+			y = getHeight()-1;
+		} else if(y>=getHeight()) {
+			y = 0;
+		}
+		return new DiscretePoint(x, y);
+	}
+
+	public boolean allow(final DiscretePoint position) {
+		return allow(position.x, position.y);
+	}
+
+	public boolean allow(final int p_x, final int p_y) {
+		if(contains(p_x, p_y)) {
+			return get(p_x, p_y).canBeWalkedOn();
+		}
+		return false;
+	}
+
+	public void readRow(final String row, final int rowIndex) {
+		final char[] characters = row.toCharArray();
+		for (int x = 0; x < characters.length; x++) {
+			char character = characters[x];
+			Content content = null;
+			switch(character) {
+			case Ground.CHARACTER: content = Ground.instance; break;
+			case Wall.CHARACTER: content = Wall.instance; break;
+			case BigPill.CHARACTER: content = new BigPill(x, rowIndex); break;
+			case SmallPill.CHARACTER: content = new SmallPill(x, rowIndex); break;
+			case PotentialSmallPill.CHARACTER: content = PotentialSmallPill.instance; break;
+			}
+			set(x, rowIndex, content);
+		}
+	}
+
+	public String toString(final ContentVisitor<String> visitor) {
+		return toStringCollection(visitor).stream().reduce((r1, r2) -> r1+"\n"+r2).get();
+	}
+
+	public Collection<String> toStringCollection(final ContentVisitor<String> visitor) {
+		return accept(new PlaygroundAdapter<Collection<String>, Content>() {
+			private StringBuilder row;
+			@Override
+			public void endVisitRow(final int y) {
+				returned.add(row.toString());
+			}
+			@Override
+			public void startVisit(final ImmutablePlayground<Content> playground) {
+				returned = new ArrayList<>(playground.getHeight());
+			}
+			@Override
+			public void startVisitRow(final int y) {
+				row = new StringBuilder();
+			}
+			@Override
+			public void visit(final int x, final int y, final Content content) {
+				if(content==null) {
+					row.append(Nothing.instance.accept(visitor));
+				} else {
+					row.append(content.accept(visitor));
+				}
+			}
+		});
+	}
 	
 	private Map<BigPill, ScoringSystem> bigPillsInfos = new HashMap<>();
-	private Playground<Integer> zero;
-	private Playground<List<DiscretePoint>> nextPointsForNormal;
-	private Playground<List<List<DiscretePoint>>> nextPointsForSpeed;
-	private Playground<List<List<DiscretePoint>>> nextPointsForViewRange;
+	public final Playground<Double> zero;
+	
+	Map<Integer, Playground<List<List<DiscretePoint>>>> nextPointsCache = new HashMap<>();
 
-	private Set<SmallPill> smallPills = new HashSet<>();
-	private Set<BigPill> bigPills = new HashSet<>();
-	private Set<Pac> pacs = new HashSet<Pac>();
+	Set<SmallPill> smallPills = new HashSet<>();
+	Set<BigPill> bigPills = new HashSet<>();
+	Set<Pac> allPacs = new HashSet<Pac>();
+	private ImmutablePlayground<ScoringSystem> distancesToPoints;
+	Playground<List<Direction>> directions;
 
 	public Playfield(final int width, final int height) {
 		super(width, height, PotentialSmallPill.instance);
+		zero = new Playground<>(width, height, 0d);
 	}
 
 	/**
@@ -87,63 +174,61 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 	 */
 	public Playfield(final Playfield playground) {
 		super(playground);
+		zero = new Playground<>(width, height, 0d);
 	}
 
 	@Override
 	public void set(DiscretePoint p, Content c) {
-		setSpecificContent(get(p), c);
+		Content previous = get(p);
 		super.set(p, c);
-	}
-
-	private void setSpecificContent(Content previous, Content next) {
-		if (next instanceof BigPill) {
-			bigPills.add((BigPill) next);
-		} else if (next instanceof Pac) {
-			pacs.add((Pac) next);
-		} else if (next instanceof SmallPill) {
-			smallPills.add((SmallPill) next);
-		} else if (next instanceof Ground) {
-			if (previous instanceof BigPill) {
-				bigPills.remove((BigPill) previous);
-			} else if (next instanceof Pac) {
-				pacs.remove((Pac) previous);
-			}
-		}
+		setSpecificContent(p, previous, c);
 	}
 
 	@Override
 	public void set(int x, int y, Content c) {
-		setSpecificContent(get(x, y), c);
+		Content previous = get(x, y);
 		super.set(x, y, c);
+		setSpecificContent(new DiscretePoint(x, y), previous, c);
+	}
+
+	private void setSpecificContent(DiscretePoint location, Content previous, Content next) {
+		next.accept(new SpecificContentSetter(this, previous, location, next));
 	}
 
 	public void init() {
-		// Force init of zero !
-		zero();
+		// Compute distance2 for each point
+		distancesToPoints = computeDistance2ToPoints();
 		// Compute valid directions for each point
-		Playground<List<Direction>> directions = computePossibleDirections();
-		nextPointsForNormal = computeNextPointsForNormal(directions);
-		nextPointsForSpeed = computeNextPointsList(directions, 2);
-		nextPointsForViewRange = computeNextPointsList(directions, Integer.MAX_VALUE);
+		directions = computePossibleDirections();
+		for(Integer i : NEXT_POINTS_LIST) {
+			nextPointsCache.put(i, computeNextPointsList(directions, i));
+		}
 	}
 
-	private Playground<List<DiscretePoint>> computeNextPointsForNormal(Playground<List<Direction>> directions) {
-		Playground<List<DiscretePoint>> points = new Playground<>(width, height);
+	private ImmutablePlayground<ScoringSystem> computeDistance2ToPoints() {
+		Playground<ScoringSystem> returned = new Playground<>(width, height);
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				List<Direction> directionsFor = directions.get(x, y);
 				DiscretePoint p = new DiscretePoint(x, y);
-				List<DiscretePoint> successors = new LinkedList<>();
-				for (Direction d : directionsFor) {
-					DiscretePoint next = putBackOnPlayground(d.move(p));
-					if (get(next).canBeWalkedOn()) {
-						successors.add(next);
-					}
+				Content content = get(p);
+				if(content.canBeWalkedOn()) {
+					returned.set(x, y, new ScoringSystem(content, 
+							computeDistancesTo(p, NEXT_POINTS_VIEW_RANGE), computeDistance2SquaredTo(p)));
 				}
-				points.set(p, successors);
 			}
 		}
-		return points;
+		return returned;
+	}
+
+	private ImmutablePlayground<Double> computeDistance2SquaredTo(DiscretePoint center) {
+		Playground<Double> returned = new Playground<>(width, height);
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				DiscretePoint p = new DiscretePoint(x, y);
+				returned.set(x, y, p.distance2SquaredTo(center));
+			}
+		}
+		return returned;
 	}
 
 	private Playground<List<List<DiscretePoint>>> computeNextPointsList(Playground<List<Direction>> directions,
@@ -151,22 +236,35 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		Playground<List<List<DiscretePoint>>> points = new Playground<>(width, height);
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				List<Direction> directionsFor = directions.get(x, y);
 				DiscretePoint p = new DiscretePoint(x, y);
-				List<List<DiscretePoint>> successors = new LinkedList<>();
-				for (Direction d : directionsFor) {
-					List<DiscretePoint> pointsInThatDirection = new LinkedList<>();
-					DiscretePoint point = p;
-					while (get(point).canBeWalkedOn()) {
-						pointsInThatDirection.add(point);
-						point = putBackOnPlayground(d.move(point));
-					}
-					successors.add(pointsInThatDirection);
-				}
+				List<List<DiscretePoint>> successors = computeNextPointsListAt(directions, p, limit);
 				points.set(p, successors);
 			}
 		}
 		return points;
+	}
+
+	List<List<DiscretePoint>> computeNextPointsListAt(Playground<List<Direction>> directions,
+			DiscretePoint p, int limit) {
+		List<Direction> directionsFor = directions.get(p);
+		List<List<DiscretePoint>> successors = new ArrayList<>();
+		for (Direction d : directionsFor) {
+			List<DiscretePoint> pointsInThatDirection = new ArrayList<>();
+			
+			int deeepness = 0;
+			for(DiscretePoint point = p;
+					get(point).canBeWalkedOn() && deeepness<=limit;
+					point = putBackOnPlayground(d.move(point))
+					) {
+				pointsInThatDirection.add(point);
+				deeepness++;
+			}
+			// Since we always include this point, we have to make sure there is at least one other point 
+			if(pointsInThatDirection.size()>1) {
+				successors.add(pointsInThatDirection);
+			}
+		}
+		return successors;
 	}
 
 	private Playground<List<Direction>> computePossibleDirections() {
@@ -185,18 +283,6 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 			}
 		}
 		return directions;
-	}
-
-	@Override
-	public ScoringSystem cacheDistanceMapTo(BigPill c) {
-		if (!bigPillsInfos.containsKey(c)) {
-			bigPillsInfos.put(c, computeScoringInfos(c, EvolvableConstants.HORIZON_FOR_BIG_PILLS));
-		}
-		return bigPillsInfos.get(c);
-	}
-
-	protected ScoringSystem computeScoringInfos(AbstractDistinctContent c, int limit) {
-		return new ScoringSystem(c, computeDistancesTo(c, limit));
 	}
 
 	private Playground<Integer> computeDistancesTo(DiscretePoint c, int limit) {
@@ -225,25 +311,9 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		return distances;
 	}
 
-	@Override
-	public Playground<Integer> zero() {
-		if (zero == null) {
-			zero = new Playground<Integer>(width, height, 0);
-		}
-		return zero;
-	}
-
-	public List<List<DiscretePoint>> speedPointsAt(DiscretePoint p) {
-		return nextPointsForSpeed.get(p);
-	}
-
-	public List<DiscretePoint> nextPointsAt(DiscretePoint p) {
-		return nextPointsForNormal.get(p);
-	}
-
-	private List<Pac> getMyPacs() {
+	public List<Pac> getMyPacs() {
 		List<Pac> returned = new ArrayList<>();
-		for (Pac pac : pacs) {
+		for (Pac pac : allPacs) {
 			if (pac.mine)
 				returned.add(pac);
 		}
@@ -264,9 +334,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 	}
 
 	public String compute() {
-		updatePlayground();
-		Map<Pac, PacAction> actions = computeActions(-1);
-		return toCommands(actions);
+		return toCommands(computeActions(-1));
 	}
 
 	/**
@@ -274,7 +342,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 	 */
 	private void updatePlayground() {
 		for (Pac pac : getMyPacs()) {
-			for (List<DiscretePoint> directions : nextPointsForViewRange.get(pac)) {
+			for (List<DiscretePoint> directions : nextPointsCache.get(NEXT_POINTS_VIEW_RANGE).get(pac)) {
 				for (DiscretePoint point : directions) {
 					if(get(point) instanceof PotentialSmallPill) {
 						set(point, Ground.instance);
@@ -284,29 +352,77 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		}
 	}
 
+	/**
+	 * maximum is a kind of deepness we used in real turn
+	 * @param maximum
+	 * @return
+	 */
 	public Map<Pac, PacAction> computeActions(int maximum) {
-		Turn turn = new Turn(this, getBigPillsDistances());
-		List<Pac> myPacs = getMyPacs();
-		Map<Pac, ActionTree> actionList = new HashMap<>();
-		for (Pac pac : myPacs) {
-			actionList.put(pac, new ActionTree(this, turn, pac, pac, 0));
-		}
-		int computations = 0;
-		Delay delay = new Delay();
-		do {
-			for (Pac pac : myPacs) {
-				actionList.get(pac).grow();
-			}
-			computations++;
-		} while ((maximum < 0 && !delay.isElapsed(EvolvableConstants.DELAY_FOR_PREDICTION)) || computations <= maximum);
-
+		updatePlayground();
 		Map<Pac, PacAction> returned = new HashMap<>();
-		for (Map.Entry<Pac, ActionTree> action : actionList.entrySet()) {
-			ActionTree actionTree = action.getValue();
-			returned.put(action.getKey(), actionTree.getFirstAction()
-					.withMessage(String.format("c=%d;s=%d", computations, actionTree.score())));
+		for(Pac my : getMyPacs()) {
+			returned.put(my, computeActionFor(my));
 		}
 		return returned;
+	}
+	
+	private ImmutablePlayground<Double> usingDistance(DiscretePoint system) {
+		return distancesToPoints.get(system).distancesOnPlaygroundSquared;
+	}
+
+	private PacAction computeActionFor(Pac my) {
+		set(my, Ground.instance);
+		ImmutablePlayground<Double> scores = buildDistancesScoresFor(my);
+		SortedMap<Double, PacAction> actions = new TreeMap<>(Comparator.reverseOrder());
+		List<List<DiscretePoint>> accessibleNextPoints = nextPointsCache.get(NEXT_POINTS_NORMAL).get(my);
+		for(List<DiscretePoint> direction : accessibleNextPoints) {
+			double score = 0;
+			DiscretePoint last = null;
+			for(DiscretePoint point : direction) {
+				if(get(point).canBeWalkedOn()) {
+					last = point;
+					score += scores.get(point);
+				} else {
+					break;
+				}
+			}
+			if(last!=null) {
+				actions.put(score, new MoveTo(my, last));
+			}
+		}
+		PacAction returned = actions.get(actions.firstKey());
+		Pac myFuture = returned.transform();
+		set(myFuture, myFuture);
+		return returned;
+	}
+
+	private ImmutablePlayground<Double> buildDistancesScoresFor(Pac my) {
+		ImmutablePlayground<Double> scores = zero;
+		for(BigPill big : bigPills) {
+			scores = scores.apply(usingDistance(big), 
+					(a, b) -> a+EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL/(1+b), false);
+		}
+		for(SmallPill small : smallPills) {
+			scores = scores.apply(usingDistance(small), 
+					(a, b) -> a+EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL/(1+b), false);
+		}
+		for(Pac pac : allPacs) {
+			if(pac.mine) {
+/*				if(!pac.equals(my)) {
+					scores = scores.apply(usingDistance(pac), 
+							(a, b) -> a+EvolvableConstants.INTERNAL_SCORE_FOR_TEAMMATE_TOO_CLOSE/(1+b), false);
+				}
+*/			} else {
+				if(pac.isDangerousFor(my)) {
+					scores = scores.apply(usingDistance(pac), 
+							(a, b) -> a+EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREDATOR/(1+b), false);
+				} else {
+					scores = scores.apply(usingDistance(pac),
+							(a, b) -> a+EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREY/(1+b), false);
+				}
+			}
+		}
+		return scores;
 	}
 
 	public void advanceOneTurn() {
@@ -317,7 +433,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		}
 		bigPills.clear();
 		smallPills.clear();
-		pacs.clear();
+		allPacs.clear();
 	}
 
 	public String toUnitTestString(int turn) {
@@ -340,7 +456,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 			returned.append("\n");
 		}
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t));\n");
-		List<Pac> pacs = getMyPacs();
+		List<Pac> pacs = new ArrayList<>(getAllPacs());
 		StringBuffer init = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("Pac\n");
 		StringBuffer usage = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("tested.readGameEntities(");
 		for(int index=0; index<pacs.size(); index++) {
@@ -369,13 +485,7 @@ public class Playfield extends Playground<Content> implements SpringChallengePla
 		return returned.toString();
 	}
 
-	@Override
-	public ImmutablePlayground<Integer> getBigPillsDistances() {
-		ImmutablePlayground<Integer> returned = zero();
-		for(BigPill big : bigPills) {
-			returned = returned.apply(cacheDistanceMapTo(big).scores, (a, b) -> a+b);
-		}
-		return returned;
+	public Set<Pac> getAllPacs() {
+		return allPacs;
 	}
-
 }

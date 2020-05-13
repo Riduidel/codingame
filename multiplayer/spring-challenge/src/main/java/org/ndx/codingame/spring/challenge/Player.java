@@ -6,7 +6,6 @@ import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.playground.Playfield;
-import org.ndx.codingame.spring.challenge.playground.Turn;
 
 /**
  * Grab the pellets as fast as you can!

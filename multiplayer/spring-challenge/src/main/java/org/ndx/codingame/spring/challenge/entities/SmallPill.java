@@ -35,4 +35,9 @@ public class SmallPill extends AbstractDistinctContent {
 	public String toString() {
 		return Character.toString(CHARACTER);
 	}
+	
+	@Override
+	public Content advanceOneTurn() {
+		return PotentialSmallPill.instance;
+	}
 }

@@ -12,14 +12,18 @@ import org.ndx.codingame.spring.challenge.entities.Content;
  */
 public class ScoringSystem {
 
-	public final ImmutablePlayground<Integer> distances;
+	public final ImmutablePlayground<Integer> distancesOnPlayground;
+	public final ImmutablePlayground<Double> distances2Squared;
 	private Content targetContent;
-	public final ImmutablePlayground<Integer> scores;
+	public final ImmutablePlayground<Double> distancesOnPlaygroundSquared;
 
-	public ScoringSystem(Content c, ImmutablePlayground<Integer> computeDistancesTo) {
+	public ScoringSystem(Content c, 
+			ImmutablePlayground<Integer> computeDistancesTo,
+			ImmutablePlayground<Double> distances2Squared) {
 		this.targetContent = c;
-		this.distances = computeDistancesTo;
-		this.scores = distances.apply(distance -> distance==EvolvableConstants.DISTANCE_UNREACHABLE ? 0 : EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL_DISTANCE-distance); 
+		this.distancesOnPlayground = computeDistancesTo;
+		this.distancesOnPlaygroundSquared = computeDistancesTo.apply(a -> (double) a*a);
+		this.distances2Squared = distances2Squared;
 	}
 
 }
