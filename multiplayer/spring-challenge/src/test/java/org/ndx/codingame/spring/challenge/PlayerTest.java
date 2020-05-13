@@ -1,12 +1,15 @@
 package org.ndx.codingame.spring.challenge;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.ndx.codingame.lib2d.Geometry.at;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.AbstractObjectAssert;
 import org.junit.jupiter.api.Test;
+import org.ndx.codingame.lib2d.Geometry;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.spring.challenge.actions.MoveTo;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
@@ -28,39 +31,43 @@ class PlayerTest {
 //		base.advanceOneTurn();
 		return base;
 	}
-	private void isMoveTo(Pac my_p0, Map<Pac, PacAction> actions, int x, int y) {
-		assertThat(actions.get(my_p0)).isInstanceOf(MoveTo.class)
-			.extracting(action -> ((MoveTo) action).destination)
-			.isEqualTo(new DiscretePoint(x, y));
+	private AbstractObjectAssert<?,?> isMoveTo(Pac my_p0, Map<Pac, PacAction> actions) {
+		return assertThat(actions.get(my_p0)).isInstanceOf(MoveTo.class)
+			.extracting(action -> ((MoveTo) action).destination);
 	}
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_find_action_at_turn_81_1589362518196() {
+	@Test public void can_find_action_at_turn_106_1589394391220() {
 		Playfield tested = read(Arrays.asList(
 			"#################################",
-			"###ddd# ??# #?? #???#d#?? #ddd###",
-			"#####d# ### ### #?###d### #d#####",
-			"#ddddd#   # #   #???#d#   #ddd d#",
-			"#d#d### # # # #####?#d# # ###d#d#",
-			"#d#     #               #     #d#",
-			"### # # ##### #####?##### # # ###",
-			"#   #         #####???? ? ? # dd#",
-			"#?# ### # # # #####?#?# # ### #d#",
-			"#?#       # ? ????????#       #d#",
-			"##### # ##### #?#?#?##### # #####",
-			"#O#   # ????? ??#???????? #   #d#",
-			"#?# # # #?#?###?#?###?#?# # # # #",
-			"#??.# # #?#?#???#???#?#?# # #   #",
+			"#?#?????#?###???#   ### #     #?#",
+			"#?#?###?#?###?##### ### # ### #?#",
+			"#   #???#               #   #   #",
+			"### #?### ##### # ##### ### # ###",
+			"#             # # #             #",
+			"# #?#?#?##### # # # ##### # # #?#",
+			"#?#?#???????#       #       # #?#",
+			"###?#####?#?#?# # # # # ##### ###",
+			"#?#???????#???#   #   #       #?#",
+			"#?#?#?###?###?##### ### ### # #?#",
+			"#???#? ???#???????? ??#     # ??#",
+			"###?#####?#?###?#?###?# ##### ###",
+			"????????????###?#?###?? ????? ???",
+			"#####?#####?###?#?###?#####?#####",
 			"#################################"
 			));
 		Pac
-			my_p3 = new Pac(3, 9, 3, true, Type.ROCK, 0, 0),
-			my_p1 = new Pac(29, 9, 1, true, Type.PAPER, 0, 0),
-			my_p2 = new Pac(31, 12, 2, true, Type.SCISSORS, 0, 0),
-			his_p1 = new Pac(7, 9, 1, false, Type.PAPER, 3, 7),
-			my_p0 = new Pac(3, 12, 0, true, Type.ROCK, 0, 0);
-		tested.readGameEntities(my_p3, my_p1, my_p2, his_p1, my_p0);
-		Map<Pac, PacAction> actions = tested.computeActions(-1);
+			my_p2 = new Pac(29, 4, 2, true, Type.SCISSORS, 0, 0),
+			my_p1 = new Pac(21, 7, 1, true, Type.PAPER, 1, 5),
+			my_p0 = new Pac(29, 3, 0, true, Type.ROCK, 0, 0);
+		tested.readGameEntities(my_p2, my_p1, my_p0);
+		Map<Pac, PacAction> actions = tested.computeActions();
+		isMoveTo(my_p2, actions)
+			.isNotEqualTo(at(29,3))
+			.isNotEqualTo(at(29,4));
+		isMoveTo(my_p0, actions)
+			.isNotEqualTo(at(29,4))
+			.isNotEqualTo(at(29,3));
 		assertThat(actions).isNotEmpty();
 	}
 }

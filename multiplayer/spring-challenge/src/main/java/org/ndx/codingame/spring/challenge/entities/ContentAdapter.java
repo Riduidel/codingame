@@ -30,4 +30,8 @@ public class ContentAdapter<Type> implements ContentVisitor<Type> {
 	public Type visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
 		return returnedFromContent;
 	}
+	@Override
+	public Type visitPacTrace(PacTrace pacTrace) {
+		return returnedFromContent;
+	}
 }

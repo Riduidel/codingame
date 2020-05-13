@@ -1,6 +1,5 @@
 package org.ndx.codingame.spring.challenge.entities;
 
-import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
 
 public class Pac extends AbstractDistinctContent {
@@ -42,6 +41,15 @@ public class Pac extends AbstractDistinctContent {
 	@Override
 	public int score() {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_PAC;
+	}
+	
+	@Override
+	public Content advanceOneTurn() {
+		if(mine) {
+			return super.advanceOneTurn();
+		} else {
+			return new PacTrace(x, y, id, type);
+		}
 	}
 
 	@Override
