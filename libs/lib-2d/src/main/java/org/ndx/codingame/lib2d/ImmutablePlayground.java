@@ -22,11 +22,11 @@ public interface ImmutablePlayground<Content> {
 	public boolean contains(int x, int y);
 
 	public default <Returned> ImmutablePlayground<Returned> apply(Function<Content, Returned> function) {
-		return apply(function, true);
+		return apply(function, false);
 	}
 	public default <Returned, Other> ImmutablePlayground<Returned> apply(ImmutablePlayground<Other> other,
 			BiFunction<Content, Other, Returned> function) {
-		return apply(other, function, true);
+		return apply(other, function, false);
 	}
 
 	public default <Returned> ImmutablePlayground<Returned> apply(Function<Content, Returned> function, boolean eager) {

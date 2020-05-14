@@ -327,17 +327,17 @@ public class Playfield extends Playground<Content> {
 	private ImmutablePlayground<Double> buildDistancesScoresForPills(Pac my) {
 		ImmutablePlayground<Double> scores = zero;
 		for (BigPill big : bigPills) {
-			scores = scores.apply(cache.usingDistance(big),
-					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL / (1 + b), false);
+			scores = scores.apply(cache.usingDistanceTo(big),
+					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL / (1 + b));
 		}
 		for (SmallPill small : smallPills) {
-			scores = scores.apply(cache.usingDistance(small),
-					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL / (1 + b), false);
+			scores = scores.apply(cache.usingDistanceTo(small),
+					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL / (1 + b));
 		}
 		if (bigPills.isEmpty() && smallPills.isEmpty()) {
 			// Now add the n nearest potential pills
 			DiscretePoint preceding = null;
-			for (DiscretePoint point : cache.getNearestPoints(my)) {
+			for (DiscretePoint point : cache.getPointsSortedByDistanceTo(my)) {
 				if (PotentialSmallPill.instance == get(point)) {
 					if(preceding!=null) {
 						// We want to target the nearest cluster of points
@@ -345,8 +345,8 @@ public class Playfield extends Playground<Content> {
 							break;
 						}
 					}
-					scores = scores.apply(cache.usingDistance(point),
-							(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL / (1 + b), false);
+					scores = scores.apply(cache.usingDistanceTo(point),
+							(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL / (1 + b));
 				}
 			}
 		}
