@@ -13,17 +13,14 @@ import org.ndx.codingame.spring.challenge.entities.Content;
 public class ScoringSystem {
 
 	public final ImmutablePlayground<Integer> distancesOnPlayground;
-	public final ImmutablePlayground<Double> distances2Squared;
 	private Content targetContent;
 	public final ImmutablePlayground<Double> distancesOnPlaygroundSquared;
 
 	public ScoringSystem(Content c, 
-			ImmutablePlayground<Integer> computeDistancesTo,
-			ImmutablePlayground<Double> distances2Squared) {
+			ImmutablePlayground<Integer> computeDistancesTo) {
 		this.targetContent = c;
 		this.distancesOnPlayground = computeDistancesTo;
 		this.distancesOnPlaygroundSquared = computeDistancesTo.apply(a -> (double) a*a);
-		this.distances2Squared = distances2Squared;
 	}
 
 }

@@ -36,7 +36,7 @@ public class Cache {
 		// Ccompute list of valid locations (in order to avoid browsing the whole table while walls don't interest us)
 		List<DiscretePoint> locations = computeValidLocations(playfield);
 		// Compute distance2 for each point
-		distancesToPoints = computeDistance2ToPoints(playfield, locations);
+		distancesToPoints = computeDistancesToPoints(playfield, locations);
 		// Compute valid directions for each point
 		directions = computePossibleDirections(playfield, locations);
 		for(Integer i : NEXT_POINTS_LIST) {
@@ -72,20 +72,11 @@ public class Cache {
 		return returned;
 	}
 
-	private ImmutablePlayground<ScoringSystem> computeDistance2ToPoints(Playfield playfield, List<DiscretePoint> locations) {
+	private ImmutablePlayground<ScoringSystem> computeDistancesToPoints(Playfield playfield, List<DiscretePoint> locations) {
 		Playground<ScoringSystem> returned = new Playground<>(playfield.getWidth(), playfield.getHeight());
 		for(DiscretePoint point : locations) {
 			returned.set(point, new ScoringSystem(playfield.get(point), 
-					computeDistancesTo(playfield, point, NEXT_POINTS_VIEW_RANGE), 
-					computeDistance2SquaredTo(playfield, point, locations)));
-		}
-		return returned;
-	}
-
-	private ImmutablePlayground<Double> computeDistance2SquaredTo(Playfield playfield, DiscretePoint center, List<DiscretePoint> locations) {
-		Playground<Double> returned = new Playground<>(playfield.getWidth(), playfield.getHeight());
-		for(DiscretePoint point : locations) {
-			returned.set(point, point.distance2SquaredTo(center));
+					computeDistancesTo(playfield, point, NEXT_POINTS_VIEW_RANGE)));
 		}
 		return returned;
 	}
