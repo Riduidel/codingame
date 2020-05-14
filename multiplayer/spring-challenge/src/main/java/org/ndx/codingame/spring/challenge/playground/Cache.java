@@ -2,6 +2,7 @@ package org.ndx.codingame.spring.challenge.playground;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,29 @@ import org.ndx.codingame.spring.challenge.EvolvableConstants;
 import org.ndx.codingame.spring.challenge.entities.Content;
 
 public class Cache {
+	public static final class ByDistanceOnPlayground extends AbstractPoint.PositionByDistance2To {
+
+		private ImmutablePlayground<Double> distanceOnPlayground;
+
+		public ByDistanceOnPlayground(DiscretePoint point, ImmutablePlayground<Double> immutablePlayground) {
+			super(point);
+			this.distanceOnPlayground = immutablePlayground;
+		}
+		
+		@Override
+		public int compare(AbstractPoint o1, AbstractPoint o2) {
+			// I know they're discrete point, ok ?
+			DiscretePoint p1 = (DiscretePoint) o1, p2 = (DiscretePoint) o2;
+			
+			Double d1 = distanceOnPlayground.get(p1),
+					d2 = distanceOnPlayground.get(p2);
+			int doubleCompare = d1.compareTo(d2);
+			if(doubleCompare!=0) {
+				return doubleCompare;
+			}
+			return super.compare(o1, o2);
+		}
+	}
 	public static final int NEXT_POINTS_VIEW_RANGE = Integer.MAX_VALUE;
 	public static final int NEXT_POINTS_SPEED = 2;
 	public static final int NEXT_POINTS_NORMAL = 1;
@@ -65,7 +89,7 @@ public class Cache {
 	private ImmutablePlayground<SortedSet<DiscretePoint>> computeNearestPoints(Playfield playfield, List<DiscretePoint> locations) {
 		Playground<SortedSet<DiscretePoint>> returned = new Playground<>(playfield.getWidth(), playfield.getHeight());
 		for(DiscretePoint point : locations) {
-			SortedSet<DiscretePoint> sorted = new TreeSet<>(new AbstractPoint.PositionByDistance2To(point));
+			SortedSet<DiscretePoint> sorted = new TreeSet<>(new ByDistanceOnPlayground(point, usingDistance(point)));
 			sorted.addAll(locations);
 			returned.set(point, sorted);
 		}
@@ -98,6 +122,11 @@ public class Cache {
 		List<Direction> directionsFor = directions.get(p);
 		List<List<DiscretePoint>> successors = new ArrayList<>();
 		for (Direction d : directionsFor) {
+			if(d.name.equals("UP") || d.name.equals("DOWN")) {
+				limit = playfield.height;
+			} else if(d.name.equals("LEFT") || d.name.equals("RIGHT")) {
+				limit = playfield.height;
+			}
 			List<DiscretePoint> pointsInThatDirection = new ArrayList<>();
 			
 			int deeepness = 0;
@@ -156,5 +185,10 @@ public class Cache {
 		}
 		return distances;
 	}
+
+	ImmutablePlayground<Double> usingDistance(DiscretePoint system) {
+		return distancesToPoints.get(system).distancesOnPlaygroundSquared;
+	}
+
 
 }

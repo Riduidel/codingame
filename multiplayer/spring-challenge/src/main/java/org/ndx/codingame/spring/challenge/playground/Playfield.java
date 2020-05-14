@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
@@ -208,7 +209,9 @@ public class Playfield extends Playground<Content> {
 	}
 
 	public void init() {
+		Delay delay = new Delay();
 		cache = new Cache(this);
+		System.err.println("init took "+delay.howLong()+ "ms");
 	}
 
 	public List<Pac> getMyPacs() {
@@ -264,10 +267,6 @@ public class Playfield extends Playground<Content> {
 			returned.put(my, computeActionFor(my));
 		}
 		return returned;
-	}
-
-	private ImmutablePlayground<Double> usingDistance(DiscretePoint system) {
-		return cache.distancesToPoints.get(system).distancesOnPlaygroundSquared;
 	}
 
 	private PacAction computeActionFor(Pac my) {
@@ -327,11 +326,11 @@ public class Playfield extends Playground<Content> {
 	private ImmutablePlayground<Double> buildDistancesScoresForPills(Pac my) {
 		ImmutablePlayground<Double> scores = zero;
 		for (BigPill big : bigPills) {
-			scores = scores.apply(usingDistance(big),
+			scores = scores.apply(cache.usingDistance(big),
 					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL / (1 + b), false);
 		}
 		for (SmallPill small : smallPills) {
-			scores = scores.apply(usingDistance(small),
+			scores = scores.apply(cache.usingDistance(small),
 					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL / (1 + b), false);
 		}
 		if (bigPills.isEmpty() && smallPills.isEmpty()) {
@@ -346,7 +345,7 @@ public class Playfield extends Playground<Content> {
 							break;
 						}
 					}
-					scores = scores.apply(usingDistance(point),
+					scores = scores.apply(cache.usingDistance(point),
 							(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL / (1 + b), false);
 				}
 			}
