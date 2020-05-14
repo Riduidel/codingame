@@ -13,8 +13,9 @@ import org.ndx.codingame.lib2d.PointBuilder;
 public abstract class AbstractPoint implements Distance2, ConstructableInUnitTest {
 	public static class PositionByDistance2To implements Comparator<AbstractPoint> {
 	
-		private final Collection<Distance2> centers = new ArrayList<>();
-		private int signum = 1;
+		protected final Collection<Distance2> centers = new ArrayList<>();
+		protected int signum = 1;
+		protected boolean distinct = false;
 	
 		public PositionByDistance2To(final Distance2... principal) {
 			centers.addAll(Arrays.asList(principal));
@@ -27,7 +28,13 @@ public abstract class AbstractPoint implements Distance2, ConstructableInUnitTes
 		@Override
 		public PositionByDistance2To reversed() {
 			final PositionByDistance2To reversed = new PositionByDistance2To(centers);
-			reversed.signum = -1;
+			reversed.signum = -1*signum;
+			return reversed;
+		}
+		
+		public PositionByDistance2To distinct() {
+			final PositionByDistance2To reversed = new PositionByDistance2To(centers);
+			reversed.distinct = !distinct;
 			return reversed;
 		}
 
@@ -39,7 +46,33 @@ public abstract class AbstractPoint implements Distance2, ConstructableInUnitTes
 	
 		@Override
 		public int compare(final AbstractPoint o1, final AbstractPoint o2) {
-			return signum * (int) Math.signum(distance2To(o1)-distance2To(o2));
+			int returned = compareAndSign(distance2To(o1), distance2To(o2));
+			if(returned==0) {
+				if(distinct) {
+					if(o1.equals(o2)) {
+						return 0;
+					} else {
+						if(o1.getX()<o2.getX()) {
+							return -1;
+						} else if(o1.getX()>o2.getX()) {
+							return 1;
+						} else {
+							if(o1.getY()<o2.getY()) {
+								return -1;
+							} else if(o1.getY()>o2.getY()) {
+								return 1;
+							} else {
+								return 0;
+							}
+						}
+					}
+				}
+			}
+			return returned;
+		}
+		
+		protected int compareAndSign(double d1, double d2) {
+			return signum * (int) Math.signum(d1-d2);
 		}
 	}
 	private Map<Object, Double> distanceCache;

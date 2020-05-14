@@ -38,6 +38,6 @@ public class SmallPill extends AbstractDistinctContent {
 	
 	@Override
 	public Content advanceOneTurn() {
-		return PotentialSmallPill.instance;
+		return new SmallPill(x, y);
 	}
 }
