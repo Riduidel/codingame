@@ -320,6 +320,27 @@ public class Playfield extends Playground<Content> {
 	private ImmutablePlayground<Double> buildDistancesScoresForPacs(Pac my) {
 		ImmutablePlayground<Double> scores = zero;
 		for (Pac pac : allPacs) {
+			if(pac.mine) {
+				scores = scores.apply(cache.usingDistanceTo(pac),
+						(a, b) -> a +
+						(b<EvolvableConstants.DISTANCE_TEAMMATE_TOO_CLOSE ?
+								EvolvableConstants.INTERNAL_SCORE_FOR_TEAMMATE_TOO_CLOSE : 0
+								) / (1 + b));
+			} else {
+				if(pac.isDangerousFor(my)) {
+					scores = scores.apply(cache.usingDistanceTo(pac),
+							(a, b) -> a +
+							(b<EvolvableConstants.DISTANCE_ENEMY_TOO_CLOSE ?
+									EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREDATOR : 0
+									) / (1 + b));
+				} else  {
+					scores = scores.apply(cache.usingDistanceTo(pac),
+							(a, b) -> a +
+							(b<EvolvableConstants.DISTANCE_ENEMY_TOO_CLOSE ?
+									EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREY : 0
+									) / (1 + b));
+				}
+			}
 		}
 		return scores;
 	}
