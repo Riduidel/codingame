@@ -18,6 +18,7 @@ import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
 import org.ndx.codingame.spring.challenge.entities.Content;
+import org.ndx.codingame.spring.challenge.entities.Pac;
 
 public class Cache {
 	public static final class ByDistanceOnPlayground extends AbstractPoint.PositionByDistance2To {
@@ -54,11 +55,12 @@ public class Cache {
 	final Map<Integer, ImmutablePlayground<List<List<DiscretePoint>>>> nextPointsCache = new HashMap<>();
 	final ImmutablePlayground<ScoringSystem> distancesToPoints;
 	final ImmutablePlayground<List<Direction>> directions;
-	final ImmutablePlayground<SortedSet<DiscretePoint>> nearestPoints;
+	private final Playground<SortedSet<DiscretePoint>> nearestPoints;
+	private List<DiscretePoint> locations;
 
 	public Cache(Playfield playfield) {
 		// Ccompute list of valid locations (in order to avoid browsing the whole table while walls don't interest us)
-		List<DiscretePoint> locations = computeValidLocations(playfield);
+		locations = computeValidLocations(playfield);
 		// Compute distance2 for each point
 		distancesToPoints = computeDistancesToPoints(playfield, locations);
 		// Compute valid directions for each point
@@ -66,7 +68,7 @@ public class Cache {
 		for(Integer i : NEXT_POINTS_LIST) {
 			nextPointsCache.put(i, computeNextPointsList(playfield, directions, locations, i));
 		}
-		nearestPoints = computeNearestPoints(playfield, locations);
+		nearestPoints = new Playground<>(playfield.getWidth(), playfield.getHeight());
 	}
 
 	private List<DiscretePoint> computeValidLocations(Playfield playfield) {
@@ -83,17 +85,6 @@ public class Cache {
 				}
 			}
 		});
-	}
-
-
-	private ImmutablePlayground<SortedSet<DiscretePoint>> computeNearestPoints(Playfield playfield, List<DiscretePoint> locations) {
-		Playground<SortedSet<DiscretePoint>> returned = new Playground<>(playfield.getWidth(), playfield.getHeight());
-		for(DiscretePoint point : locations) {
-			SortedSet<DiscretePoint> sorted = new TreeSet<>(new ByDistanceOnPlayground(point, usingDistance(point)));
-			sorted.addAll(locations);
-			returned.set(point, sorted);
-		}
-		return returned;
 	}
 
 	private ImmutablePlayground<ScoringSystem> computeDistancesToPoints(Playfield playfield, List<DiscretePoint> locations) {
@@ -188,6 +179,16 @@ public class Cache {
 
 	ImmutablePlayground<Double> usingDistance(DiscretePoint system) {
 		return distancesToPoints.get(system).distancesOnPlaygroundSquared;
+	}
+
+	public SortedSet<DiscretePoint> getNearestPoints(DiscretePoint point) {
+		if(nearestPoints.get(point)==null) {
+			SortedSet<DiscretePoint> sorted = new TreeSet<>(new ByDistanceOnPlayground(point, usingDistance(point)));
+			sorted.addAll(locations);
+			nearestPoints.set(point, sorted);
+			
+		}
+		return nearestPoints.get(point);
 	}
 
 

@@ -270,6 +270,7 @@ public class Playfield extends Playground<Content> {
 	}
 
 	private PacAction computeActionFor(Pac my) {
+		Delay delay = new Delay();
 		set(my, Ground.instance);
 		ImmutablePlayground<Double> scores = buildDistancesScoresForPills(my);
 		scores = scores.apply(buildDistancesScoresForPacs(my),
@@ -283,7 +284,7 @@ public class Playfield extends Playground<Content> {
 		PacAction returned = actions.get(bestScore);
 		Pac myFuture = returned.transform();
 		set(myFuture, myFuture);
-		return returned.withMessage("s=" + bestScore);
+		return returned.withMessage("d="+delay.howLong()+";s=" + bestScore);
 	}
 
 	private Map<? extends Double, ? extends PacAction> computeSpeed(Pac my, ImmutablePlayground<Double> scores) {
@@ -335,9 +336,8 @@ public class Playfield extends Playground<Content> {
 		}
 		if (bigPills.isEmpty() && smallPills.isEmpty()) {
 			// Now add the n nearest potential pills
-			int usablePotentialPillsCount = 0;
 			DiscretePoint preceding = null;
-			for (DiscretePoint point : cache.nearestPoints.get(my)) {
+			for (DiscretePoint point : cache.getNearestPoints(my)) {
 				if (PotentialSmallPill.instance == get(point)) {
 					if(preceding!=null) {
 						// We want to target the nearest cluster of points
