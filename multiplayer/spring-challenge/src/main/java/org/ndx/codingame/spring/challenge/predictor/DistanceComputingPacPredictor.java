@@ -82,8 +82,7 @@ public class DistanceComputingPacPredictor implements PacPredictor {
 		this.playfield = playfield;
 		this.cache = cache;
 		this.my = pac;
-		this.deepness = deepness+1;
-		this.localScore = computeLocalScore()/(this.deepness*this.deepness);
+		this.localScore = computeLocalScore()/(deepness*deepness);
 	}
 
 	private double computeLocalScore() {

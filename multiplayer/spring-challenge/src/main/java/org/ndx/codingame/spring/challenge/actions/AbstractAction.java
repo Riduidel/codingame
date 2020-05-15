@@ -16,4 +16,8 @@ public abstract class AbstractAction implements PacAction {
 		this.message += message;
 		return this;
 	}
+	
+	public final String message() {
+		return message;
+	}
 }

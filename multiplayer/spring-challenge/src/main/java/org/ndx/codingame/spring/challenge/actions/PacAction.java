@@ -10,4 +10,6 @@ public interface PacAction extends Action {
 	AbstractPac transform(ImmutablePlayground<Content> playground);
 
 	PacAction withMessage(String message);
+	
+	String message();
 }

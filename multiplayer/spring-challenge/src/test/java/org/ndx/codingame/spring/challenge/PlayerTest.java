@@ -148,7 +148,7 @@ public class PlayerTest {
 	}
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_find_action_at_turn_21_1589532163378() {
+	@Disabled @Test public void can_find_action_at_turn_21_1589532163378() {
 		Playfield tested = read(Arrays.asList(
 			"###################################",
 			"###?#?#???#?#??.#?#???#?#.. #?#?###",
@@ -179,7 +179,7 @@ public class PlayerTest {
 	}
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_find_action_at_turn_2_1589548302915() {
+	@Disabled @Test public void can_find_action_at_turn_2_1589548302915() {
 		Playfield tested = read(Arrays.asList(
 			"#################################",
 			"#####???#???#?#?#?#?#???#???#####",
@@ -208,4 +208,39 @@ public class PlayerTest {
 		Map<Pac, PacAction> actions = tested.computeActions(/* TODO replace by pac value */1024);
 		assertThat(actions).isNotEmpty();
 	}
+	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
+	@Test public void can_find_action_at_turn_1_1589548649175() {
+		Playfield tested = read(Arrays.asList(
+			"#################################",
+			"#####???#???#?#?#?#?#???#???#####",
+			"#####?#?#?#?#?#?#?#?#?#?#?#?#####",
+			"#.. ..#???#?????#?????#???#?????#",
+			"#?#m#?###?#?#?#####?#?#?###?#?#?#",
+			"#O# #..m..#???????????#?????#?#O#",
+			"###.### #?###?#?#?#?###?#?###?###",
+			"... #??.#?????#???#?????#??.# ...",
+			"###.#?#.###?#?#?#?#?#?###?#.#?###",
+			"???.??#.????#?#???#?#?????#.?????",
+			"#####?###?#?#?#####?#?#?###.#####",
+			"??????#???#???????????#???#.?????",
+			"#####?#?#?###?#####?###?#?#.#####",
+			".... ..O#?????#####?????#O. m....",
+			"#################################"
+			));
+		Pac
+			my_p1 = new Pac(3, 5, 1, true, Type.PAPER, 0, 0),
+			my_p0 = new Pac(3, 3, 0, true, Type.ROCK, 5, 9),
+			my_p2 = new Pac(3, 7, 2, true, Type.ROCK, 0, 9),
+			my_p3 = new Pac(7, 6, 3, true, Type.ROCK, 0, 0),
+			his_p4 = new Pac(4, 13, 4, false, Type.PAPER, 5, 9),
+			his_p2 = new Pac(29, 7, 2, false, Type.SCISSORS, 5, 9),
+			my_p4 = new Pac(27, 13, 4, true, Type.PAPER, 0, 0);
+		tested.readGameEntities(my_p1, my_p0, my_p2, my_p3, his_p4, his_p2, my_p4);
+		Map<Pac, PacAction> actions = tested.computeActions(/* TODO replace by pac value */-1);
+		// This one should be pulled by the small pill below
+//		isMoveTo(my_p1, actions).isEqualTo(at(3, 6));
+		// THis one should be pulled by the long corridor, but there is the dead end bonus, and I'm sure it's the source of the problem
+		isMoveTo(my_p2, actions).isEqualTo(at(2, 7));
+		assertThat(actions).isNotEmpty();
+	}	
 }

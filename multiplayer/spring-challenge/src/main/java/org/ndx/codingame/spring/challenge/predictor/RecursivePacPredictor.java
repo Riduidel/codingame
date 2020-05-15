@@ -154,7 +154,7 @@ public class RecursivePacPredictor implements PacPredictor {
 			possibleActions.addAll(moves);
 		}
 		if(deadEnd) {
-			this.localScore*=EvolvableConstants.DEADEND_BONUS;
+//			this.localScore*=EvolvableConstants.DEADEND_BONUS;
 			action.withMessage("DEADEND;");
 		}
 		playfield.set(pac, pac);
@@ -245,7 +245,14 @@ public class RecursivePacPredictor implements PacPredictor {
 	 * @return
 	 */
 	public PacAction getBestAction() {
-		return ((RecursivePacPredictor) bestPrediction).action.withMessage("d="+depth()+";s="+completeScore()+";");
+		if(action==null) {
+			return ((RecursivePacPredictor) bestPrediction).getBestAction().withMessage("s="+completeScore()+";");
+		} else {
+			if(bestPrediction instanceof RecursivePacPredictor) {
+				action.withMessage("d="+bestPrediction.depth()+";");
+			}
+			return action;
+		}
 	}
 
 	@Override
