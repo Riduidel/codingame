@@ -1,13 +1,13 @@
 package org.ndx.codingame.spring.challenge.actions;
 
-import org.ndx.codingame.spring.challenge.entities.Pac;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
 
 public abstract class AbstractAction implements PacAction {
-	public final Pac pac;
+	public final AbstractPac pac;
 	
 	protected String message = "";
 
-	public AbstractAction(Pac pac) {
+	public AbstractAction(AbstractPac pac) {
 		super();
 		this.pac = pac;
 	}

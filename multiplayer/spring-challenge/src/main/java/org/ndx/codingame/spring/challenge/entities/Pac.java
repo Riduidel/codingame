@@ -2,35 +2,15 @@ package org.ndx.codingame.spring.challenge.entities;
 
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
 
-public class Pac extends AbstractDistinctContent {
-
-	public final boolean mine;
-	public final Type type;
-	public final int speedTurnsLeft;
-	public final int abilityCooldown;
-	public final int id;
+public class Pac extends AbstractPac {
 
 	public Pac(int x, int y, int pacId, boolean mine, Type type, int speedTurnsLeft, int abilityCooldown) {
-		super(x, y);
-		this.id = pacId;
-		this.mine = mine;
-		this.type = type;
-		this.speedTurnsLeft = speedTurnsLeft;
-		this.abilityCooldown = abilityCooldown;
+		super(x, y, pacId, mine, type, speedTurnsLeft, abilityCooldown);
 	}
 
 	@Override
 	public <Type> Type accept(ContentVisitor<Type> visitor) {
 		return visitor.visitPac(this);
-	}
-
-	@Override
-	public boolean canBeWalkedOn() {
-		return false;
-	}
-
-	public boolean isDangerousFor(Pac pac) {
-		return type.isDangerousFor(pac.type);
 	}
 
 	@Override
@@ -45,11 +25,7 @@ public class Pac extends AbstractDistinctContent {
 	
 	@Override
 	public Content advanceOneTurn() {
-		if(mine) {
-			return super.advanceOneTurn();
-		} else {
-			return new PacTrace(x, y, id, type);
-		}
+		return new PacTrace(x, y, id, mine, type, speedTurnsLeft, abilityCooldown);
 	}
 
 	@Override
@@ -69,7 +45,7 @@ public class Pac extends AbstractDistinctContent {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Pac other = (Pac) obj;
+		AbstractPac other = (AbstractPac) obj;
 		if (id != other.id)
 			return false;
 		if (mine != other.mine)

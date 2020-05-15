@@ -1,0 +1,59 @@
+package org.ndx.codingame.spring.challenge.playground;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.ndx.codingame.lib2d.MutablePlayground;
+import org.ndx.codingame.spring.challenge.actions.PacAction;
+import org.ndx.codingame.spring.challenge.entities.Content;
+import org.ndx.codingame.spring.challenge.entities.Pac;
+
+public class Predictor {
+
+	private Playfield playfield;
+	private Cache cache;
+	private Map<Pac, PacPredictor> predictors = new HashMap<>();
+	private MutablePlayground<Content> virtualPlayfield;
+
+	public Predictor(Playfield playfield) {
+		this.playfield = playfield;
+		this.cache = playfield.cache;
+		this.virtualPlayfield = playfield.readWriteProxy();
+		// Immediatly map alive pacs to their specific predictors
+		for(Pac pac : playfield.getMyPacs()) {
+			predictors.put(pac, 
+					new PacPredictor(
+						virtualPlayfield,
+						cache,
+						pac,
+						pac,
+						0,
+						null));
+		}
+	}
+
+	public boolean grow(int iteration) {
+		boolean returned = false;
+		for(PacPredictor predictor : predictors.values()) {
+			// put returned after grow call to avoid short-circuit
+			returned = predictor.grow(iteration) || returned;
+		}
+		return returned;
+	}
+
+	public Map<Pac, PacAction> getBestPredictions(String message) {
+		Map<Pac, PacAction> returned = new HashMap<>();
+		for(Map.Entry<Pac, PacPredictor> predictor : predictors.entrySet()) {
+			returned.put(predictor.getKey(), predictor.getValue().getBestAction().withMessage(message));
+		}
+		return returned;
+	}
+
+	@Override
+	public String toString() {
+		return "Predictor [predictors=" + predictors + "]";
+	}
+
+}

@@ -8,49 +8,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
+import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.lib2d.ImmutablePlayground;
-import org.ndx.codingame.lib2d.base.AbstractPoint;
 import org.ndx.codingame.lib2d.discrete.Direction;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
 import org.ndx.codingame.spring.challenge.entities.Content;
 
 public class Cache {
-	public static final class ByDistanceOnPlayground extends AbstractPoint.PositionByDistance2To {
-
-		private ImmutablePlayground<Double> distanceOnPlayground;
-
-		public ByDistanceOnPlayground(DiscretePoint point, ImmutablePlayground<Double> immutablePlayground) {
-			super(point);
-			super.distinct = true;
-			this.distanceOnPlayground = immutablePlayground;
-		}
-		
-		@Override
-		public ByDistanceOnPlayground reversed() {
-			final ByDistanceOnPlayground reversed = new ByDistanceOnPlayground((DiscretePoint) centers.iterator().next(), distanceOnPlayground);
-			reversed.signum = -1*signum;
-			return reversed;
-		}
-		
-		@Override
-		public int compare(AbstractPoint o1, AbstractPoint o2) {
-			// I know they're discrete point, ok ?
-			DiscretePoint p1 = (DiscretePoint) o1, p2 = (DiscretePoint) o2;
-			
-			Double d1 = distanceOnPlayground.get(p1),
-					d2 = distanceOnPlayground.get(p2);
-			int doubleCompare = d1.compareTo(d2);
-			if(doubleCompare!=0) {
-				return doubleCompare;
-			}
-			return super.compare(o1, o2);
-		}
-	}
 	public static final int NEXT_POINTS_VIEW_RANGE = Integer.MAX_VALUE;
 	public static final int NEXT_POINTS_SPEED = 2;
 	public static final int NEXT_POINTS_NORMAL = 1;
@@ -59,23 +28,31 @@ public class Cache {
 			NEXT_POINTS_SPEED,
 			NEXT_POINTS_VIEW_RANGE);
 
-	public final Map<Integer, ImmutablePlayground<List<List<DiscretePoint>>>> nextPointsCache = new HashMap<>();
+	private final Map<Integer, ImmutablePlayground<List<List<DiscretePoint>>>> nextPointsCache = new HashMap<>();
 	private final ImmutablePlayground<ScoringSystem> distancesToPoints;
 	public final ImmutablePlayground<List<Direction>> directions;
-	private final Playground<SortedSet<DiscretePoint>> nearestPoints;
-	public final List<DiscretePoint> locations;
+	private NearestPointCache nearestPoints;
+	private List<DiscretePoint> locations;
+	private final Playfield playfield;
 
 	public Cache(Playfield playfield) {
-		// Ccompute list of valid locations (in order to avoid browsing the whole table while walls don't interest us)
-		locations = computeValidLocations(playfield);
+		this.playfield = playfield;
 		// Compute distance on playground for each point
-		distancesToPoints = computeDistancesToPoints(playfield, locations);
+		distancesToPoints = computeDistancesToPoints(playfield, getLocations());
 		// Compute valid directions for each point
-		directions = computePossibleDirections(playfield, locations);
+		directions = computePossibleDirections(playfield, getLocations());
 		for(Integer i : NEXT_POINTS_LIST) {
-			nextPointsCache.put(i, computeNextPointsList(playfield, directions, locations, i));
+			nextPointsCache.put(i, computeNextPointsList(playfield, directions, getLocations(), i));
 		}
-		nearestPoints = new Playground<>(playfield.getWidth(), playfield.getHeight());
+		nearestPoints = new NearestPointCache(this, playfield, getLocations());
+	}
+	
+	public List<DiscretePoint> getLocations() {
+		if(locations==null) {
+			// Ccompute list of valid locations (in order to avoid browsing the whole table while walls don't interest us)
+			locations = computeValidLocations(playfield);
+		}
+		return locations;
 	}
 
 	private List<DiscretePoint> computeValidLocations(Playfield playfield) {
@@ -87,7 +64,8 @@ public class Cache {
 			
 			@Override
 			public void visit(int x, int y, Content content) {
-				if(playfield.allow(x, y)) {
+				/* I'm sorry, cause this one is absolutely not safe */
+				if(playfield.allow(x, y, null)) {
 					returned.add(new DiscretePoint(x, y));
 				}
 			}
@@ -129,7 +107,7 @@ public class Cache {
 			
 			int deeepness = 0;
 			for(DiscretePoint point = p;
-					playfield.get(point).canBeWalkedOn() && deeepness<=limit;
+					playfield.get(point).canBeWalkedOnBy(null) && deeepness<=limit;
 					point = playfield.putBackOnPlayground(d.move(point))
 					) {
 				pointsInThatDirection.add(point);
@@ -149,7 +127,7 @@ public class Cache {
 			List<Direction> directionsForPoint = new ArrayList<>();
 			for (Direction d : Direction.DIRECTIONS) {
 				DiscretePoint next = playfield.putBackOnPlayground(d.move(point));
-				if (playfield.get(next).canBeWalkedOn()) {
+				if (playfield.get(next).canBeWalkedOnBy(null)) {
 					directionsForPoint.add(d);
 				}
 			}
@@ -171,7 +149,7 @@ public class Cache {
 				// distance + 1, and loop on them
 				for (Direction d : Direction.DIRECTIONS) {
 					DiscretePoint next = playfield.putBackOnPlayground(d.move(p));
-					if (playfield.allow(next)) {
+					if (playfield.allow(next, null)) {
 						if (distances.get(next) > distance + 1) {
 							nextRound.add(next);
 						}
@@ -188,15 +166,23 @@ public class Cache {
 		return distancesToPoints.get(system).distancesOnPlaygroundSquared;
 	}
 
-	public SortedSet<DiscretePoint> getPointsSortedByDistanceTo(DiscretePoint point) {
-		if(nearestPoints.get(point)==null) {
-			SortedSet<DiscretePoint> sorted = new TreeSet<>(new ByDistanceOnPlayground(point, usingDistanceTo(point)));
-			sorted.addAll(locations);
-			nearestPoints.set(point, sorted);
-			
-		}
-		return nearestPoints.get(point);
+	public ImmutablePlayground<List<List<DiscretePoint>>> getNextPointsCache(int nextPointsViewRange) {
+		return nextPointsCache.get(nextPointsViewRange);
 	}
 
+	public List<List<DiscretePoint>> getNextPointsCache(AbstractPac my) {
+		return  getNextPointsCache(my.speedTurnsLeft > 0 ? Cache.NEXT_POINTS_SPEED : Cache.NEXT_POINTS_NORMAL).get(my);
+	}
 
+	public void loadPointsByDistanceUntil(Delay delay, int limit) {
+		nearestPoints.loadPointsByDistanceUntil(delay, limit);
+	}
+
+	public boolean nearestPointsLoaded() {
+		return nearestPoints.loaded();
+	}
+
+	public SortedSet<DiscretePoint> getPointsSortedByDistanceTo(DiscretePoint point) {
+		return nearestPoints.getPointsSortedByDistanceTo(point);
+	}
 }

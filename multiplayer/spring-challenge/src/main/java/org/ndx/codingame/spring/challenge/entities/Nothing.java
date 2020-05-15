@@ -9,7 +9,7 @@ public class Nothing implements Content {
 	}
 
 	@Override
-	public boolean canBeWalkedOn() {
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
 		return false;
 	}
 

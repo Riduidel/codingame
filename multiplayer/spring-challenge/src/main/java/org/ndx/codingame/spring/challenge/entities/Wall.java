@@ -10,7 +10,7 @@ public class Wall implements Content {
 	}
 
 	@Override
-	public boolean canBeWalkedOn() {
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
 		return false;
 	}
 

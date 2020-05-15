@@ -17,4 +17,6 @@ public interface ContentVisitor<Type> {
 	Type visitPotentialSmallPill(PotentialSmallPill potentialSmallPill);
 
 	Type visitPacTrace(PacTrace pacTrace);
+
+	Type visitVirtualPac(VirtualPac virtualPac);
 }

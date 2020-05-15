@@ -1,6 +1,7 @@
 package org.ndx.codingame.spring.challenge.playground;
 
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
 import org.ndx.codingame.spring.challenge.entities.BigPill;
 import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.ContentAdapter;
@@ -45,7 +46,7 @@ public class SpecificContentSetter extends ContentAdapter<Void> {
 		if (previous instanceof BigPill) {
 			this.playfield.bigPills.remove((BigPill) previous);
 		} else if (next instanceof Pac) {
-			this.playfield.allPacs.remove((Pac) previous);
+			this.playfield.allPacs.remove((AbstractPac) previous);
 		}
 		return super.visitGround(ground);
 	}

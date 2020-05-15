@@ -23,7 +23,7 @@ public class BigPill extends AbstractDistinctContent {
 	}
 
 	@Override
-	public boolean canBeWalkedOn() {
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
 		return true;
 	}
 

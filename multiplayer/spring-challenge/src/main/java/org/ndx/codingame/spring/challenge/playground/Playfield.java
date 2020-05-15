@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.ndx.codingame.gaming.Delay;
 import org.ndx.codingame.gaming.tounittest.ToUnitTestHelpers;
 import org.ndx.codingame.lib2d.ImmutablePlayground;
+import org.ndx.codingame.lib2d.MutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.Playground;
 import org.ndx.codingame.lib2d.discrete.PlaygroundAdapter;
@@ -24,6 +25,7 @@ import org.ndx.codingame.spring.challenge.actions.MoveTo;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.actions.Speed;
 import org.ndx.codingame.spring.challenge.entities.AbstractDistinctContent;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
 import org.ndx.codingame.spring.challenge.entities.BigPill;
 import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.ContentAdapter;
@@ -34,6 +36,7 @@ import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.PacTrace;
 import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
+import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.entities.Wall;
 
 public class Playfield extends Playground<Content> {
@@ -76,7 +79,7 @@ public class Playfield extends Playground<Content> {
 		};
 
 		public String visitPacTrace(PacTrace pacTrace) {
-			return " ";
+			return pacTrace.toString();
 		}
 
 	}
@@ -96,13 +99,13 @@ public class Playfield extends Playground<Content> {
 		return new DiscretePoint(x, y);
 	}
 
-	public boolean allow(final DiscretePoint position) {
-		return allow(position.x, position.y);
+	public boolean allow(final DiscretePoint position, AbstractPac pac) {
+		return allow(position.x, position.y, pac);
 	}
 
-	public boolean allow(final int p_x, final int p_y) {
+	public boolean allow(final int p_x, final int p_y, AbstractPac pac) {
 		if (contains(p_x, p_y)) {
-			return get(p_x, p_y).canBeWalkedOn();
+			return get(p_x, p_y).canBeWalkedOnBy(pac);
 		}
 		return false;
 	}
@@ -127,6 +130,12 @@ public class Playfield extends Playground<Content> {
 				break;
 			case PotentialSmallPill.CHARACTER:
 				content = PotentialSmallPill.instance;
+				break;
+			case PacTrace.MINE:
+				content = new PacTrace(x, rowIndex, -1, true, Type.DEAD, 0, 0);
+				break;
+			case PacTrace.ENEMY:
+				content = new PacTrace(x, rowIndex, -1, true, Type.DEAD, 0, 0);
 				break;
 			}
 			set(x, rowIndex, content);
@@ -173,7 +182,7 @@ public class Playfield extends Playground<Content> {
 	Set<SmallPill> smallPills = new HashSet<>();
 	Set<BigPill> bigPills = new HashSet<>();
 	Set<Pac> allPacs = new HashSet<Pac>();
-	private Cache cache;
+	Cache cache;
 
 	public Playfield(final int width, final int height) {
 		super(width, height, PotentialSmallPill.instance);
@@ -204,13 +213,14 @@ public class Playfield extends Playground<Content> {
 		setSpecificContent(new DiscretePoint(x, y), previous, c);
 	}
 
-	private void setSpecificContent(DiscretePoint location, Content previous, Content next) {
+	public void setSpecificContent(DiscretePoint location, Content previous, Content next) {
 		next.accept(new SpecificContentSetter(this, previous, location, next));
 	}
 
 	public void init() {
 		Delay delay = new Delay();
 		cache = new Cache(this);
+		cache.loadPointsByDistanceUntil(delay, 900);
 		System.err.println("init took "+delay.howLong()+ "ms");
 	}
 
@@ -218,7 +228,8 @@ public class Playfield extends Playground<Content> {
 		List<Pac> returned = new ArrayList<>();
 		for (Pac pac : allPacs) {
 			if (pac.mine)
-				returned.add(pac);
+				if(Type.DEAD!=pac.type)
+					returned.add(pac);
 		}
 		return returned;
 	}
@@ -237,22 +248,29 @@ public class Playfield extends Playground<Content> {
 	}
 
 	public String compute() {
-		return toCommands(computeActions());
+		Delay turnDuration = new Delay();
+		try {
+			return toCommands(computeActions(-1));
+		} finally {
+			System.err.println("Full turn took "+turnDuration.howLong()+"ms");
+		}
 	}
 
 	/**
 	 * Update playground by first clearing all view range excepted explicit elements
 	 */
 	private void updatePlayground() {
-		for (Pac pac : getMyPacs()) {
-			for (List<DiscretePoint> directions : cache.nextPointsCache.get(cache.NEXT_POINTS_VIEW_RANGE).get(pac)) {
+		Delay turnDuration = new Delay();
+		for (AbstractPac pac : getMyPacs()) {
+			for (List<DiscretePoint> directions : cache.getNextPointsCache(cache.NEXT_POINTS_VIEW_RANGE).get(pac)) {
 				for (DiscretePoint point : directions) {
-					if (get(point) instanceof PotentialSmallPill) {
+					if (get(point).revealsGround()) {
 						set(point, Ground.instance);
 					}
 				}
 			}
 		}
+		System.err.println("upading playground took "+turnDuration.howLong()+"ms");
 	}
 
 	/**
@@ -260,16 +278,30 @@ public class Playfield extends Playground<Content> {
 	 * 
 	 * @return
 	 */
-	public Map<Pac, PacAction> computeActions() {
-		updatePlayground();
-		Map<Pac, PacAction> returned = new HashMap<>();
-		for (Pac my : getMyPacs()) {
-			returned.put(my, computeActionFor(my));
+	public Map<Pac, PacAction> computeActions(int iterations) {
+		Delay turnDuration = new Delay();
+		try {
+			updatePlayground();
+			int count = 0;
+			Predictor predictor = new Predictor(this);
+			boolean continueToGrow;
+			do {
+				continueToGrow = predictor.grow(count++);
+			} while(continueToGrow  &&
+					((iterations<0 && turnDuration.howLong()<EvolvableConstants.DELAY_FOR_PREDICTION)
+					||
+					(iterations>0 && count<iterations)));
+			String message = "c="+count+";";
+			if(!continueToGrow) {
+				message+="horizon reached!";
+			}
+			return predictor.getBestPredictions(message);
+		} finally {
+			System.err.println("Full computation took "+turnDuration.howLong()+"ms");
 		}
-		return returned;
 	}
-
-	private PacAction computeActionFor(Pac my) {
+/*
+	private PacAction computeActionFor(AbstractPac my) {
 		Delay delay = new Delay();
 		set(my, Ground.instance);
 		ImmutablePlayground<Double> scores = buildDistancesScoresForPills(my);
@@ -282,28 +314,27 @@ public class Playfield extends Playground<Content> {
 		actions.putAll(computeActionMapFor(my, scores));
 		Double bestScore = actions.firstKey();
 		PacAction returned = actions.get(bestScore);
-		Pac myFuture = returned.transform();
+		AbstractPac myFuture = returned.transform(original);
 		set(myFuture, myFuture);
 		return returned.withMessage("d="+delay.howLong()+";s=" + bestScore);
 	}
 
-	private Map<? extends Double, ? extends PacAction> computeSpeed(Pac my, ImmutablePlayground<Double> scores) {
+	private Map<? extends Double, ? extends PacAction> computeSpeed(AbstractPac my, ImmutablePlayground<Double> scores) {
 		Speed speed = new Speed(my);
-		SortedMap<Double, PacAction> actions = computeActionMapFor(speed.transform(), scores);
+		SortedMap<Double, PacAction> actions = computeActionMapFor(speed.transform(original), scores);
 		SortedMap<Double, PacAction> returned = new TreeMap<>(Comparator.reverseOrder());
 		returned.put(actions.firstKey(), speed);
 		return returned;
 	}
 
-	private SortedMap<Double, PacAction> computeActionMapFor(Pac my, ImmutablePlayground<Double> scores) {
+	private SortedMap<Double, PacAction> computeActionMapFor(AbstractPac my, ImmutablePlayground<Double> scores) {
 		SortedMap<Double, PacAction> actions = new TreeMap<>(Comparator.reverseOrder());
-		List<List<DiscretePoint>> accessibleNextPoints = cache.nextPointsCache
-				.get(my.speedTurnsLeft > 0 ? Cache.NEXT_POINTS_SPEED : Cache.NEXT_POINTS_NORMAL).get(my);
+		List<List<DiscretePoint>> accessibleNextPoints = cache.getNextPointsCache(my);
 		for (List<DiscretePoint> direction : accessibleNextPoints) {
 			double score = 0;
 			DiscretePoint last = null;
 			for (DiscretePoint point : direction) {
-				if (get(point).canBeWalkedOn()) {
+				if (get(point).canBeWalkedOnBy(my)) {
 					last = point;
 					score = scores.get(point);
 				} else {
@@ -317,10 +348,11 @@ public class Playfield extends Playground<Content> {
 		return actions;
 	}
 
-	private ImmutablePlayground<Double> buildDistancesScoresForPacs(Pac my) {
+	private ImmutablePlayground<Double> buildDistancesScoresForPacs(AbstractPac my) {
 		ImmutablePlayground<Double> scores = zero;
-		for (Pac pac : allPacs) {
-			if(pac.mine) {
+		for (AbstractPac pac : allPacs) {
+			if(pac.type==Type.DEAD) {
+			} else if(pac.mine) {
 				scores = scores.apply(cache.usingDistanceTo(pac),
 						(a, b) -> a +
 						(b<EvolvableConstants.DISTANCE_TEAMMATE_TOO_CLOSE ?
@@ -345,7 +377,7 @@ public class Playfield extends Playground<Content> {
 		return scores;
 	}
 
-	private ImmutablePlayground<Double> buildDistancesScoresForPills(Pac my) {
+	private ImmutablePlayground<Double> buildDistancesScoresForPills(AbstractPac my) {
 		ImmutablePlayground<Double> scores = zero;
 		for (BigPill big : bigPills) {
 			scores = scores.apply(cache.usingDistanceTo(big),
@@ -373,7 +405,7 @@ public class Playfield extends Playground<Content> {
 		}
 		return scores;
 	}
-
+*/
 	public void advanceOneTurn() {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
@@ -412,7 +444,7 @@ public class Playfield extends Playground<Content> {
 				init.append(",\n");
 				usage.append(", ");
 			}
-			Pac pac = pacs.get(index);
+			AbstractPac pac = pacs.get(index);
 			String name = (pac.mine ? "my" : "his") + "_p" + pac.id;
 			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name).append(" = new Pac(").append(pac.x)
 					.append(", ").append(pac.y).append(", ").append(pac.id).append(", ").append(pac.mine).append(", ")
@@ -423,7 +455,7 @@ public class Playfield extends Playground<Content> {
 		returned.append(init.append(";\n"));
 		returned.append(usage.append(");\n"));
 		returned.append(
-				ToUnitTestHelpers.CONTENT_PREFIX + "Map<Pac, PacAction> actions = tested.computeActions();\n");
+				ToUnitTestHelpers.CONTENT_PREFIX + "Map<Pac, PacAction> actions = tested.computeActions(/* TODO replace by pac value */-1);\n");
 		returned.append(ToUnitTestHelpers.CONTENT_PREFIX + "assertThat(actions).isNotEmpty();\n");
 		returned.append(ToUnitTestHelpers.METHOD_PREFIX + "}\n\n");
 		return returned.toString();
@@ -431,5 +463,14 @@ public class Playfield extends Playground<Content> {
 
 	public Set<Pac> getAllPacs() {
 		return allPacs;
+	}
+
+	public void terminateNearestPointsLoading() {
+		cache.loadPointsByDistanceUntil(new Delay(), 200);
+	}
+	
+	@Override
+	public VirtualPlayfield readWriteProxy() {
+		return new VirtualPlayfield(this);
 	}
 }

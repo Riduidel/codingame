@@ -58,6 +58,7 @@ public class Player {
             // To debug: System.err.println("Debug messages...");
 			System.err.println(playfield.toUnitTestString(turn++));
 			System.out.println(playfield.compute());
+			playfield.terminateNearestPointsLoading();
         }
     }
 }

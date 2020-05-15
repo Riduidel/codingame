@@ -1,13 +1,16 @@
 package org.ndx.codingame.spring.challenge.actions;
 
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
-import org.ndx.codingame.spring.challenge.entities.Pac;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
+import org.ndx.codingame.spring.challenge.entities.Content;
+import org.ndx.codingame.spring.challenge.entities.VirtualPac;
 
 public class MoveTo extends AbstractAction {
 	
 	public final DiscretePoint destination;
 
-	public MoveTo(Pac pac, DiscretePoint destination) {
+	public MoveTo(AbstractPac pac, DiscretePoint destination) {
 		super(pac);
 		this.destination = destination;
 	}
@@ -18,15 +21,18 @@ public class MoveTo extends AbstractAction {
 	}
 
 	@Override
-	public Pac transform() {
-		return new Pac(destination.x, destination.y, 
+	public AbstractPac transform(ImmutablePlayground<Content> playground) {
+		return new VirtualPac(destination.x, destination.y, 
 				pac.id, pac.mine, 
-				pac.type, pac.speedTurnsLeft, pac.abilityCooldown);
+				pac.type, 
+				pac.speedTurnsLeft==0 ? 0 : pac.speedTurnsLeft-1, 
+				pac.abilityCooldown==0 ? 0 : pac.abilityCooldown-1,
+				playground.get(destination));
 	}
 
 	@Override
 	public String toString() {
-		return "MoveTo [" + destination + "]";
+		return "MoveTo [destination=" + destination + ", message=" + message + "]";
 	}
 
 }

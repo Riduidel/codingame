@@ -2,15 +2,14 @@ package org.ndx.codingame.spring.challenge.entities;
 
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
 
-public class PacTrace extends AbstractDistinctContent implements Content {
+public class PacTrace extends AbstractPac implements Content {
 
-	private int id;
-	private Type type;
+	public static final char ENEMY = 'e';
+	public static final char MINE = 'm';
 
-	public PacTrace(int x, int y, int id, Type type) {
-		super(x, y);
-		this.id = id;
-		this.type = type;
+	public PacTrace(int x, int y, int pacId, boolean mine, Type type,
+			int speedTurnsLeft, int abilityCooldown) {
+		super(x, y, pacId, mine, type, speedTurnsLeft, abilityCooldown);
 	}
 
 	@Override
@@ -19,7 +18,7 @@ public class PacTrace extends AbstractDistinctContent implements Content {
 	}
 
 	@Override
-	public boolean canBeWalkedOn() {
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
 		return true;
 	}
 
@@ -27,5 +26,13 @@ public class PacTrace extends AbstractDistinctContent implements Content {
 	public int score() {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_PAC_TRACE;
 	}
-
+	
+	@Override
+	public String toString() {
+		if(mine) {
+			return Character.toString(MINE);
+		} else {
+			return Character.toString(ENEMY);
+		}
+	}
 }

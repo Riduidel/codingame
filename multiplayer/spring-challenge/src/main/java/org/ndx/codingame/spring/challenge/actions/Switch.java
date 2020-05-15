@@ -1,13 +1,16 @@
 package org.ndx.codingame.spring.challenge.actions;
 
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.spring.challenge.EvolvableConstants;
-import org.ndx.codingame.spring.challenge.entities.Pac;
+import org.ndx.codingame.spring.challenge.entities.AbstractPac;
+import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.Type;
+import org.ndx.codingame.spring.challenge.entities.VirtualPac;
 
 public class Switch extends AbstractAction implements PacAction {
 
 	public final Type type;
-	public Switch(Pac pac, Type type) {
+	public Switch(AbstractPac pac, Type type) {
 		super(pac);
 		this.type = type;
 	}
@@ -16,14 +19,15 @@ public class Switch extends AbstractAction implements PacAction {
 		return String.format("SWITCH %d %s %s", pac.id, type, message);
 	}
 	@Override
-	public Pac transform() {
-		return new Pac(pac.x, pac.y, 
+	public AbstractPac transform(ImmutablePlayground<Content> playground) {
+		return new VirtualPac(pac.x, pac.y, 
 				pac.id, pac.mine, 
-				type, pac.speedTurnsLeft, EvolvableConstants.MAX_ABILITY_COOLDOWN);
+				type, pac.speedTurnsLeft, EvolvableConstants.MAX_ABILITY_COOLDOWN,
+				playground.get(pac));
 	}
 	@Override
 	public String toString() {
-		return "Switch [type=" + type + "]";
+		return "Switch [type=" + type + ", message=" + message + "]";
 	}
 
 }

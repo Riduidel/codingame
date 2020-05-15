@@ -13,7 +13,7 @@ public class PotentialSmallPill implements Content {
 	}
 
 	@Override
-	public boolean canBeWalkedOn() {
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
 		return true;
 	}
 
@@ -30,5 +30,10 @@ public class PotentialSmallPill implements Content {
 	@Override
 	public String toString() {
 		return Character.toString(CHARACTER);
+	}
+	
+	@Override
+	public boolean revealsGround() {
+		return true;
 	}
 }

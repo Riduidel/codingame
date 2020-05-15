@@ -34,4 +34,8 @@ public class ContentAdapter<Type> implements ContentVisitor<Type> {
 	public Type visitPacTrace(PacTrace pacTrace) {
 		return returnedFromContent;
 	}
+	@Override
+	public Type visitVirtualPac(VirtualPac virtualPac) {
+		return returnedFromContent;
+	}
 }
