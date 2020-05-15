@@ -126,7 +126,6 @@ public class RecursivePacPredictor implements PacPredictor {
 	 * time and consumed by the grow method
 	 */
 	private List<PacAction> possibleActions = new ArrayList<>();
-	private boolean deadEnd;
 	private int deepness;
 	private double localScore;
 	private PacPredictor bestPrediction;
@@ -151,19 +150,12 @@ public class RecursivePacPredictor implements PacPredictor {
 		this.deepness = deepness + 1;
 		this.localScore = computeScore() / (this.deepness * this.deepness);
 		List<MoveTo> moves = createMoveActions(origin);
-		deadEnd = moves.isEmpty();
 		if (deepness > EvolvableConstants.HORIZON_FOR_RANDOM_PATH) {
 			if (cache.nearestPointsLoaded()) {
 				children.add(new DistanceComputingPacPredictor(playfield, cache, pac, this.deepness));
 			}
 		} else {
 			possibleActions.addAll(moves);
-		}
-		if (deadEnd) {
-			this.localScore*=EvolvableConstants.DEADEND_BONUS;
-			if(action!=null) {
-				action.withMessage("DEADEND;");
-			}
 		}
 		playfield.set(pac, pac);
 	}
@@ -182,7 +174,7 @@ public class RecursivePacPredictor implements PacPredictor {
 	/**
 	 * This method emits true when
 	 * 
-	 * @param origin
+	 * @param origin origin is here to exclude the direction we're coming from
 	 * @return
 	 */
 	protected List<MoveTo> createMoveActions(DiscretePoint origin) {
