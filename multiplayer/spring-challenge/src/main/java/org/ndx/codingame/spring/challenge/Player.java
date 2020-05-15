@@ -1,6 +1,8 @@
 package org.ndx.codingame.spring.challenge;
+import java.util.Map;
 import java.util.Scanner;
 
+import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.entities.BigPill;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
@@ -57,8 +59,9 @@ public class Player {
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");
 			System.err.println(playfield.toUnitTestString(turn++));
-			System.out.println(playfield.compute());
-			playfield.terminateNearestPointsLoading();
+			Map<Pac, PacAction> actions = playfield.computeActions(-1);
+			System.out.println(playfield.toCommands(actions));
+			playfield.terminateTurn(actions);
         }
     }
 }

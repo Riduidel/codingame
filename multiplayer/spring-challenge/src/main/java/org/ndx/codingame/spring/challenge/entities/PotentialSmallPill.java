@@ -21,11 +21,6 @@ public class PotentialSmallPill implements Content {
 	public int score() {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL;
 	}
-
-	@Override
-	public Content advanceOneTurn() {
-		return this;
-	}
 	
 	@Override
 	public String toString() {

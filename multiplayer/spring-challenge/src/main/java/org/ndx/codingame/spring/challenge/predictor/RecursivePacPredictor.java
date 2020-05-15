@@ -1,6 +1,7 @@
 package org.ndx.codingame.spring.challenge.predictor;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.ndx.codingame.lib2d.MutablePlayground;
@@ -16,6 +17,7 @@ import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.ContentAdapter;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.entities.PacTrace;
+import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.entities.VirtualPac;
@@ -46,25 +48,35 @@ public class RecursivePacPredictor implements PacPredictor {
 		}
 
 		@Override
+		public Double visitPotentialSmallPill(PotentialSmallPill potentialSmallPill) {
+			action.withMessage("on potential pill;");
+			return simpleScore(potentialSmallPill);
+		}
+
+		@Override
 		public Double visitPac(Pac pac) {
-			if(pac.type!=Type.DEAD) {
-				if(pac.mine) {
+			if (pac.type != Type.DEAD) {
+				if (pac.mine) {
 					// On first predictor run, action is null
-					if(action!=null)
+					if (action != null)
 						action.withMessage("on my pac;");
-					if(pac.id==my.id) {
+					if (pac.id == my.id) {
 						return 0.0;
 					} else {
 						return (double) EvolvableConstants.INTERNAL_SCORE_FOR_TEAMMATE_TOO_CLOSE;
 					}
 				} else {
-					if(pac.isDangerousFor(my)) {
-						action.withMessage("on predator;");
-						return (double) EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREDATOR;
-					} else if(my.isDangerousFor(pac)) {
+					if (pac.isDangerousFor(my)) {
+						if (deepness < EvolvableConstants.DISTANCE_ENEMY_TOO_CLOSE) {
+							action.withMessage("on predator;");
+							return (double) EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREDATOR;
+						}
+					} else if (my.isDangerousFor(pac)) {
 						// Take care and only attack enemies which can't mutate
 						action.withMessage("on prey;");
-						if(pac.abilityCooldown<deepness) {
+						if(pac.speedTurnsLeft>0) {
+							action.withMessage("prey too fast;");
+						} else if (pac.abilityCooldown < deepness) {
 							action.withMessage("unsure;");
 						} else {
 							action.withMessage("sure;");
@@ -75,7 +87,7 @@ public class RecursivePacPredictor implements PacPredictor {
 			}
 			return 0.0;
 		}
-		
+
 		@Override
 		public Double visitVirtualPac(VirtualPac virtualPac) {
 			return virtualPac.original.accept(this);
@@ -83,12 +95,12 @@ public class RecursivePacPredictor implements PacPredictor {
 
 		@Override
 		public Double visitPacTrace(PacTrace pacTrace) {
-			if(pacTrace.mine) {
+			if (pacTrace.mine) {
 				action.withMessage("on my pac trac");
 			} else {
-				if(pacTrace.isDangerousFor(my)) {
+				if (pacTrace.isDangerousFor(my)) {
 					action.withMessage("on predator pac trace");
-					return -1.0*EvolvableConstants.INTERNAL_SCORE_FOR_PAC_TRACE;
+					return -1.0 * EvolvableConstants.INTERNAL_SCORE_FOR_PAC_TRACE;
 				} else {
 					action.withMessage("on prey pac trace");
 					return (double) EvolvableConstants.INTERNAL_SCORE_FOR_PAC_TRACE;
@@ -97,6 +109,7 @@ public class RecursivePacPredictor implements PacPredictor {
 			return 0.0;
 		}
 	}
+
 	private SpringPlayfield playfield;
 	private Cache cache;
 	private AbstractPac my;
@@ -109,8 +122,8 @@ public class RecursivePacPredictor implements PacPredictor {
 	 */
 	private PacAction action;
 	/**
-	 * List of possible actions we will evaluate here.
-	 * It is built at construction time and consumed by the grow method
+	 * List of possible actions we will evaluate here. It is built at construction
+	 * time and consumed by the grow method
 	 */
 	private List<PacAction> possibleActions = new ArrayList<>();
 	private boolean deadEnd;
@@ -119,54 +132,56 @@ public class RecursivePacPredictor implements PacPredictor {
 	private PacPredictor bestPrediction;
 	private int iterator = 0;
 
-	public RecursivePacPredictor(SpringPlayfield playfield,
-			Cache cache,
-			AbstractPac pac,
-			DiscretePoint origin,
-			int deepness,
-			PacAction action) {
+	public RecursivePacPredictor(SpringPlayfield playfield, Cache cache, AbstractPac pac, DiscretePoint origin,
+			int deepness, PacAction action) {
 		this.playfield = playfield;
 		this.cache = cache;
 		this.my = pac;
 		this.action = action;
-		if(deepness==0) {
-			if(pac.abilityCooldown==0) {
+		if (deepness == 0) {
+			if (pac.abilityCooldown == 0) {
 				possibleActions.add(new Speed(pac));
-				for(Type type : Type.values()) {
-					if(type!=Type.DEAD && type!=pac.type) {
+				for (Type type : Type.values()) {
+					if (type != Type.DEAD && type != pac.type) {
 						possibleActions.add(new Switch(pac, type));
 					}
 				}
 			}
 		}
-		this.deepness = deepness+1;
-		this.localScore = computeScore()/(this.deepness*this.deepness);
+		this.deepness = deepness + 1;
+		this.localScore = computeScore() / (this.deepness * this.deepness);
 		List<MoveTo> moves = createMoveActions(origin);
 		deadEnd = moves.isEmpty();
-		if(deepness>EvolvableConstants.HORIZON_FOR_RANDOM_PATH) {
-			if(cache.nearestPointsLoaded()) {
-				children.add(new DistanceComputingPacPredictor(
-						playfield,
-						cache, pac,
-						this.deepness));
+		if (deepness > EvolvableConstants.HORIZON_FOR_RANDOM_PATH) {
+			if (cache.nearestPointsLoaded()) {
+				children.add(new DistanceComputingPacPredictor(playfield, cache, pac, this.deepness));
 			}
 		} else {
 			possibleActions.addAll(moves);
 		}
-		if(deadEnd) {
-//			this.localScore*=EvolvableConstants.DEADEND_BONUS;
-			action.withMessage("DEADEND;");
+		if (deadEnd) {
+			this.localScore*=EvolvableConstants.DEADEND_BONUS;
+			if(action!=null) {
+				action.withMessage("DEADEND;");
+			}
 		}
 		playfield.set(pac, pac);
 	}
 
 	private double computeScore() {
-		Content content = playfield.get(my);
-		return content.accept(new ScoreComputer(0.0));
+		double returned = 0;
+		if(action!=null) {
+			for(DiscretePoint point : action.path()) {
+				Content content = playfield.get(my);
+				returned += content.accept(new ScoreComputer(0.0));
+			}
+		}
+		return returned;
 	}
 
 	/**
-	 * This method emits true when 
+	 * This method emits true when
+	 * 
 	 * @param origin
 	 * @return
 	 */
@@ -174,17 +189,18 @@ public class RecursivePacPredictor implements PacPredictor {
 		List<List<DiscretePoint>> nextPoints = getCache().getNextPointsCache(my);
 		List<MoveTo> returned = new ArrayList<>();
 		// Remove the list of points the origin is in, to avoid looping predictions
-		for(List<DiscretePoint> navigable : nextPoints) {
-			if(!navigable.contains(origin)) {
-				// As we're building real move actions, let's evaluate only those which provide real moves
-				DiscretePoint goal = null;
-				for(DiscretePoint p : navigable) {
-					if(playfield.get(p).canBeWalkedOnBy(my)) {
-						goal = p;
+		for (List<DiscretePoint> navigable : nextPoints) {
+			if (!navigable.contains(origin)) {
+				// As we're building real move actions, let's evaluate only those which provide
+				// real moves
+				LinkedList<DiscretePoint> path = new LinkedList<>();
+				for (DiscretePoint p : navigable) {
+					if (playfield.get(p).canBeWalkedOnBy(my)) {
+						path.add(p);
 					}
 				}
-				if(goal!=null && !goal.equals(my)) {
-					returned.add(new MoveTo(my, goal));
+				if (!path.isEmpty() && !path.getLast().equals(my)) {
+					returned.add(new MoveTo(my, path));
 				}
 			}
 		}
@@ -197,59 +213,56 @@ public class RecursivePacPredictor implements PacPredictor {
 
 	/**
 	 * Grow that pac predictor of one more pac prediction
-	 * @param iteration 
-	 * @return 
+	 * 
+	 * @param iteration
+	 * @return
 	 */
 	public boolean grow(int iteration) {
 		boolean continueToGrow = false;
 		PacPredictor evaluated = null;
-		if(possibleActions.isEmpty()) {
-			if(children.size()>0) {
-				evaluated = children.get(iterator++%children.size());
+		if (possibleActions.isEmpty()) {
+			if (children.size() > 0) {
+				evaluated = children.get(iterator++ % children.size());
 				continueToGrow = evaluated.grow(iteration);
 			}
 		} else {
-			PacAction action = possibleActions.remove(iterator%possibleActions.size());
-			action.withMessage("i="+iteration+";");
-			playfield.set(my, 
-					new VirtualPac(my.x, my.y, my.id, my.mine, my.type, my.speedTurnsLeft, my.abilityCooldown,
-							playfield.get(my)));
+			PacAction action = possibleActions.remove(iterator % possibleActions.size());
+			action.withMessage("i=" + iteration + ";");
+			playfield.set(my, new VirtualPac(my.x, my.y, my.id, my.mine, my.type, my.speedTurnsLeft, my.abilityCooldown,
+					playfield.get(my)));
 			AbstractPac transformed = action.transform(playfield);
 			// We make sure playfield still allow that move
 			// to avoid locking of pacs
-			if(playfield.get(transformed).canBeWalkedOnBy(transformed)) {
-				evaluated = new RecursivePacPredictor(
-						playfield,
-						cache,
-						transformed, 
-						// This one is really a hack: setting origin to null will allow non-move actions to be handled properly
-						action instanceof MoveTo ? new DiscretePoint(my.x, my.y) : null, 
-						deepness, 
-						action);
+			if (playfield.get(transformed).canBeWalkedOnBy(transformed)) {
+				evaluated = new RecursivePacPredictor(playfield, cache, transformed,
+						// This one is really a hack: setting origin to null will allow non-move actions
+						// to be handled properly
+						action instanceof MoveTo ? new DiscretePoint(my.x, my.y) : null, deepness, action);
 				children.add(evaluated);
 			}
 			continueToGrow = true;
 		}
-		if(evaluated!=null) {
-			if(bestPrediction==null) {
+		if (evaluated != null) {
+			if (bestPrediction == null) {
 				bestPrediction = evaluated;
-			} else if(evaluated.completeScore()>bestPrediction.completeScore()) {
+			} else if (evaluated.completeScore() > bestPrediction.completeScore()) {
 				bestPrediction = evaluated;
 			}
 		}
 		return continueToGrow;
 	}
-	
+
 	/**
 	 * Only called at root level, so it is not a part of the interface
+	 * 
 	 * @return
 	 */
 	public PacAction getBestAction() {
-		if(action==null) {
-			return ((RecursivePacPredictor) bestPrediction).getBestAction().withMessage("s="+completeScore()+";");
+		if (action == null) {
+			return ((RecursivePacPredictor) bestPrediction).getBestAction().withMessage("s=" + completeScore() + ";");
 		} else {
-			if(bestPrediction instanceof RecursivePacPredictor) {
-				action.withMessage("d="+bestPrediction.depth()+";");
+			if (bestPrediction instanceof RecursivePacPredictor) {
+				action.withMessage("d=" + bestPrediction.depth() + ";");
 			}
 			return action;
 		}
@@ -257,25 +270,26 @@ public class RecursivePacPredictor implements PacPredictor {
 
 	@Override
 	public double completeScore() {
-		return localScore+(bestPrediction==null ? 0 : bestPrediction.completeScore());
+		return localScore + (bestPrediction == null ? 0 : bestPrediction.completeScore());
 	}
 
-	@Override public int depth() {
-		return bestPrediction==null ? deepness : bestPrediction.depth();
+	@Override
+	public int depth() {
+		return bestPrediction == null ? deepness : bestPrediction.depth();
 	}
 
 	@Override
 	public String toString() {
 		return toString("\t").toString();
 	}
-	@Override public StringBuilder toString(String prefix) {
+
+	@Override
+	public StringBuilder toString(String prefix) {
 		StringBuilder sOut = new StringBuilder();
-		sOut.append(prefix)
-			.append("s=").append(completeScore()).append(";")
-			.append("l=").append(localScore).append(";")
-			.append(action).append("\n");
-		for(PacPredictor p : children) {
-			sOut.append(p.toString(prefix+"\t"));
+		sOut.append(prefix).append("s=").append(completeScore()).append(";").append("l=").append(localScore).append(";")
+				.append(action).append("\n");
+		for (PacPredictor p : children) {
+			sOut.append(p.toString(prefix + "\t"));
 		}
 		return sOut;
 	}

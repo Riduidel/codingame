@@ -198,7 +198,7 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 		System.err.println("init took "+delay.howLong()+ "ms");
 	}
 
-	private String toCommands(Map<Pac, PacAction> actions) {
+	public String toCommands(Map<Pac, PacAction> actions) {
 		return actions.values().stream().map(action -> action.toCommandString()).collect(Collectors.joining("|"));
 	}
 
@@ -208,15 +208,6 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 		smallPills.addAll(getAll(SmallPill.class));
 		for (AbstractDistinctContent c : contents) {
 			set(c, c);
-		}
-	}
-
-	public String compute() {
-		Delay turnDuration = new Delay();
-		try {
-			return toCommands(computeActions(-1));
-		} finally {
-			System.err.println("Full turn took "+turnDuration.howLong()+"ms");
 		}
 	}
 
@@ -266,11 +257,6 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 	}
 
 	public void advanceOneTurn() {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				set(x, y, get(x, y).advanceOneTurn());
-			}
-		}
 		bigPills.clear();
 		smallPills.clear();
 		allPacs.clear();
@@ -342,5 +328,16 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 
 	public Cache getCache() {
 		return cache;
+	}
+
+	/**
+	 * Apply pac actions and clean the ground
+	 */
+	public void terminateTurn(Map<Pac, PacAction> actions) {
+		for(PacAction action : actions.values()) {
+			action.update(this);
+		}
+		// Don't forget to load cache of next points
+		terminateNearestPointsLoading();
 	}
 }

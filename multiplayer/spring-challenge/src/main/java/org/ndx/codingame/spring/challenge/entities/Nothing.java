@@ -19,11 +19,6 @@ public class Nothing implements Content {
 	}
 	
 	@Override
-	public Content advanceOneTurn() {
-		return this;
-	}
-	
-	@Override
 	public String toString() {
 		return Character.toString('X');
 	}

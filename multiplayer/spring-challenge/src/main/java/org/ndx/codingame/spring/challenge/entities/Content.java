@@ -12,10 +12,6 @@ public interface Content {
 
 	public int score();
 
-	public default Content advanceOneTurn() {
-		return Ground.instance;
-	}
-
 	/**
 	 * Invoked on advance turn when this cell is in viewsight of one of our alive pacs
 	 * @return

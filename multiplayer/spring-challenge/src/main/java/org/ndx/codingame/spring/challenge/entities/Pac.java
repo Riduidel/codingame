@@ -22,11 +22,6 @@ public class Pac extends AbstractPac {
 	public int score() {
 		return EvolvableConstants.INTERNAL_SCORE_FOR_PAC;
 	}
-	
-	@Override
-	public Content advanceOneTurn() {
-		return new PacTrace(x, y, id, mine, type, speedTurnsLeft, abilityCooldown);
-	}
 
 	@Override
 	public int hashCode() {
