@@ -128,7 +128,6 @@ public class RecursivePacPredictor implements PacPredictor {
 	private List<PacAction> possibleActions = new ArrayList<>();
 	private int deepness;
 	private double localScore;
-	private PacPredictor bestPrediction;
 	private int iterator = 0;
 
 	public RecursivePacPredictor(SpringPlayfield playfield, Cache cache, AbstractPac pac, DiscretePoint origin,
@@ -214,7 +213,7 @@ public class RecursivePacPredictor implements PacPredictor {
 		PacPredictor evaluated = null;
 		if (possibleActions.isEmpty()) {
 			if (children.size() > 0) {
-				evaluated = children.get(iterator++ % children.size());
+				evaluated = children.remove(iterator++ % children.size());
 				continueToGrow = evaluated.grow(iteration);
 			}
 		} else {
@@ -235,12 +234,9 @@ public class RecursivePacPredictor implements PacPredictor {
 			continueToGrow = true;
 		}
 		if (evaluated != null) {
-			if (bestPrediction == null) {
-				bestPrediction = evaluated;
-			} else if (evaluated.completeScore() > bestPrediction.completeScore()) {
-				bestPrediction = evaluated;
-			}
+			children.add(evaluated);
 		}
+		children.sort(new PacPredictor.ByScoreAndDepth().reversed());
 		return continueToGrow;
 	}
 
@@ -250,24 +246,28 @@ public class RecursivePacPredictor implements PacPredictor {
 	 * @return
 	 */
 	public PacAction getBestAction() {
-		if (action == null) {
-			return ((RecursivePacPredictor) bestPrediction).getBestAction().withMessage("s=" + completeScore() + ";");
-		} else {
-			if (bestPrediction instanceof RecursivePacPredictor) {
-				action.withMessage("d=" + bestPrediction.depth() + ";");
-			}
-			return action;
-		}
+		return getBestPrediction().action;
 	}
 
 	@Override
 	public double completeScore() {
-		return localScore + (bestPrediction == null ? 0 : bestPrediction.completeScore());
+		RecursivePacPredictor bestPrediction = getBestPrediction();
+		return localScore + (bestPrediction==null ? 0 :bestPrediction.completeScore());
 	}
 
 	@Override
 	public int depth() {
-		return bestPrediction == null ? deepness : bestPrediction.depth();
+		return getBestPrediction() == null ? deepness : getBestPrediction().depth();
+	}
+
+	private RecursivePacPredictor getBestPrediction() {
+		if(children.isEmpty()) {
+			return null;
+		} else if(!(children.get(0) instanceof PacPredictor)) {
+			return null;
+		} else {
+			return (RecursivePacPredictor) children.get(0);
+		}
 	}
 
 	@Override
