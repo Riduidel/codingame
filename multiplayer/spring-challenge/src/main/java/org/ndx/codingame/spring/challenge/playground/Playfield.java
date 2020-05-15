@@ -305,9 +305,11 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 					.append(pac.abilityCooldown).append(")").append(",\n");
 			usage.append(name).append(", ");
 		}
+		// Remove last "," and replace it by ";"
+		init.replace(init.length()-2, init.length()-1, ";");
 		List<BigPill> bigs = new ArrayList<>(bigPills);
 		if(!bigs.isEmpty()) {
-			usage.append("\n");
+			usage.append("\n").append(ToUnitTestHelpers.CONTENT_PREFIX);
 			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("BigPill\n");
 			for (int index = 0; index < bigPills.size(); index++) {
 				BigPill b = bigs.get(index);
@@ -316,10 +318,11 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 					.append(" = new BigPill(").append(b.x).append(", ").append(b.y).append("),\n");
 				usage.append(name).append(", ");
 			}
+			init.replace(init.length()-2, init.length()-1, ";");
 		}
 		List<SmallPill> small = new ArrayList<>(smallPills);
 		if(!small.isEmpty()) {
-			usage.append("\n");
+			usage.append("\n").append(ToUnitTestHelpers.CONTENT_PREFIX);
 			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("SmallPill\n");
 			for (int index = 0; index < small.size(); index++) {
 				SmallPill b = small.get(index);
@@ -328,7 +331,9 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 					.append(" = new SmallPill(").append(b.x).append(", ").append(b.y).append("),\n");
 				usage.append(name).append(", ");
 			}
+			init.replace(init.length()-2, init.length(), ";");
 		}
+		usage.replace(usage.length()-2, usage.length()-1, "");
 		returned.append(init.append(";\n"));
 		returned.append(usage.append(");\n"));
 		returned.append(
