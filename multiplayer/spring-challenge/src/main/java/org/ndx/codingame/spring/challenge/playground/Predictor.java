@@ -12,14 +12,14 @@ import org.ndx.codingame.spring.challenge.entities.Pac;
 
 public class Predictor {
 
-	private Playfield playfield;
+	private SpringPlayfield playfield;
 	private Cache cache;
 	private Map<Pac, PacPredictor> predictors = new HashMap<>();
-	private MutablePlayground<Content> virtualPlayfield;
+	private SpringPlayfield virtualPlayfield;
 
-	public Predictor(Playfield playfield) {
+	public Predictor(SpringPlayfield playfield) {
 		this.playfield = playfield;
-		this.cache = playfield.cache;
+		this.cache = playfield.getCache();
 		this.virtualPlayfield = playfield.readWriteProxy();
 		// Immediatly map alive pacs to their specific predictors
 		for(Pac pac : playfield.getMyPacs()) {

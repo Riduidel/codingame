@@ -39,7 +39,7 @@ import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.entities.Wall;
 
-public class Playfield extends Playground<Content> {
+public class Playfield extends Playground<Content> implements SpringPlayfield {
 
 	public static final class ToPhysicalString extends ContentAdapter<String> {
 		private ToPhysicalString() {
@@ -82,32 +82,6 @@ public class Playfield extends Playground<Content> {
 			return pacTrace.toString();
 		}
 
-	}
-
-	public DiscretePoint putBackOnPlayground(DiscretePoint point) {
-		int x = point.x, y = point.y;
-		if (x < 0) {
-			x = getWidth() - 1;
-		} else if (x >= getWidth()) {
-			x = 0;
-		}
-		if (y < 0) {
-			y = getHeight() - 1;
-		} else if (y >= getHeight()) {
-			y = 0;
-		}
-		return new DiscretePoint(x, y);
-	}
-
-	public boolean allow(final DiscretePoint position, AbstractPac pac) {
-		return allow(position.x, position.y, pac);
-	}
-
-	public boolean allow(final int p_x, final int p_y, AbstractPac pac) {
-		if (contains(p_x, p_y)) {
-			return get(p_x, p_y).canBeWalkedOnBy(pac);
-		}
-		return false;
 	}
 
 	public void readRow(final String row, final int rowIndex) {
@@ -176,13 +150,12 @@ public class Playfield extends Playground<Content> {
 		});
 	}
 
-	private Map<BigPill, ScoringSystem> bigPillsInfos = new HashMap<>();
 	public final Playground<Double> zero;
 
-	Set<SmallPill> smallPills = new HashSet<>();
-	Set<BigPill> bigPills = new HashSet<>();
-	Set<Pac> allPacs = new HashSet<Pac>();
-	Cache cache;
+	private Set<SmallPill> smallPills = new HashSet<>();
+	private Set<BigPill> bigPills = new HashSet<>();
+	private Set<Pac> allPacs = new HashSet<Pac>();
+	private Cache cache;
 
 	public Playfield(final int width, final int height) {
 		super(width, height, PotentialSmallPill.instance);
@@ -222,16 +195,6 @@ public class Playfield extends Playground<Content> {
 		cache = new Cache(this);
 		cache.loadPointsByDistanceUntil(delay, 900);
 		System.err.println("init took "+delay.howLong()+ "ms");
-	}
-
-	public List<Pac> getMyPacs() {
-		List<Pac> returned = new ArrayList<>();
-		for (Pac pac : allPacs) {
-			if (pac.mine)
-				if(Type.DEAD!=pac.type)
-					returned.add(pac);
-		}
-		return returned;
 	}
 
 	private String toCommands(Map<Pac, PacAction> actions) {
@@ -461,16 +424,27 @@ public class Playfield extends Playground<Content> {
 		return returned.toString();
 	}
 
-	public Set<Pac> getAllPacs() {
-		return allPacs;
-	}
-
 	public void terminateNearestPointsLoading() {
 		cache.loadPointsByDistanceUntil(new Delay(), 200);
 	}
 	
-	@Override
-	public VirtualPlayfield readWriteProxy() {
-		return new VirtualPlayfield(this);
+	public Set<Pac> getAllPacs() {
+		return allPacs;
+	}
+
+	public Playground<Double> getZero() {
+		return zero;
+	}
+
+	public Set<SmallPill> getSmallPills() {
+		return smallPills;
+	}
+
+	public Set<BigPill> getBigPills() {
+		return bigPills;
+	}
+
+	public Cache getCache() {
+		return cache;
 	}
 }
