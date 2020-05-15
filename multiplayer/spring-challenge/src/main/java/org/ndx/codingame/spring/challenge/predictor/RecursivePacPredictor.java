@@ -1,4 +1,4 @@
-package org.ndx.codingame.spring.challenge.playground;
+package org.ndx.codingame.spring.challenge.predictor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +19,10 @@ import org.ndx.codingame.spring.challenge.entities.PacTrace;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.entities.VirtualPac;
+import org.ndx.codingame.spring.challenge.playground.Cache;
+import org.ndx.codingame.spring.challenge.playground.SpringPlayfield;
 
-public class PacPredictor {
+public class RecursivePacPredictor implements PacPredictor {
 
 	private final class ScoreComputer extends ContentAdapter<Double> {
 		private ScoreComputer(Double returned) {
@@ -95,7 +97,7 @@ public class PacPredictor {
 			return 0.0;
 		}
 	}
-	private MutablePlayground<Content> playfield;
+	private SpringPlayfield playfield;
 	private Cache cache;
 	private AbstractPac my;
 	/**
@@ -117,7 +119,7 @@ public class PacPredictor {
 	private PacPredictor bestPrediction;
 	private int iterator = 0;
 
-	public PacPredictor(MutablePlayground<Content> playfield,
+	public RecursivePacPredictor(SpringPlayfield playfield,
 			Cache cache,
 			AbstractPac pac,
 			DiscretePoint origin,
@@ -138,10 +140,19 @@ public class PacPredictor {
 			}
 		}
 		this.deepness = deepness+1;
+		this.localScore = computeScore()/(this.deepness*this.deepness);
 		List<MoveTo> moves = createMoveActions(origin);
 		deadEnd = moves.isEmpty();
-		possibleActions.addAll(moves);
-		this.localScore = computeScore()/(this.deepness*this.deepness);
+		if(deepness>EvolvableConstants.HORIZON_FOR_RANDOM_PATH) {
+			if(cache.nearestPointsLoaded()) {
+				children.add(new DistanceComputingPacPredictor(
+						playfield,
+						cache, pac,
+						this.deepness));
+			}
+		} else {
+			possibleActions.addAll(moves);
+		}
 		if(deadEnd) {
 			this.localScore*=EvolvableConstants.DEADEND_BONUS;
 			action.withMessage("DEADEND;");
@@ -159,8 +170,8 @@ public class PacPredictor {
 	 * @param origin
 	 * @return
 	 */
-	private List<MoveTo> createMoveActions(DiscretePoint origin) {
-		List<List<DiscretePoint>> nextPoints = cache.getNextPointsCache(my);
+	protected List<MoveTo> createMoveActions(DiscretePoint origin) {
+		List<List<DiscretePoint>> nextPoints = getCache().getNextPointsCache(my);
 		List<MoveTo> returned = new ArrayList<>();
 		// Remove the list of points the origin is in, to avoid looping predictions
 		for(List<DiscretePoint> navigable : nextPoints) {
@@ -180,14 +191,16 @@ public class PacPredictor {
 		return returned;
 	}
 
+	public Cache getCache() {
+		return cache;
+	}
+
 	/**
 	 * Grow that pac predictor of one more pac prediction
 	 * @param iteration 
 	 * @return 
 	 */
 	public boolean grow(int iteration) {
-		if(deepness>EvolvableConstants.HORIZON_FOR_RANDOM_PATH)
-			return false;
 		boolean continueToGrow = false;
 		PacPredictor evaluated = null;
 		if(possibleActions.isEmpty()) {
@@ -205,7 +218,7 @@ public class PacPredictor {
 			// We make sure playfield still allow that move
 			// to avoid locking of pacs
 			if(playfield.get(transformed).canBeWalkedOnBy(transformed)) {
-				evaluated = new PacPredictor(
+				evaluated = new RecursivePacPredictor(
 						playfield,
 						cache,
 						transformed, 
@@ -227,15 +240,20 @@ public class PacPredictor {
 		return continueToGrow;
 	}
 	
+	/**
+	 * Only called at root level, so it is not a part of the interface
+	 * @return
+	 */
 	public PacAction getBestAction() {
-		return bestPrediction.action.withMessage("d="+depth()+";s="+completeScore()+";");
+		return ((RecursivePacPredictor) bestPrediction).action.withMessage("d="+depth()+";s="+completeScore()+";");
 	}
 
-	private double completeScore() {
+	@Override
+	public double completeScore() {
 		return localScore+(bestPrediction==null ? 0 : bestPrediction.completeScore());
 	}
 
-	private int depth() {
+	@Override public int depth() {
 		return bestPrediction==null ? deepness : bestPrediction.depth();
 	}
 
@@ -243,7 +261,7 @@ public class PacPredictor {
 	public String toString() {
 		return toString("\t").toString();
 	}
-	private StringBuilder toString(String prefix) {
+	@Override public StringBuilder toString(String prefix) {
 		StringBuilder sOut = new StringBuilder();
 		sOut.append(prefix)
 			.append("s=").append(completeScore()).append(";")

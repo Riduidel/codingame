@@ -34,14 +34,14 @@ public class CacheTest {
 		tested.readGameEntities(my_p1);
 		/* Let's make sure our cache is correctly filled */
 		/* navigable points should be ok */
-		assertThat(tested.cache.getLocations())
+		assertThat(tested.getCache().getLocations())
 			.contains(at(1, 1), at(2, 1), at(3,1), at(4, 1), at(5, 1));
 		/* Directions should be left and right */
-		assertThat(tested.cache.directions.get(my_p1))
+		assertThat(tested.getCache().directions.get(my_p1))
 			.contains(Direction.LEFT, Direction.RIGHT);
 		/* normal points cache should contains elements of length 2 */
 		List<List<DiscretePoint>> navigablePointsOnP1 = 
-				tested.cache.getNextPointsCache(my_p1);
+				tested.getCache().getNextPointsCache(my_p1);
 		assertThat(navigablePointsOnP1).hasSize(2);
 		assertThat(navigablePointsOnP1.get(1))
 			.containsExactly(at(3, 1), at(2, 1));
@@ -78,7 +78,7 @@ public class CacheTest {
 			my_p2 = new Pac(21, 9, 2, true, Type.SCISSORS, 0, 0);
 		tested.readGameEntities(my_p1, my_p0, my_p3, my_p4, my_p2);
 		/* Let's make sure our cache is correctly filled */
-		List<List<DiscretePoint>> normalPointsCache = tested.cache
+		List<List<DiscretePoint>> normalPointsCache = tested.getCache()
 				.getNextPointsCache(my_p4);
 		assertThat(normalPointsCache).hasSize(2)
 			.extracting(list -> list.get(0)).hasSize(2)

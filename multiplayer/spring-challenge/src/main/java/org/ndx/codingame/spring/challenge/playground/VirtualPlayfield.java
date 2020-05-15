@@ -3,6 +3,7 @@ package org.ndx.codingame.spring.challenge.playground;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ndx.codingame.lib2d.ImmutablePlayground;
 import org.ndx.codingame.lib2d.discrete.DiscretePoint;
 import org.ndx.codingame.lib2d.discrete.MutableProxy;
 import org.ndx.codingame.lib2d.discrete.Playground;
@@ -23,11 +24,6 @@ public class VirtualPlayfield extends MutableProxy<Content> implements SpringPla
 		this.smallPills = new HashSet<>(playfield.getSmallPills());
 		this.allPacs = new HashSet<>(playfield.getAllPacs());
 	}
-	
-	@Override
-	public VirtualPlayfield getSource() {
-		return (VirtualPlayfield) super.getSource();
-	}
 
 	@Override
 	public Set<Pac> getAllPacs() {
@@ -37,6 +33,11 @@ public class VirtualPlayfield extends MutableProxy<Content> implements SpringPla
 	@Override
 	public Playground<Double> getZero() {
 		return getSource().getZero();
+	}
+	
+	@Override
+	public SpringPlayfield getSource() {
+		return (SpringPlayfield) super.getSource();
 	}
 
 	@Override

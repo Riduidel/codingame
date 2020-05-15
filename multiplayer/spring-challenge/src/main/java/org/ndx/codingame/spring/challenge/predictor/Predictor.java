@@ -1,4 +1,4 @@
-package org.ndx.codingame.spring.challenge.playground;
+package org.ndx.codingame.spring.challenge.predictor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,12 +9,14 @@ import org.ndx.codingame.lib2d.MutablePlayground;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.Pac;
+import org.ndx.codingame.spring.challenge.playground.Cache;
+import org.ndx.codingame.spring.challenge.playground.SpringPlayfield;
 
 public class Predictor {
 
 	private SpringPlayfield playfield;
 	private Cache cache;
-	private Map<Pac, PacPredictor> predictors = new HashMap<>();
+	private Map<Pac, RecursivePacPredictor> predictors = new HashMap<>();
 	private SpringPlayfield virtualPlayfield;
 
 	public Predictor(SpringPlayfield playfield) {
@@ -24,7 +26,7 @@ public class Predictor {
 		// Immediatly map alive pacs to their specific predictors
 		for(Pac pac : playfield.getMyPacs()) {
 			predictors.put(pac, 
-					new PacPredictor(
+					new RecursivePacPredictor(
 						virtualPlayfield,
 						cache,
 						pac,
@@ -45,7 +47,7 @@ public class Predictor {
 
 	public Map<Pac, PacAction> getBestPredictions(String message) {
 		Map<Pac, PacAction> returned = new HashMap<>();
-		for(Map.Entry<Pac, PacPredictor> predictor : predictors.entrySet()) {
+		for(Map.Entry<Pac, RecursivePacPredictor> predictor : predictors.entrySet()) {
 			returned.put(predictor.getKey(), predictor.getValue().getBestAction().withMessage(message));
 		}
 		return returned;

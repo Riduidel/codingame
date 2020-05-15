@@ -38,6 +38,7 @@ import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
 import org.ndx.codingame.spring.challenge.entities.Wall;
+import org.ndx.codingame.spring.challenge.predictor.Predictor;
 
 public class Playfield extends Playground<Content> implements SpringPlayfield {
 
@@ -263,112 +264,7 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 			System.err.println("Full computation took "+turnDuration.howLong()+"ms");
 		}
 	}
-/*
-	private PacAction computeActionFor(AbstractPac my) {
-		Delay delay = new Delay();
-		set(my, Ground.instance);
-		ImmutablePlayground<Double> scores = buildDistancesScoresForPills(my);
-		scores = scores.apply(buildDistancesScoresForPacs(my),
-				(a, b) -> a+b);
-		SortedMap<Double, PacAction> actions = new TreeMap<>(Comparator.reverseOrder());
-		if (my.abilityCooldown == 0) {
-			actions.putAll(computeSpeed(my, scores));
-		}
-		actions.putAll(computeActionMapFor(my, scores));
-		Double bestScore = actions.firstKey();
-		PacAction returned = actions.get(bestScore);
-		AbstractPac myFuture = returned.transform(original);
-		set(myFuture, myFuture);
-		return returned.withMessage("d="+delay.howLong()+";s=" + bestScore);
-	}
 
-	private Map<? extends Double, ? extends PacAction> computeSpeed(AbstractPac my, ImmutablePlayground<Double> scores) {
-		Speed speed = new Speed(my);
-		SortedMap<Double, PacAction> actions = computeActionMapFor(speed.transform(original), scores);
-		SortedMap<Double, PacAction> returned = new TreeMap<>(Comparator.reverseOrder());
-		returned.put(actions.firstKey(), speed);
-		return returned;
-	}
-
-	private SortedMap<Double, PacAction> computeActionMapFor(AbstractPac my, ImmutablePlayground<Double> scores) {
-		SortedMap<Double, PacAction> actions = new TreeMap<>(Comparator.reverseOrder());
-		List<List<DiscretePoint>> accessibleNextPoints = cache.getNextPointsCache(my);
-		for (List<DiscretePoint> direction : accessibleNextPoints) {
-			double score = 0;
-			DiscretePoint last = null;
-			for (DiscretePoint point : direction) {
-				if (get(point).canBeWalkedOnBy(my)) {
-					last = point;
-					score = scores.get(point);
-				} else {
-					break;
-				}
-			}
-			if (last != null) {
-				actions.put(score, new MoveTo(my, last));
-			}
-		}
-		return actions;
-	}
-
-	private ImmutablePlayground<Double> buildDistancesScoresForPacs(AbstractPac my) {
-		ImmutablePlayground<Double> scores = zero;
-		for (AbstractPac pac : allPacs) {
-			if(pac.type==Type.DEAD) {
-			} else if(pac.mine) {
-				scores = scores.apply(cache.usingDistanceTo(pac),
-						(a, b) -> a +
-						(b<EvolvableConstants.DISTANCE_TEAMMATE_TOO_CLOSE ?
-								EvolvableConstants.INTERNAL_SCORE_FOR_TEAMMATE_TOO_CLOSE : 0
-								) / (1 + b));
-			} else {
-				if(pac.isDangerousFor(my)) {
-					scores = scores.apply(cache.usingDistanceTo(pac),
-							(a, b) -> a +
-							(b<EvolvableConstants.DISTANCE_ENEMY_TOO_CLOSE ?
-									EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREDATOR : 0
-									) / (1 + b));
-				} else  {
-					scores = scores.apply(cache.usingDistanceTo(pac),
-							(a, b) -> a +
-							(b<EvolvableConstants.DISTANCE_ENEMY_TOO_CLOSE ?
-									EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREY : 0
-									) / (1 + b));
-				}
-			}
-		}
-		return scores;
-	}
-
-	private ImmutablePlayground<Double> buildDistancesScoresForPills(AbstractPac my) {
-		ImmutablePlayground<Double> scores = zero;
-		for (BigPill big : bigPills) {
-			scores = scores.apply(cache.usingDistanceTo(big),
-					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_BIG_PILL / (1 + b));
-		}
-		for (SmallPill small : smallPills) {
-			scores = scores.apply(cache.usingDistanceTo(small),
-					(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_SMALL_PILL / (1 + b));
-		}
-		if (bigPills.isEmpty() && smallPills.isEmpty()) {
-			// Now add the n nearest potential pills
-			DiscretePoint preceding = null;
-			for (DiscretePoint point : cache.getPointsSortedByDistanceTo(my)) {
-				if (PotentialSmallPill.instance == get(point)) {
-					if(preceding!=null) {
-						// We want to target the nearest cluster of points
-						if(preceding.distance1To(point)>1) {
-							break;
-						}
-					}
-					scores = scores.apply(cache.usingDistanceTo(point),
-							(a, b) -> a + EvolvableConstants.INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL / (1 + b));
-				}
-			}
-		}
-		return scores;
-	}
-*/
 	public void advanceOneTurn() {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
