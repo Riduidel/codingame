@@ -3,7 +3,7 @@ package org.ndx.codingame.spring.challenge;
 public class EvolvableConstants {
 
 	// This is the one to change to have longer paths
-	public static final int HORIZON_FOR_RANDOM_PATH = 20;
+	public static final int HORIZON_FOR_RANDOM_PATH = 50;
 	public static final int MAX_SPEED_TURNS = 5;
 	public static final int MAX_ABILITY_COOLDOWN = 10;
 	public static final int INTERNAL_SCORE_FOR_SMALL_PILL = 2;
