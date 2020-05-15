@@ -219,8 +219,20 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 		for (AbstractPac pac : getMyPacs()) {
 			for (List<DiscretePoint> directions : cache.getNextPointsCache(cache.NEXT_POINTS_VIEW_RANGE).get(pac)) {
 				for (DiscretePoint point : directions) {
-					if (get(point).revealsGround()) {
+					Content content = get(point);
+					if(Ground.instance.equals(content)) {
+						// Pills don't reveal ground, so we have to take care of them by hand
+						// There is a good reason they don't reveal ground, it's to be able to memorize them
+						if(smallPills.contains(point)) {
+							set(point, Ground.instance);
+						}
+					} else	if (content.revealsGround()) {
 						set(point, Ground.instance);
+					} else if(content instanceof SmallPill) {
+						if(!smallPills.contains(content)) {
+							set(point, Ground.instance);
+						}
+					} else {
 					}
 				}
 			}
@@ -285,17 +297,37 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 		StringBuffer init = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("Pac\n");
 		StringBuffer usage = new StringBuffer(ToUnitTestHelpers.CONTENT_PREFIX).append("tested.readGameEntities(");
 		for (int index = 0; index < pacs.size(); index++) {
-			if (index > 0) {
-				init.append(",\n");
-				usage.append(", ");
-			}
 			AbstractPac pac = pacs.get(index);
 			String name = (pac.mine ? "my" : "his") + "_p" + pac.id;
 			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name).append(" = new Pac(").append(pac.x)
 					.append(", ").append(pac.y).append(", ").append(pac.id).append(", ").append(pac.mine).append(", ")
 					.append("Type.").append(pac.type).append(", ").append(pac.speedTurnsLeft).append(", ")
-					.append(pac.abilityCooldown).append(")");
-			usage.append(name);
+					.append(pac.abilityCooldown).append(")").append(",\n");
+			usage.append(name).append(", ");
+		}
+		List<BigPill> bigs = new ArrayList<>(bigPills);
+		if(!bigs.isEmpty()) {
+			usage.append("\n");
+			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("BigPill\n");
+			for (int index = 0; index < bigPills.size(); index++) {
+				BigPill b = bigs.get(index);
+				String name = "big_" + index;
+				init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name)
+					.append(" = new BigPill(").append(b.x).append(", ").append(b.y).append("),\n");
+				usage.append(name).append(", ");
+			}
+		}
+		List<SmallPill> small = new ArrayList<>(smallPills);
+		if(!small.isEmpty()) {
+			usage.append("\n");
+			init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("SmallPill\n");
+			for (int index = 0; index < small.size(); index++) {
+				SmallPill b = small.get(index);
+				String name = "small_" + index;
+				init.append(ToUnitTestHelpers.CONTENT_PREFIX).append("\t").append(name)
+					.append(" = new SmallPill(").append(b.x).append(", ").append(b.y).append("),\n");
+				usage.append(name).append(", ");
+			}
 		}
 		returned.append(init.append(";\n"));
 		returned.append(usage.append(");\n"));
@@ -336,6 +368,9 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 	public void terminateTurn(Map<Pac, PacAction> actions) {
 		for(PacAction action : actions.values()) {
 			action.update(this);
+		}
+		for(BigPill big : new ArrayList<>(bigPills)) {
+			set(big, Ground.instance);
 		}
 		// Don't forget to load cache of next points
 		terminateNearestPointsLoading();
