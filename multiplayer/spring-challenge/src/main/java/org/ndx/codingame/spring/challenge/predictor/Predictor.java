@@ -1,13 +1,11 @@
 package org.ndx.codingame.spring.challenge.predictor;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import org.ndx.codingame.lib2d.MutablePlayground;
+import org.ndx.codingame.spring.challenge.actions.MoveTo;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
-import org.ndx.codingame.spring.challenge.entities.Content;
 import org.ndx.codingame.spring.challenge.entities.Pac;
 import org.ndx.codingame.spring.challenge.playground.Cache;
 import org.ndx.codingame.spring.challenge.playground.SpringPlayfield;
@@ -32,20 +30,20 @@ public class Predictor {
 						pac,
 						pac,
 						0,
-						null));
+						new MoveTo(pac, Arrays.asList(pac))));
 		}
 	}
 
-	public boolean grow(int iteration) {
-		boolean returned = false;
+	public void grow(int iteration) {
+//		System.err.println(iteration);
 		for(PacPredictor predictor : predictors.values()) {
 			// put returned after grow call to avoid short-circuit
-			returned = predictor.grow(iteration) || returned;
+			predictor.grow(iteration);
 		}
-		return returned;
 	}
 
 	public Map<Pac, PacAction> getBestPredictions(String message) {
+//		System.err.println(predictors);
 		Map<Pac, PacAction> returned = new HashMap<>();
 		for(Map.Entry<Pac, RecursivePacPredictor> predictor : predictors.entrySet()) {
 			returned.put(predictor.getKey(), predictor.getValue().getBestAction().withMessage(message));

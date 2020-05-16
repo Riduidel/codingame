@@ -251,17 +251,12 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 			updatePlayground();
 			int count = 0;
 			Predictor predictor = new Predictor(this);
-			boolean continueToGrow;
 			do {
-				continueToGrow = predictor.grow(count++);
-			} while(continueToGrow  &&
-					((iterations<0 && turnDuration.howLong()<EvolvableConstants.DELAY_FOR_PREDICTION)
+				predictor.grow(count++);
+			} while(((iterations<0 && turnDuration.howLong()<EvolvableConstants.DELAY_FOR_PREDICTION)
 					||
 					(iterations>0 && count<iterations)));
 			String message = "c="+count+";";
-			if(!continueToGrow) {
-				message+="horizon reached!";
-			}
 			return predictor.getBestPredictions(message);
 		} finally {
 			System.err.println("Full computation took "+turnDuration.howLong()+"ms");

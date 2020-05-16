@@ -31,6 +31,6 @@ public class VirtualPac extends AbstractPac {
 
 	@Override
 	public String toString() {
-		return "VirtualPac [mine=" + mine + ", id=" + id + ", x=" + x + ", y=" + y + ", original=" + original + "]";
+		return (mine ? "V" : "Z")+id;
 	}
 }

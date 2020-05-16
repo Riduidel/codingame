@@ -15,7 +15,7 @@ public class Pac extends AbstractPac {
 
 	@Override
 	public String toString() {
-		return "Pac [id=" + id + ", type=" + type + ", x=" + x + ", y=" + y + "]";
+		return (mine ? "P" : "E")+id;
 	}
 
 	@Override
@@ -48,4 +48,8 @@ public class Pac extends AbstractPac {
 		return true;
 	}
 
+	@Override
+	public boolean canBeWalkedOnBy(AbstractPac pac) {
+		return type==Type.DEAD || (pac.id==id && pac.mine);
+	}
 }

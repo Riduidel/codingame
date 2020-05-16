@@ -38,4 +38,6 @@ public interface PacPredictor {
 	 * @return Depth of this predictor
 	 */
 	int depth();
+
+	PacAction getAction();
 }
