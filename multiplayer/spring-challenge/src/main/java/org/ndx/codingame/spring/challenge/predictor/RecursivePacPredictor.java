@@ -40,6 +40,7 @@ public class RecursivePacPredictor implements PacPredictor {
 	private boolean continueToGrow;
 	private PacPredictor bestPrediction;
 	private double bestScore = Double.NEGATIVE_INFINITY;
+	private List<PacPredictor> terminatedChildren = new ArrayList<>();
 
 	public RecursivePacPredictor(SpringPlayfield playfield, Cache cache, AbstractPac pac, DiscretePoint origin,
 			int deepness, PacAction action) {
@@ -48,8 +49,8 @@ public class RecursivePacPredictor implements PacPredictor {
 		this.my = pac;
 		this.action = action;
 		this.deepness = deepness + 1;
-		this.localScore = computeScore() * (EvolvableConstants.HORIZON_FOR_RANDOM_PATH + 1 - deepness);
-		if (deepness > EvolvableConstants.HORIZON_FOR_RANDOM_PATH) {
+		this.localScore = computeScore() * (EvolvableConstants.HORIZON_FOR_RECURSIVE_PATH + 1 - deepness);
+		if (deepness > EvolvableConstants.HORIZON_FOR_RECURSIVE_PATH) {
 			if (cache.nearestPointsLoaded()) {
 				growableChildren.add(new DistanceComputingPacPredictor(playfield, cache, pac, action, this.deepness));
 			}
@@ -76,9 +77,18 @@ public class RecursivePacPredictor implements PacPredictor {
 	private double computeScore() {
 		double returned = 0;
 		if(action!=null) {
-			for(DiscretePoint point : action.path()) {
-				Content content = playfield.get(my);
-				returned += content.accept(new ScoreComputer(my, action, deepness));
+			if(action instanceof MoveTo) {
+				boolean firstPoint = true;
+				for(DiscretePoint point : action.path()) {
+					// Don't evaluate the first point !
+					if(!firstPoint) {
+						Content content = playfield.get(my);
+						returned += content.accept(new ScoreComputer(my, action, deepness));
+					}
+					firstPoint = false;
+				}
+			} else if(action instanceof Switch) {
+				returned = -1*EvolvableConstants.MAX_ABILITY_COOLDOWN;
 			}
 		}
 		return returned;
@@ -151,10 +161,14 @@ public class RecursivePacPredictor implements PacPredictor {
 			bestScore = evaluated.completeScore();
 			bestPrediction = evaluated;
 		}
-		if(continueToGrow && evaluated!=null) {
-			growableChildren.add(evaluated);
+		if(evaluated!=null) {
+			if(continueToGrow) {
+				growableChildren.add(evaluated);
+			} else {
+				terminatedChildren.add(evaluated);
+			}
 		}
-		return continueToGrow;
+		return !growableChildren.isEmpty() || !possibleActions.isEmpty(); 
 	}
 
 	/**
@@ -193,13 +207,25 @@ public class RecursivePacPredictor implements PacPredictor {
 		StringBuilder sOut = new StringBuilder();
 		sOut.append(prefix)
 			.append(continueToGrow ? "GROWING" : "DONE").append(" ")
-			.append("s=").append(completeScore()).append(";").append("l=").append(localScore).append(";")
+			.append("s=").append(completeScore()).append(";")
+			.append("l=").append(localScore).append(";")
+			.append("d=").append(deepness).append(";")
 			.append(action).append("\n");
 		if(bestPrediction!=null) {
-			sOut.append(bestPrediction.toString(prefix + "\tBEST "));
+			sOut.append(prefix).append("===BEST===\n");
+			sOut.append(bestPrediction.toString(prefix+"\t"));
 		}
-		for (PacPredictor p : growableChildren) {
-			sOut.append(p.toString(prefix + "\t"));
+		if(!growableChildren.isEmpty()) {
+			sOut.append(prefix).append("===GROWABLE===\n");
+			for (PacPredictor p : growableChildren) {
+				sOut.append(p.toString(prefix + "\t"));
+			}
+		}
+		if(!terminatedChildren.isEmpty()) {
+			sOut.append(prefix).append("===TERMINATED===\n");
+			for (PacPredictor p : terminatedChildren) {
+				sOut.append(p.toString(prefix + "\t"));
+			}
 		}
 		return sOut;
 	}

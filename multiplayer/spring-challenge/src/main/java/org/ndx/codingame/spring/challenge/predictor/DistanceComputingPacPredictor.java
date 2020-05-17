@@ -6,6 +6,8 @@ import org.ndx.codingame.spring.challenge.EvolvableConstants;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.entities.AbstractPac;
 import org.ndx.codingame.spring.challenge.entities.BigPill;
+import org.ndx.codingame.spring.challenge.entities.Content;
+import org.ndx.codingame.spring.challenge.entities.Ground;
 import org.ndx.codingame.spring.challenge.entities.PotentialSmallPill;
 import org.ndx.codingame.spring.challenge.entities.SmallPill;
 import org.ndx.codingame.spring.challenge.entities.Type;
@@ -36,7 +38,11 @@ public class DistanceComputingPacPredictor implements PacPredictor {
 		ImmutablePlayground<Double> distances = cache.usingDistanceTo(my);
 		for(DiscretePoint point : cache.getPointsSortedByDistanceTo(my)) {
 			if(!point.equals(my)) {
-				score = score + playfield.get(point).accept(scoreComputer)/distances.get(point);
+				Content content = playfield.get(point);
+				if(!(content instanceof Ground) && !(content instanceof AbstractPac)) {
+					score = score + content.accept(scoreComputer)/distances.get(point);
+					break;
+				}
 			}
 		}
 		return score;
