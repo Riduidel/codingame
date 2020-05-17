@@ -9,7 +9,7 @@ public class EvolvableConstants {
 	public static final int MAX_ABILITY_COOLDOWN = 10;
 	public static final int INTERNAL_SCORE_FOR_BIG_PILL = 1000;
 	public static final int INTERNAL_SCORE_FOR_SMALL_PILL = 100;
-	public static final int INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL = 1;
+	public static final int INTERNAL_SCORE_FOR_POTENTIAL_SMALL_PILL = 60;
 //	public static final long DELAY_FOR_PREDICTION = 1000*60*60;
 	public static final long DELAY_FOR_PREDICTION = 20;
 	public static final int DISTANCE_UNREACHABLE = 1000;
