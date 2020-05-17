@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ndx.codingame.spring.challenge.EvolvableConstants;
 import org.ndx.codingame.spring.challenge.actions.MoveTo;
 import org.ndx.codingame.spring.challenge.actions.PacAction;
 import org.ndx.codingame.spring.challenge.entities.Pac;
@@ -43,7 +44,8 @@ public class Predictor {
 	}
 
 	public Map<Pac, PacAction> getBestPredictions(String message) {
-//		System.err.println(predictors);
+		if(EvolvableConstants.DEBUG_PREDICTOR)
+			System.err.println(predictors);
 		Map<Pac, PacAction> returned = new HashMap<>();
 		for(Map.Entry<Pac, RecursivePacPredictor> predictor : predictors.entrySet()) {
 			returned.put(predictor.getKey(), predictor.getValue().getBestAction().withMessage(message));
