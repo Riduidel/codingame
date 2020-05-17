@@ -71,12 +71,17 @@ public class ScoreComputer extends ContentAdapter<Double> {
 					action.withMessage("on prey;");
 					if(pac.speedTurnsLeft>0) {
 						action.withMessage("prey too fast;");
+						return (double) EvolvableConstants.INTERNAL_SCORE_FOR_NON_DANGEROUS;
 					} else if (pac.abilityCooldown < deepness) {
 						action.withMessage("unsure;");
+						return (double) EvolvableConstants.INTERNAL_SCORE_FOR_NON_DANGEROUS;
 					} else {
 						action.withMessage("sure;");
 						return (double) EvolvableConstants.INTERNAL_SCORE_FOR_ENEMY_PREY;
 					}
+				} else {
+					action.withMessage("on same;");
+					return (double) EvolvableConstants.INTERNAL_SCORE_FOR_NON_DANGEROUS;
 				}
 			}
 		}

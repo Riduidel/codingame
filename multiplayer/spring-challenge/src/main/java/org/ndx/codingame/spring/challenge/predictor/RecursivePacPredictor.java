@@ -37,7 +37,6 @@ public class RecursivePacPredictor implements PacPredictor {
 	private List<PacAction> possibleActions = new ArrayList<>();
 	int deepness;
 	private double localScore;
-	private boolean continueToGrow;
 	private PacPredictor bestPrediction;
 	private double bestScore = Double.NEGATIVE_INFINITY;
 	private List<PacPredictor> terminatedChildren = new ArrayList<>();
@@ -89,16 +88,16 @@ public class RecursivePacPredictor implements PacPredictor {
 				}
 			} else if(action instanceof Switch) {
 				returned = -1*EvolvableConstants.MAX_ABILITY_COOLDOWN;
+			} else if(action instanceof Speed) {
+				returned = -1*EvolvableConstants.MAX_SPEED_TURNS;
 			}
 		}
 		return returned;
 	}
 
 	/**
-	 * This method emits true when
-	 * 
 	 * @param origin origin is here to exclude the direction we're coming from
-	 * @return
+	 * @return the list of valid moveto actions
 	 */
 	protected List<MoveTo> createMoveActions(DiscretePoint origin) {
 		List<List<DiscretePoint>> nextPoints = getCache().getNextPointsCache(my);
@@ -130,15 +129,13 @@ public class RecursivePacPredictor implements PacPredictor {
 	 * Grow that pac predictor of one more pac prediction
 	 * 
 	 * @param iteration
-	 * @return
 	 */
-	public boolean grow(int iteration) {
-		continueToGrow = false;
+	public void grow(int iteration) {
 		PacPredictor evaluated = null;
 		if (possibleActions.isEmpty()) {
 			if (growableChildren.size() > 0) {
 				evaluated = growableChildren.remove(0);
-				continueToGrow = evaluated.grow(iteration);
+				evaluated.grow(iteration);
 			}
 		} else {
 			PacAction action = possibleActions.remove(0);
@@ -152,9 +149,18 @@ public class RecursivePacPredictor implements PacPredictor {
 						// This one is really a hack: setting origin to null will allow non-move actions
 						// to be handled properly
 						action instanceof MoveTo ? new DiscretePoint(my.x, my.y) : null, deepness, action);
-				continueToGrow = true;
+				growOrTerminate(evaluated);
 			}
 		}
+		growOrTerminate(evaluated);
+	}
+	
+	@Override
+	public boolean isGrowable() {
+		return !growableChildren.isEmpty() || !possibleActions.isEmpty();
+	}
+
+	private void growOrTerminate(PacPredictor evaluated) {
 		if(bestPrediction==null) {
 			bestPrediction=evaluated;
 		} else if(evaluated!=null && evaluated.completeScore()>bestScore) {
@@ -162,13 +168,12 @@ public class RecursivePacPredictor implements PacPredictor {
 			bestPrediction = evaluated;
 		}
 		if(evaluated!=null) {
-			if(continueToGrow) {
+			if(evaluated.isGrowable()) {
 				growableChildren.add(evaluated);
 			} else {
 				terminatedChildren.add(evaluated);
 			}
 		}
-		return !growableChildren.isEmpty() || !possibleActions.isEmpty(); 
 	}
 
 	/**
@@ -206,7 +211,7 @@ public class RecursivePacPredictor implements PacPredictor {
 	public StringBuilder toString(String prefix) {
 		StringBuilder sOut = new StringBuilder();
 		sOut.append(prefix)
-			.append(continueToGrow ? "GROWING" : "DONE").append(" ")
+			.append(isGrowable() ? "GROWING" : "DONE").append(" ")
 			.append("s=").append(completeScore()).append(";")
 			.append("l=").append(localScore).append(";")
 			.append("d=").append(deepness).append(";")

@@ -52,7 +52,11 @@ public class DistanceComputingPacPredictor implements PacPredictor {
 	 * This pac computer can't grow, because it simply computes distances
 	 */
 	@Override
-	public boolean grow(int iteration) {
+	public void grow(int iteration) {
+	}
+	
+	@Override
+	public boolean isGrowable() {
 		return false;
 	}
 
