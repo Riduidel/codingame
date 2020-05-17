@@ -372,6 +372,9 @@ public class Playfield extends Playground<Content> implements SpringPlayfield {
 		for(BigPill big : new ArrayList<>(bigPills)) {
 			set(big, Ground.instance);
 		}
+		for(Pac pac : new ArrayList<>(getAllPacs())) {
+			set(pac, Ground.instance);
+		}
 		// Don't forget to load cache of next points
 		terminateNearestPointsLoading();
 	}
