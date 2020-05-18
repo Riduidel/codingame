@@ -49,42 +49,46 @@ public class PlayerTest {
 	}
 
 	// @PerfTest(invocations = INVOCATION_COUNT, threads = THREAD_COUNT) @Required(percentile99=PERCENTILE)
-	@Test public void can_find_action_at_turn_6_1589727848236() {
+	@Test public void can_find_action_at_turn_15_1589729250319() {
 		Playfield tested = read(Arrays.asList(
-			"###############################",
-			"###O??###?#?#     #?#?###??O###",
-			"###?#?###?#?# #.# #?#?###?#?###",
-			"#???#???????# #.# #???????#???#",
-			"#?#####?#?###.### ###?#?#####?#",
-			"#..   ..#??.?.??? ????#?? ????#",
-			"##### #?###.#.#?# #?###?#?#####",
-			"#..   ..#     #?# ????#???????#",
-			"#?# ###?#.### #?# ###?#?###?#?#",
-			"#?# ..#??.#   #?# ??#???#???#?#",
-			"#####?#?#.# ###?###?#?#?#?#####",
-			"###############################"
+			"###################################",
+			"###?#???#???#?#?????#?#???#??.#.###",
+			"###?#?#?#?#?#?###?###?#?#?#?#.#.###",
+			"#?????#???#???#?????#???#???#     #",
+			"# ###?###?###?#?###?#?###?### ### #",
+			"#???#?#???#?????????????#???# #   #",
+			"###?#?#?#?#?#?#######?#?#?#?# # ###",
+			".....   #???#?????????#???#..   ...",
+			"#####?#?###?#####?#####?###?# #####",
+			"#?????#.              ...   #    .#",
+			"#?###?### ###?#?#?#.# ###?###.###?#",
+			"#?#???#.. ###???#?#.?.###???#.??#?#",
+			"#?#?#?#?# ###?#######.###?#?#.#?#?#",
+			"#?#?#???# ......###??.????#??.#?#?#",
+			"###################################"
 			));
 		Pac
-			my_p1 = new Pac(3, 5, 1, true, Type.PAPER, 1, 5),
-			my_p0 = new Pac(17, 3, 0, true, Type.ROCK, 1, 5),
-			my_p2 = new Pac(9, 7, 2, true, Type.SCISSORS, 0, 4);
-		BigPill
-			big_0 = new BigPill(27, 1),
-			big_1 = new BigPill(3, 1);
+			my_p0 = new Pac(21, 10, 0, true, Type.ROCK, 0, 0),
+			my_p1 = new Pac(29, 7, 1, true, Type.PAPER, 2, 6);
 		SmallPill
-			small_0 = new SmallPill(2, 5),
-			small_1 = new SmallPill(6, 5),
-			small_2 = new SmallPill(9, 8),
-			small_3 = new SmallPill(9, 9),
-			small_4 = new SmallPill(9, 10),
-			small_5 = new SmallPill(1, 5),
-			small_6 = new SmallPill(7, 5);;
-		tested.readGameEntities(my_p1, my_p0, my_p2, 
-		big_0, big_1, 
-		small_0, small_1, small_2, small_3, small_4, small_5, small_6 );
-		Map<Pac, PacAction> actions = tested.computeActions(/* TODO replace by pac value */219);
-		isMoveTo(my_p2, actions).isEqualTo(at(9, 8));
+			small_0 = new SmallPill(21, 11),
+			small_1 = new SmallPill(29, 12),
+			small_2 = new SmallPill(29, 13),
+			small_3 = new SmallPill(29, 11),
+			small_4 = new SmallPill(29, 10),
+			small_5 = new SmallPill(1, 7),
+			small_6 = new SmallPill(33, 7),
+			small_7 = new SmallPill(0, 7),
+			small_8 = new SmallPill(29, 1),
+			small_9 = new SmallPill(2, 7),
+			small_10 = new SmallPill(34, 7),
+			small_11 = new SmallPill(29, 2),
+			small_12 = new SmallPill(21, 12),
+			small_13 = new SmallPill(21, 13);;
+		tested.readGameEntities(my_p0, my_p1, 
+		small_0, small_1, small_2, small_3, small_4, small_5, small_6, small_7, small_8, small_9, small_10, small_11, small_12, small_13 );
+		Map<Pac, PacAction> actions = tested.computeActions(/* TODO replace by pac value */2115);
+		isMoveTo(my_p0, actions).isEqualTo(at(21, 11));
 		assertThat(actions).isNotEmpty();
 	}
-
 }

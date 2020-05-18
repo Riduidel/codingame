@@ -39,7 +39,7 @@ public class DistanceComputingPacPredictor implements PacPredictor {
 		for(DiscretePoint point : cache.getPointsSortedByDistanceTo(my)) {
 			if(!point.equals(my)) {
 				Content content = playfield.get(point);
-				if(!(content instanceof Ground) && !(content instanceof AbstractPac)) {
+				if((content instanceof SmallPill) || (content instanceof BigPill)) {
 					score = score + content.accept(scoreComputer)/distances.get(point);
 					break;
 				}
