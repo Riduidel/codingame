@@ -7,7 +7,7 @@ class TestDirection(unittest.TestCase):
     def test_that_direction_moves_point(self):
         assert Direction("UP", 0, -1).move(Point(0, 0))==Point(0, -1)
     def test_that_directions_constants_are_usable(self):
-        assert "UP" in DIRECTIONS
+        assert len(DIRECTIONS)>0
 
 class TestPlaygroundAllowPoint(unittest.TestCase):
     def test_that_playground_is_loaded(self):
@@ -22,3 +22,16 @@ class TestPlaygroundAllowPoint(unittest.TestCase):
         tested = Point(-1, 0)
         # Then
         assert playground.allow(tested)==False
+
+    def test_that_playground_loads_from_string(self):
+        # Given
+        playground = Playground.load_from("""00
+  """, 
+        [Player(0, 0, 0)],
+        width=2, height=2)
+        print("%s"%(playground.toDebug()))
+        # Then
+        assert isinstance(playground.memory[0][0], Player)
+        assert isinstance(playground.memory[1][0], Player)
+        assert isinstance(playground.memory[0][1], Available)
+        assert isinstance(playground.memory[1][1], Available)

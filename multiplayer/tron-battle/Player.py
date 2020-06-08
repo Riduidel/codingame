@@ -1,16 +1,10 @@
 import sys
 import math
+import time
 
-# Auto-generated code below aims at helping you parse
-# the standard input according to the problem statement.
-GRID_WIDTH=30
-GRID_HEIGHT=20
 # =====================================================
-class Available:
-    def allow(self):
-        return True
-    def toDebug(self):
-        return " "
+def current_time_millis():
+    return int(round(time.time() * 1000))
 # =====================================================
 class Point:
     def __init__(self, x, y):
@@ -33,20 +27,22 @@ class Direction(Point):
         return Point(point.x+self.x, point.y+self.y)
     def __str__(self):
         return "Direction(%s; %d; %d)"%(self.name, self.x, self.y)
-    def directions():
-        used = [
+
+DIRECTIONS = [
             Direction("UP", 0, -1),
             Direction("DOWN", 0, 1),
             Direction("LEFT", -1, 0),
             Direction("RIGHT", 1, 0)
         ]
-        returned = dict()
-        for d in used:
-            returned[d.name]=d
-        d
 
-DIRECTIONS = Direction.directions()
+# =====================================================
+class Available:
+    def allow(self):
+        return True
+    def toDebug(self):
+        return " "
 
+# =====================================================
 class Player(Point):
     def __init__(self, playerIndex, x, y):
         super().__init__(x, y)
@@ -58,8 +54,11 @@ class Player(Point):
     def toDebug(self):
         return "%d"%self.index
 
+# =====================================================
 class Playground:
-    def __init__(self, width, height):
+    GRID_WIDTH=30
+    GRID_HEIGHT=20
+    def __init__(self, width=GRID_WIDTH, height=GRID_HEIGHT):
         super().__init__()
         self.width = width
         self.height = height
@@ -69,7 +68,6 @@ class Playground:
             for j in range(height):
                 column.append(Available())
             self.memory.append(column)
-        print("There are %d columns (height is %d)"%(len(self.memory), self.height), file=sys.stderr)
 
     def clear(self):
         self.players = []
@@ -91,27 +89,58 @@ class Playground:
                 return False
         else:
             return False
-    def generateDebug(self, myPlayerIndex):
-        """Generates a Python test that will reproduce this exact instant of game"""
+    def toDebug(self):
         playground = ""
         for j in range(self.height):
             for i in range(self.width):
                 playground+=self.memory[i][j].toDebug()
             playground+="\n"
         return playground
-    def computeMove(self, myPlayerIndex):
-        debug = self.generateDebug(myPlayerIndex)
+    def playersToDebug(self):
+        returned = ""
+        for index,text in enumerate(["Player(%d, %d, %d)"%(p.index, p.x, p.y) for p in self.players]):
+            if index>0:
+                returned += ", "
+            returned += text
+        return "["+returned+"]"
+    def generateDebug(self, turn, myPlayerIndex, effectiveMove):
+        """Generates a Python test that will reproduce this exact instant of game"""
+        return """
+    def test_playground_at_turn_%d_time_%d(self):
+        playground = self.load_playground_from(\"\"\"%s\"\"\",
+        %s)
+        assert playground.doComputeMove(%d)!=\"%s\"
+        """%(turn, current_time_millis(), self.toDebug(), self.playersToDebug(), myPlayerIndex, effectiveMove)
+    def computeMove(self, turn, myPlayerIndex):
+        move = self.doComputeMove(myPlayerIndex)
+        debug = self.generateDebug(turn, myPlayerIndex, move)
+        return (move, debug)
+    def doComputeMove(self, myPlayerIndex):
         me = self.players[myPlayerIndex]
-        for direction in DIRECTIONS.items():
-            if(self.allow(direction.value.move(me))):
-                return (direction.value.name, debug)
-        ("DIE", debug)
+        for direction in DIRECTIONS:
+            if(self.allow(direction.move(me))):
+                return direction.name
+        return "DIE"
+    def load_from(playground, players, width=GRID_WIDTH, height=GRID_HEIGHT):
+        returned = Playground(width=width, height=height)
+        x = 0
+        y = 0
+        for c in playground:
+            if c=='\n':
+                y+=1
+                x=0
+            else:
+                if c!=' ':
+                    returned.memory[x][y] = Player(int(c), x, y)
+                x+=1
+        returned.players = players
+        return returned
 
 # =====================================================
-
 if __name__ == '__main__':
     # At game beginning, we define a playground
-    playground = Playground(GRID_WIDTH, GRID_HEIGHT)
+    playground = Playground()
+    turn = 0
     # game loop
     while True:
         # =====================================================
@@ -128,9 +157,11 @@ if __name__ == '__main__':
             playground.setPlayer(i, x1, y1)
         # =====================================================
 
-        command, debug = playground.computeMove(myPlayerIndex)
+        command, debug = playground.computeMove(turn, myPlayerIndex)
         # Write an action using print
         print(debug, file=sys.stderr)
 
         # A single line with UP, DOWN, LEFT or RIGHT
         print(command)
+
+        turn = turn + 1
