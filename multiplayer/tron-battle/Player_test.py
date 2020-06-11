@@ -31,7 +31,15 @@ class TestPlaygroundAllowPoint(unittest.TestCase):
         width=2, height=2)
         print("%s"%(playground.toDebug()))
         # Then
-        assert isinstance(playground.memory[0][0], Player)
-        assert isinstance(playground.memory[1][0], Player)
+        assert isinstance(playground.memory[0][0], PlayerTrace)
+        assert isinstance(playground.memory[1][0], PlayerTrace)
         assert isinstance(playground.memory[0][1], Available)
         assert isinstance(playground.memory[1][1], Available)
+
+    def test_that_valid_move_is_recognized(self):
+        # Given
+        playground = Playground.load_from("""00
+  """, 
+        [Player(0, 0, 0)],
+        width=2, height=2)
+        assert playground.doComputeMove(0)=="DOWN"
