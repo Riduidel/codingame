@@ -91,10 +91,28 @@ class Playground:
     GRID_WIDTH=30
     GRID_HEIGHT=20
     TOTAL_CELLS=GRID_WIDTH*GRID_HEIGHT
-    def __init__(self, width=GRID_WIDTH, height=GRID_HEIGHT):
+    # =====================================================
+    def load_from(playground, players, width=GRID_WIDTH, height=GRID_HEIGHT):
+        """Load this playground object from infos provided in arguments"""
+        returned = Playground(width=width, height=height)
+        x = 0
+        y = 0
+        for c in playground:
+            if c=='\n':
+                y+=1
+                x=0
+            else:
+                if c!=' ':
+                    returned.memory[x][y] = PlayerTrace(int(c), x, y)
+                x+=1
+        returned.players = players
+        return returned
+    # =====================================================
+    def __init__(self, width=GRID_WIDTH, height=GRID_HEIGHT, simulation = False):
         super().__init__()
         self.width = width
         self.height = height
+        self.simulation = simulation
         self.players = []
         self.memory = []
         for i in range(width):
@@ -116,22 +134,6 @@ class Playground:
         self.setPlayerTrace(p)
     def setPlayerTrace(self, trace):
         self.memory[trace.x][trace.y]=trace
-    # =====================================================
-    def load_from(playground, players, width=GRID_WIDTH, height=GRID_HEIGHT):
-        """Load this playground object from infos provided in arguments"""
-        returned = Playground(width=width, height=height)
-        x = 0
-        y = 0
-        for c in playground:
-            if c=='\n':
-                y+=1
-                x=0
-            else:
-                if c!=' ':
-                    returned.memory[x][y] = PlayerTrace(int(c), x, y)
-                x+=1
-        returned.players = players
-        return returned
     # =====================================================
     def toDebug(self):
         playground = ""
