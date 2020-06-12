@@ -7,6 +7,12 @@ PREDICTION_HORIZON=10
 # =====================================================
 def current_time_millis():
     return int(round(time.time() * 1000))
+class Delay:
+    def __init__(self):
+        super().__init__()
+        self.start = current_time_millis()
+    def isElapsed(self, delay):
+        return current_time_millis()-self.start>delay
 # =====================================================
 class Point:
     def __init__(self, x, y):
