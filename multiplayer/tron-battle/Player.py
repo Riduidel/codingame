@@ -51,6 +51,9 @@ class Available:
         return True
     def toDebug(self):
         return " "
+    def __eq__(self, other):
+        return isinstance(other, Available)
+
 
 # =====================================================
 class Player(Point):
