@@ -180,7 +180,14 @@ class Playground:
         debug = self.generateDebug(turn, myPlayerIndex, move)
         return (move, debug)
     def getValidDirectionsAt(self, me):
-        return [direction for direction in DIRECTIONS if self.allow(direction.move(me))]
+        return [direction for direction in DIRECTIONS if self.allow(me.move(direction))]
+    def getNextPointsAt(self, me):
+        returned = []
+        for d in DIRECTIONS:
+            moved = me.move(d)
+            if self.allow(moved):
+                returned.append(moved)
+        return returned
     def doComputeMove(self, myPlayerIndex):
         """Essential method computing all moves of our tron cycle"""
         me = self.players[myPlayerIndex]
