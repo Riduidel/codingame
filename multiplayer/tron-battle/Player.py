@@ -135,6 +135,19 @@ class Playground:
     def setPlayerTrace(self, trace):
         self.memory[trace.x][trace.y]=trace
     # =====================================================
+    def copy(self, player):
+        """Creates a full copy of this playground: both memory and players are copied, excepted the player given as argument which replaces the player of same index"""
+        returned = Playground(self.width, self.height)
+        for i in range(self.width):
+            for j in range(self.height):
+                returned.memory[i][j]=self.memory[i][j]
+        for p in self.players:
+            if player and p.index==player.index:
+                returned.players.append(player)
+            else:
+                returned.players.append(p)
+        return returned
+    # =====================================================
     def toDebug(self):
         playground = ""
         for j in range(self.height):
@@ -209,18 +222,6 @@ class Playground:
         return CombiningEvaluator([
             CountCellsEvaluator(self.copy(moved), moved)
             ])
-    def copy(self, player):
-        """Creates a full copy of this playground: both memory and players are copied, excepted the player given as argument which replaces the player of same index"""
-        returned = Playground(self.width, self.height)
-        for i in range(self.width):
-            for j in range(self.height):
-                returned.memory[i][j]=self.memory[i][j]
-        for p in self.players:
-            if player and p.index==player.index:
-                returned.players.append(player)
-            else:
-                returned.players.append(p)
-        return returned
 
 # =====================================================
 class CombiningEvaluator:
