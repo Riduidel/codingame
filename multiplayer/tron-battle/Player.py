@@ -70,12 +70,33 @@ class Player(Point):
     def toDebug(self):
         return "%d"%self.index
     def move(self, direction):
-        returned = Player(self.index, direction.x+self.x, direction.y+self.y)
-        returned.direction  = direction.name
-        return returned
+        return PlayerSimulation(self.index, direction.x+self.x, direction.y+self.y, direction)
     def trace(self):
         """Convert this player to a trace"""
         return PlayerTrace(self.index, self.x, self.y)
+class PlayerSimulation(Player):
+    def __init__(self, playerIndex, x, y, direction, turn = 1):
+        """Extension of player to have both a turn number and an origin direction"""
+        super().__init__(playerIndex, x, y)
+        self.turn = turn
+        self.direction = direction
+    def allow(self):
+        return True
+    def move(self, direction):
+        return PlayerSimulation(self.index, direction.x+self.x, direction.y+self.y, direction, self.turn+1)
+    def __str__(self):
+        return "PlayerSim(%d; %d; %d)"%(self.index, self.x, self.y)
+    def isBefore(self, other):
+        if isinstance(other, Available):
+            return True
+        elif isinstance(other, PlayerSimulation):
+            if self.index==other.index:
+                return self.turn<other.turn
+            else:
+                return self.turn<=other.turn
+        else:
+            return False
+
 class PlayerTrace(Point):
     """Memory of a player positions"""
     def __init__(self, playerIndex, x, y):
@@ -139,15 +160,16 @@ class Playground:
     def setPlayerTrace(self, trace):
         self.memory[trace.x][trace.y]=trace
     # =====================================================
-    def copy(self, player, simulation=True):
+    def copy(self, excluding=None, simulation=True):
         """Creates a full copy of this playground: both memory and players are copied, excepted the player given as argument which replaces the player of same index"""
         returned = Playground(self.width, self.height, simulation)
         for i in range(self.width):
             for j in range(self.height):
                 returned.memory[i][j]=self.memory[i][j]
         for p in self.players:
-            if player and p.index==player.index:
-                returned.players.append(player)
+            if excluding:
+                if p.index!=excluding.index:
+                    returned.players.append(p)
             else:
                 returned.players.append(p)
         return returned
@@ -216,39 +238,68 @@ class Playground:
         delay = Delay()
         length = -1
         if valid:
-            # Then, bind an evaluator to each direction
-            evaluated = dict((nextPoint.direction, LongestPathEvaluator(self.copy(me), nextPoint)) for nextPoint in valid)
-            # Now, score each direction according to the number of accessible spots
-            evaluated = sorted(evaluated.items(), key=lambda entry: entry[1].evaluate(), reverse=True)
+            simulator = self.copy(me)
+            # As the simulator doesn't contain my player, we can grow the field to have all enemies
+            # voronoi tesselations, in other words nearest player for each cell and the number of turn 
+            # this player will take to reach this cell
+            simulator.tesselate()
+            # So now, there should be no more Available spots in simulator, but only PlayerTrace and PlayerSimulation
+            # Let's create an evaulator for each possible direction which will count the number of reachable cells
+            evaluated = self.evaluate(simulator, valid)
             text = ""
-            for (d,e) in evaluated:
-                text+="%s=%d;"%(d, e.evaluate())
+            for d in evaluated:
+                text += "%s;"%d
             text += "Computing that took %d"%delay.elapsed()
             print(text, file=sys.stderr)
             # And get first result
-            return next(iter(evaluated))[0]
+            return evaluated[0]['direction'].direction.name
         return "DIE"
-
-class LongestPathEvaluator:
-    def __init__(self, playground, me):
-        super().__init__()
-        self.me = me
-        self.playground = playground
-        self.score = -1
-    def evaluate(self):
-        if self.score<0:
-            self.score = self.evaluate_all_of([self.me])
-        return self.score
-    def evaluate_all_of(self, points, deepness=0):
-        nextPoints = set()
-        returned = 0
-        for p in points:
-            # First, mark point to make sure it will not be rewritten
-            self.playground.memory[p.x][p.y]=p
-            nextPoints.update(self.playground.getNextPointsAt(p))
-        if nextPoints:
-            returned = max(returned, self.evaluate_all_of(nextPoints)+1, deepness+1)
+    def evaluate(self, simulator, directions):
+        returned = []
+        for me in directions:
+            v = VoronoiEvaluator(simulator, me)
+            data = {'direction':me}
+            data.update(v.evaluate())
+            returned.append(data)
+        returned = sorted(returned, key=lambda d: (d['count'], d['max']), reverse=True)
         return returned
+    def tesselate(self):
+        self.tesselate_players(self.players)
+    def tesselate_players(self, players):
+        counts = {}
+        for p in players:
+            counts[p.index]= {'count':0, 'max':0}
+        nextPlayers = []
+        turn = 0
+        while players:
+            turn+=1
+            nextPlayers = []
+            for p in players:
+                valid = self.getNextPointsAt(p)
+                # Put all points on playground
+                for nextP in valid:
+                    content = self.memory[nextP.x][nextP.y]
+                    if nextP.isBefore(content):
+                        countFor = counts[nextP.index]
+                        countFor["count"]=countFor["count"]+1
+                        countFor["max"]=turn
+                        self.memory[nextP.x][nextP.y]=nextP
+                        nextPlayers.append(nextP)
+            players = nextPlayers
+        return counts
+
+class VoronoiEvaluator:
+    def __init__(self, simulator, me):
+        super().__init__()
+        self.simulator = simulator.copy()
+        self.me = me
+        self.score = None
+    def evaluate(self):
+        """Count the number of cells reachable from this position"""
+        if not self.score:
+            tesselation = self.simulator.tesselate_players([self.me])
+            self.score = tesselation[self.me.index]
+        return self.score
 
 # =====================================================
 if __name__ == '__main__':
