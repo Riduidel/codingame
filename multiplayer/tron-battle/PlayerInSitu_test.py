@@ -28,3 +28,54 @@ class InGameTests(unittest.TestCase):
 """,
         [Player(0, 7, 13), Player(1, 17, 12)])
         assert playground.doComputeMove(1)=="DOWN"
+
+
+    def test_playground_at_turn_6_time_1591987044330(self):
+        playground = self.load_playground_from("""                              
+                              
+                              
+                              
+   1                          
+   1                          
+   1                          
+   1                          
+   11                         
+  0 1                         
+  0                           
+  0                           
+  0                           
+  0                           
+  0                           
+  0                           
+                              
+                              
+                              
+                              
+""",
+        [Player(0, 2, 9), Player(1, 4, 9)])
+        assert playground.doComputeMove(0)!="RIGHT"
+
+    def test_playground_at_turn_4_time_1591988727414(self):
+        playground = self.load_playground_from("""                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                             0
+                             0
+                            00
+                            0 
+                              
+           11111              
+                              
+                              
+""",
+        [Player(0, 29, 12), Player(1, 15, 17)])
+        assert playground.doComputeMove(0)!="LEFT"

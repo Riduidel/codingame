@@ -2,8 +2,6 @@ import sys
 import math
 import time
 
-# Only prepare actions ten turns in advance
-PREDICTION_HORIZON=10
 # =====================================================
 def current_time_millis():
     return int(round(time.time() * 1000))
@@ -12,7 +10,9 @@ class Delay:
         super().__init__()
         self.start = current_time_millis()
     def isElapsed(self, delay):
-        return current_time_millis()-self.start>delay
+        return self.elapsed()>delay
+    def elapsed(self):
+        return current_time_millis()-self.start
 # =====================================================
 class Point:
     def __init__(self, x, y):
@@ -26,6 +26,8 @@ class Point:
         if isinstance(other, Point):
             return self.x==other.x and self.y==other.y
         return False
+    def __hash__(self):
+        return hash(self.x) ^ hash(self.y)
     def distance1To(self, p):
         return abs(self.x-p.x)+abs(self.y+p.y)
 
@@ -68,7 +70,9 @@ class Player(Point):
     def toDebug(self):
         return "%d"%self.index
     def move(self, direction):
-        return Player(self.index, direction.x+self.x, direction.y+self.y)
+        returned = Player(self.index, direction.x+self.x, direction.y+self.y)
+        returned.direction  = direction.name
+        return returned
     def trace(self):
         """Convert this player to a trace"""
         return PlayerTrace(self.index, self.x, self.y)
@@ -135,9 +139,9 @@ class Playground:
     def setPlayerTrace(self, trace):
         self.memory[trace.x][trace.y]=trace
     # =====================================================
-    def copy(self, player):
+    def copy(self, player, simulation=True):
         """Creates a full copy of this playground: both memory and players are copied, excepted the player given as argument which replaces the player of same index"""
-        returned = Playground(self.width, self.height)
+        returned = Playground(self.width, self.height, simulation)
         for i in range(self.width):
             for j in range(self.height):
                 returned.memory[i][j]=self.memory[i][j]
@@ -202,67 +206,49 @@ class Playground:
                 returned.append(moved)
         return returned
     def doComputeMove(self, myPlayerIndex):
-        """Essential method computing all moves of our tron cycle"""
+        """
+        We have tried coputing all possible paths, but it doesn't work so well. Let's try to choose the direction 
+        providing the longest potential path
+        """
         me = self.players[myPlayerIndex]
         # First, filter ibvoously bad decisions away
-        valid = self.getValidDirectionsAt(me)
+        valid = self.getNextPointsAt(me)
+        delay = Delay()
+        length = -1
         if valid:
             # Then, bind an evaluator to each direction
-            evaluated = dict((direction.name,self.evaluator(me, direction)) for direction in valid)
+            evaluated = dict((nextPoint.direction, LongestPathEvaluator(self.copy(me), nextPoint)) for nextPoint in valid)
             # Now, score each direction according to the number of accessible spots
             evaluated = sorted(evaluated.items(), key=lambda entry: entry[1].evaluate(), reverse=True)
+            text = ""
+            for (d,e) in evaluated:
+                text+="%s=%d;"%(d, e.evaluate())
+            text += "Computing that took %d"%delay.elapsed()
+            print(text, file=sys.stderr)
             # And get first result
             return next(iter(evaluated))[0]
         return "DIE"
-    def evaluator(self, me, direction):
-        """Create an evaluator for the given direction.
-        First version simply evaluates the number of cells reachable from the given direction
-        """
-        moved = me.move(direction)
-        return CombiningEvaluator([
-            CountCellsEvaluator(self.copy(moved), moved)
-            ])
 
-# =====================================================
-class CombiningEvaluator:
-    """Combine multiple evaluators into a uique metric"""
-    def __init__(self, evaluators):
-        self.evaluators = evaluators
+class LongestPathEvaluator:
+    def __init__(self, playground, me):
+        super().__init__()
+        self.me = me
+        self.playground = playground
         self.score = -1
     def evaluate(self):
         if self.score<0:
-            self.score = 0
-            size = len(self.evaluators)
-            for index, e in enumerate(self.evaluators):
-                # THis little hack allows first evaluator to have numeric priority over second
-                self.score += (size-index)*e.evaluate()
+            self.score = self.evaluate_all_of([self.me])
         return self.score
-class CountCellsEvaluator:
-    """Gives the direction with the most accessible cells a hgher score"""
-    def __init__(self, playground, me):
-        self.playground = playground
-        self.me = me
-        self.count=-1
-    def evaluate(self):
-        """Count number of reachable cells by simply trying to navigate them recursively from initial position given by self.me"""
-        if self.count<0:
-            self.count = self.evaluate_at(self.me.trace())
-        return self.count/Playground.TOTAL_CELLS
-    def evaluate_at(self, me):
-        """Evaluate this position in the following way
-        1. list each navigable direction
-        2. For each one, recursively call this method
-        3. Add the score obtained and returns it
-        """
-        self.playground.setPlayerTrace(me)
-        valid = self.playground.getValidDirectionsAt(me)
-        # Count is set at 1 because we can go on this spot!
-        count = 1
-        for direction in valid:
-            # We call the move on the PlayerTrace object to get a new PlayerTrace object
-            futureMe = me.move(direction)
-            count += self.evaluate_at(futureMe)
-        return count
+    def evaluate_all_of(self, points, deepness=0):
+        nextPoints = set()
+        returned = 0
+        for p in points:
+            # First, mark point to make sure it will not be rewritten
+            self.playground.memory[p.x][p.y]=p
+            nextPoints.update(self.playground.getNextPointsAt(p))
+        if nextPoints:
+            returned = max(returned, self.evaluate_all_of(nextPoints)+1, deepness+1)
+        return returned
 
 # =====================================================
 if __name__ == '__main__':
