@@ -153,10 +153,19 @@ class Playground:
         Notice we distinguish between the active player and its trace:
         Player object is set in the players list, and player trace is dropped on memory
         """
-        p = PlayerTrace(playerIndex, x, y)
-        self.players.append(Player(playerIndex, x, y))
-        self.memory[x0][y0]=p
-        self.setPlayerTrace(p)
+        if x0<0 and y0<0:
+            # Player is dead: Remove it from everywhere it could be (the memory, in other words)
+            for i in range(self.width):
+                for j in range(self.height):
+                    if isinstance(self.memory[i][j], PlayerTrace):
+                        trace = self.memory[i][j]
+                        if trace.index==playerIndex:
+                            self.memory[i][j]=Available()
+        else:
+            p = PlayerTrace(playerIndex, x, y)
+            self.players.append(Player(playerIndex, x, y))
+            self.memory[x0][y0]=p
+            self.setPlayerTrace(p)
     def setPlayerTrace(self, trace):
         self.memory[trace.x][trace.y]=trace
     # =====================================================
@@ -232,7 +241,7 @@ class Playground:
         We have tried coputing all possible paths, but it doesn't work so well. Let's try to choose the direction 
         providing the longest potential path
         """
-        me = self.players[myPlayerIndex]
+        me = next(player for player in self.players if player.index==myPlayerIndex)
         # First, filter ibvoously bad decisions away
         valid = self.getNextPointsAt(me)
         delay = Delay()
