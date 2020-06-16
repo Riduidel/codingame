@@ -22,7 +22,7 @@ class Point:
     def __str__(self):
         return "Point(%d;%d)"%(self.x, self.y)
     def __eq__(self, other):
-        """Makie sure two points at the same position are equals"""
+        """Make sure two points at the same position are equals"""
         if isinstance(other, Point):
             return self.x==other.x and self.y==other.y
         return False
@@ -44,7 +44,7 @@ DIRECTIONS = [
             Direction("UP", 0, -1),
             Direction("DOWN", 0, 1),
             Direction("LEFT", -1, 0),
-            Direction("RIGHT", 1, 0)
+            Direction("RIGHT", 1, 0),
         ]
 
 # =====================================================
@@ -85,7 +85,9 @@ class PlayerSimulation(Player):
     def move(self, direction):
         return PlayerSimulation(self.index, direction.x+self.x, direction.y+self.y, direction, self.turn+1)
     def __str__(self):
-        return "PlayerSim(%d; %d; %d)"%(self.index, self.x, self.y)
+        return "PlayerSim(%d; %d; %d; %s)"%(self.index, self.x, self.y, self.direction.name)
+    def __repr__(self):
+        return self.__str__()
     def isBefore(self, other):
         if isinstance(other, Available):
             return True
@@ -97,15 +99,12 @@ class PlayerSimulation(Player):
         else:
             return False
 
-class PlayerTrace(Point):
+class PlayerTrace(Player):
     """Memory of a player positions"""
     def __init__(self, playerIndex, x, y):
-        super().__init__(x, y)
-        self.index = playerIndex
+        super().__init__(playerIndex, x, y)
     def __str__(self):
         return "PlayerTrace(%d; %d; %d)"%(self.index, self.x, self.y)
-    def allow(self):
-        return False
     def toDebug(self):
         return "%d"%self.index
     def move(self, direction):
@@ -201,10 +200,16 @@ class Playground:
         """Generates a Python test that will reproduce this exact instant of game"""
         return """
     def test_playground_at_turn_%d_time_%d(self):
+        \"\"\"
+        \"\"\"
         playground = self.load_playground_from(\"\"\"%s\"\"\",
         %s)
         assert playground.doComputeMove(%d)!=\"%s\"
-        """%(turn, current_time_millis(), self.toDebug(), self.playersToDebug(), myPlayerIndex, effectiveMove)
+        """%(turn, current_time_millis(), 
+            self.toDebug(), 
+            self.playersToDebug(), 
+            myPlayerIndex, 
+            effectiveMove)
     # =====================================================
     def allow(self, point):
         """Generic allowance function.
@@ -251,13 +256,13 @@ class Playground:
             # As the simulator doesn't contain my player, we can grow the field to have all enemies
             # voronoi tesselations, in other words nearest player for each cell and the number of turn 
             # this player will take to reach this cell
-            simulator.tesselate()
+            expectancies = simulator.tesselate()
             # So now, there should be no more Available spots in simulator, but only PlayerTrace and PlayerSimulation
             # Let's create an evaulator for each possible direction which will count the number of reachable cells
             evaluated = self.evaluate(simulator, valid)
             text = ""
             for d in evaluated:
-                text += "%s;"%d
+                text += "%s;\n"%d
             text += "Computing that took %d"%delay.elapsed()
             print(text, file=sys.stderr)
             # And get first result
@@ -270,14 +275,20 @@ class Playground:
             data = {'direction':me}
             data.update(v.evaluate())
             returned.append(data)
-        returned = sorted(returned, key=lambda d: (d['count'], d['max']), reverse=True)
+        returned = sorted(returned, key=lambda d: (d['sum'], d['max'], d['sum']), reverse=True)
         return returned
     def tesselate(self):
-        self.tesselate_players(self.players)
-    def tesselate_players(self, players):
+        return self.tesselate_players(self.players)
+    def tesselate_players(self, players, expectancies={}):
+        """
+        Provide for each player a count of reachable spots
+        Returned values are
+        - mine: count of points reachable by this player
+        - max: longest path for this player
+        """
         counts = {}
         for p in players:
-            counts[p.index]= {'count':0, 'max':0}
+            counts[p.index]= {'mine':0, 'max':0}
         nextPlayers = []
         turn = 0
         while players:
@@ -290,7 +301,7 @@ class Playground:
                     content = self.memory[nextP.x][nextP.y]
                     if nextP.isBefore(content):
                         countFor = counts[nextP.index]
-                        countFor["count"]=countFor["count"]+1
+                        countFor["mine"]=countFor["mine"]+1
                         countFor["max"]=turn
                         self.memory[nextP.x][nextP.y]=nextP
                         nextPlayers.append(nextP)
@@ -308,6 +319,7 @@ class VoronoiEvaluator:
         if not self.score:
             tesselation = self.simulator.tesselate_players([self.me])
             self.score = tesselation[self.me.index]
+            self.score['sum'] = self.score['mine'] + self.score['max']
         return self.score
 
 # =====================================================
