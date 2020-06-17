@@ -106,3 +106,62 @@ class InGameTests(unittest.TestCase):
 """,
         [Player(1, 5, 12), Player(2, 2, 0)])
         assert playground.doComputeMove(1)!="RIGHT"
+
+
+    def test_playground_at_turn_1_time_1592242331799(self):
+        """This one is particularly hard: I'm quite sure my bot shouldn't 
+        go up at this turn, but should wait one more turn.
+        """
+        playground = self.load_playground_from("""                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                      11 00   
+                              
+                              
+                              
+""",
+        [Player(0, 25, 16), Player(1, 23, 16)])
+        assert playground.doComputeMove(0)!="UP"
+
+    def test_playground_at_turn_16_time_1592337492702(self):
+        """
+        Here the player should go down
+            {'direction': PlayerSim(1; 17; 14; LEFT), 'mine': 376, 'max': 31, 'sum': 407};
+            {'direction': PlayerSim(1; 18; 15; DOWN), 'mine': 374, 'max': 33, 'sum': 407};
+        """
+        playground = self.load_playground_from("""                              
+                              
+                              
+             111111           
+                  1           
+                  1           
+                  1000000000  
+                  10          
+                  10          
+                  10          
+                  10          
+                  10          
+                  10          
+                  10          
+                  10          
+                   0          
+                              
+                              
+                              
+                              
+""",
+        [Player(0, 19, 15), Player(1, 18, 14)])
+        assert playground.doComputeMove(1)!="LEFT"
