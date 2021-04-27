@@ -1,0 +1,48 @@
+{
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "PyTest PlayerInSitu",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "pythonPath": "C:/Python38/python.EXE",
+            "module": "pytest",
+            "args": [
+                "-sv",
+                "PlayerInSitu_test.py"
+            ],
+            "cwd": "${workspaceRoot}",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "name": "PyTest Player",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "pythonPath": "C:/Python38/python.EXE",
+            "module": "pytest",
+            "args": [
+                "-sv",
+                "Player_test.py"
+            ],
+            "cwd": "${workspaceRoot}",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        }
+    ]
+}
