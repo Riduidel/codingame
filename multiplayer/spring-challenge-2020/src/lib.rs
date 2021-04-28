@@ -93,7 +93,7 @@ pub enum Action {
 impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
-            Action::Move { pac, destination } => format!("MOVE {} {} {}", pac.pac_id, destination.row, destination.col)
+            Action::Move { pac, destination } => format!("MOVE {} {} {}", pac.pac_id, destination.col, destination.row)
         })
     }
 }
