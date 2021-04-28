@@ -60,7 +60,7 @@ impl Cell {
         match self {
             Cell::Pill { score } => true,
             Cell::Ground => true,
-            Cell::Wall => false
+            _ => false
         }
     }
     fn pac_on(&self)->(&Cell, i32) {
@@ -83,6 +83,7 @@ impl fmt::Display for Cell {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Actions ///////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone)]
 pub enum Action {
     Move {
         pac:Pac,
@@ -196,12 +197,18 @@ impl Playground {
     /// return a derivator if position is supported by playground, and none otherwise
     fn move_pac_on(&self, possible_pac:Pac)->Option<Derivator> {
         let mut possible_pac = possible_pac;
-        possible_pac.position = self.recompute_position_according_to_bounds(&possible_pac.position);
+        let position = self.recompute_position_according_to_bounds(&possible_pac.position);
+        possible_pac.position = position;
         if self.can_have_pac_at(&possible_pac) {
             let mut future = self.clone();
             // Don't forget to change pac cell! (and to score accordingly)
             let score = future.with_pac_on(&possible_pac);
-            return Some(Derivator {playground:future, pac:possible_pac, score, derived:vec![], best_score:0});
+            return Some(Derivator {playground:future, 
+                pac:possible_pac.clone(), 
+                score, derived:vec![], 
+                best_score:0,
+                action: Action::Move { pac:possible_pac.clone(), destination:position.clone() }
+            });
         } else {
             return None;
         }
@@ -211,14 +218,14 @@ impl Playground {
     /// Advance playground of 7 turns, because why not, 
     /// evaluates the derivation having the best score,
     /// and return the move action being the first move into that direction
-    fn compute_pac_move(&self, pac:&Pac)->String {
+    fn compute_pac_move(&self, pac:&Pac)->Action {
         let mut sorted_tuples = Derivator::derivators_from(&self, pac);
         for derivation in &mut sorted_tuples {
             derivation.compute_at_depth(7);
         }
         sorted_tuples.sort_by(|a, b| b.best_score.cmp(&a.best_score));
         let best_tuple:&Derivator = &sorted_tuples[0];
-        format!("MOVE {} {} {}", pac.pac_id, best_tuple.pac.position.col, best_tuple.pac.position.row)
+        return best_tuple.action.clone();
     }
 
     ///
@@ -228,6 +235,7 @@ impl Playground {
         pacs.iter()
             .filter(|p| p.mine)
             .map(|p| self.compute_pac_move(p))
+            .map(|action| action.to_string())
             .collect()
     }
 }
@@ -250,7 +258,8 @@ pub struct Derivator {
     pac:Pac,
     score:i32,
     best_score:i32,
-    derived:Vec<Derivator>
+    derived:Vec<Derivator>,
+    action:Action
 }
 
 impl Derivator {
