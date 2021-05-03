@@ -1,4 +1,6 @@
 use std::io;
+use std::vec::Vec;
+use std::collections::*;
 use std::fmt;
 use std::time::SystemTime;
 
@@ -6,7 +8,7 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
     pub row:i32,
     pub col:i32
@@ -37,7 +39,7 @@ impl Point {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Cell  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cell {
     Pill {
         score:i32,
@@ -122,6 +124,17 @@ impl Playground {
     pub fn new_from(other:Playground) -> Playground {
         Playground::new(other.width, other.height)
     }
+    pub fn new_filled_with(other:&Playground, cell:Cell) -> Playground {
+        let mut returned = Playground::new(other.width, other.height);
+        for _row in 0..(returned.height as usize) {
+            let mut cols = vec![];
+            for _col in 0..(returned.width as usize) {
+                cols.push(cell);
+            }
+            returned.playground.push(cols);
+        }
+        return returned;
+    }
     pub fn new_from_str(playground_at_turn:&String)->Playground {
         let rows:Vec<&str> = playground_at_turn.split("\n").collect();
         let height = rows.len() as i32;
@@ -144,8 +157,20 @@ impl Playground {
             .collect());
     }
 
+    fn set_at(&mut self, position:Point, cell:Cell) {
+        self.set(position.row as usize, position.col as usize, cell);
+    }
+
+    fn get_at(&self, position:Point)->Cell {
+        self.get(position.row as usize, position.col as usize)
+    }
+
     fn set(&mut self, row:usize, col:usize, cell:Cell) {
         self.playground[row][col] = cell;
+    }
+
+    fn get(&self, row:usize, col:usize)->Cell {
+        self.playground[row][col]
     }
 
     /*
@@ -224,19 +249,93 @@ impl Playground {
             derivation.compute_at_depth(7);
         }
         sorted_tuples.sort_by(|a, b| b.best_score.cmp(&a.best_score));
-        let best_tuple:&Derivator = &sorted_tuples[0];
-        return best_tuple.action.clone();
+        if sorted_tuples.len()>0 {
+            let best_tuple:&Derivator = &sorted_tuples[0];
+            return best_tuple.action.clone();
+        } else {
+            return Action::Move { pac: Pac {
+                pac_id: pac.pac_id,
+                mine: pac.mine,
+                position: pac.position,
+                type_id: pac.type_id.clone(),
+                speed_turns_left: pac.speed_turns_left,
+                ability_cooldown: pac.ability_cooldown
+            
+            }, 
+                destination:pac.position };
+        }
     }
 
     ///
     /// Compute all pac moves in parallel.
     /// This implies that two pacs may end at the same position, and should be changed later
     pub fn compute_pacs_moves(&self, pacs:&Vec<Pac>)->Vec<String> {
-        pacs.iter()
+        let my_pacs:Vec<&Pac> = pacs.iter()
             .filter(|p| p.mine)
-            .map(|p| self.compute_pac_move(p))
+            // This contains only my pacs, which is cool, because it will allow us to tesselate the playground into
+            // as many exclusive fragments as they are pacs
+            .collect();
+        
+        let mut pacs_to_playground:HashMap<i32, Playground> = HashMap::new();
+        // We generate a string that will be used to generate empty workspaces
+        // This workspace will be filled in the method itself
+        for pac in my_pacs.clone() {
+            let mut tesselated = Playground::new_filled_with(self, Cell::Wall);
+            tesselated.set_at(pac.position, self.get_at(pac.position));
+            pacs_to_playground.insert(pac.pac_id, tesselated);
+        }
+        let pacs_to_playground = self.tesselate(my_pacs.clone(), pacs_to_playground);
+        for p in pacs_to_playground.keys() {
+            println!("For pac {} tesselation is\n{}", p, pacs_to_playground.get(p).unwrap());
+        }
+        // Now we've tesselated, we can predict playground on smaller effective playground
+        my_pacs.iter()
+            .map(|p| (p, pacs_to_playground.get(&p.pac_id).unwrap()))
+            .map(|tuple| tuple.1.compute_pac_move(tuple.0))
             .map(|action| action.to_string())
             .collect()
+    }
+
+    /// Tesselation is an intensive computation : we generate one playground for each pac, filled with walls
+    /// And when the pac can access a spot, we copy the value of the spot in our local playground that we 
+    /// will use later for path building. Obviously, if the cell is already reachable by any other pac, we can't reach it
+    fn tesselate(&self, to_explore:Vec<&Pac>, mut pacs_to_playground:HashMap<i32, Playground>)->HashMap<i32, Playground> {
+        // For each pac, we will iterate over possible directions built according to self playground
+        // And for each direction, if all pac playgrounds contains wall, this position is good
+        // otherwise this position is bad
+        if &to_explore.len()>&0 {
+            let mut next_turn:Vec<Pac> = vec![];
+            for pac in &to_explore {
+                for direction in Point::directions() {
+                    let mut possible_pac:Pac = pac.move_of(&direction);
+                    let position = self.recompute_position_according_to_bounds(&possible_pac.position);
+                    possible_pac.position = position;
+                    if self.can_have_pac_at(&possible_pac) {
+                        // ok, this is a valid pac, so let's check if this pac is the closer to that position
+                        let mut possible = true;
+                        for p in pacs_to_playground.values_mut() {
+                            if possible {
+                                // In fact, this pac is the first to reach the position only if this position contains a wall
+                                possible = p.get_at(possible_pac.position)==Cell::Wall;
+                            }
+                        }
+                        if possible {
+                            match pacs_to_playground.get_mut(&possible_pac.pac_id) {
+                                Some(playground) => playground.set_at(possible_pac.position, self.get_at(possible_pac.position)),
+                                _ => {}
+                            }
+                            next_turn.push(possible_pac);
+                        }
+                    }
+                }
+            }
+            let mut next_turn_to_explore:Vec<&Pac> = vec![];
+            for p in next_turn.iter() {
+                next_turn_to_explore.push(&p);
+            }
+            pacs_to_playground = self.tesselate(next_turn_to_explore, pacs_to_playground);
+        }
+        return pacs_to_playground;
     }
 }
 
@@ -299,7 +398,7 @@ impl Derivator {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Pacs  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Hash)]
 pub struct Pac {
     pub pac_id:i32, // pac unique id
     pub mine: bool, // : le propriétaire du pac (1 si ce pac est à vous, 0 sinon)
@@ -314,6 +413,12 @@ impl Pac {
         let mut moved = self.clone();
         moved.position = self.position.move_of(direction);
         moved
+    }
+}
+
+impl PartialEq for Pac {
+    fn eq(&self, other: &Self) -> bool {
+        self.position == other.position && self.pac_id==other.pac_id && self.mine==other.mine
     }
 }
 
