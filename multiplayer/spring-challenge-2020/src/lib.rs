@@ -161,7 +161,7 @@ impl Playground {
         self.set(position.row as usize, position.col as usize, cell);
     }
 
-    fn get_at(&self, position:Point)->Cell {
+    pub fn get_at(&self, position:Point)->Cell {
         self.get(position.row as usize, position.col as usize)
     }
 
@@ -169,7 +169,7 @@ impl Playground {
         self.playground[row][col] = cell;
     }
 
-    fn get(&self, row:usize, col:usize)->Cell {
+    pub fn get(&self, row:usize, col:usize)->Cell {
         self.playground[row][col]
     }
 
@@ -183,8 +183,12 @@ impl Playground {
         return (initial_playground, in_turn_playground)
     }
 
+    fn can_have_pac_at_position(&self, position:&Point)->bool {
+        return self.playground[position.row as usize][position.col as usize].allow();
+    }
+
     fn can_have_pac_at(&self, pac:&Pac)->bool {
-        return self.playground[pac.position.row as usize][pac.position.col as usize].allow();
+        return self.can_have_pac_at_position(&pac.position);
     }
 
     ///
@@ -269,13 +273,7 @@ impl Playground {
     ///
     /// Compute all pac moves in parallel.
     /// This implies that two pacs may end at the same position, and should be changed later
-    pub fn compute_pacs_moves(&self, pacs:&Vec<Pac>)->Vec<String> {
-        let my_pacs:Vec<&Pac> = pacs.iter()
-            .filter(|p| p.mine)
-            // This contains only my pacs, which is cool, because it will allow us to tesselate the playground into
-            // as many exclusive fragments as they are pacs
-            .collect();
-        
+    pub fn compute_pacs_moves(&self, my_pacs:Vec<&Pac>)->Vec<String> {
         let mut pacs_to_playground:HashMap<i32, Playground> = HashMap::new();
         // We generate a string that will be used to generate empty workspaces
         // This workspace will be filled in the method itself
@@ -285,9 +283,9 @@ impl Playground {
             pacs_to_playground.insert(pac.pac_id, tesselated);
         }
         let pacs_to_playground = self.tesselate(my_pacs.clone(), pacs_to_playground);
-        for p in pacs_to_playground.keys() {
-            println!("For pac {} tesselation is\n{}", p, pacs_to_playground.get(p).unwrap());
-        }
+//        for p in pacs_to_playground.keys() {
+//            eprintln!("For pac {} tesselation is\n{}", p, pacs_to_playground.get(p).unwrap());
+//        }
         // Now we've tesselated, we can predict playground on smaller effective playground
         my_pacs.iter()
             .map(|p| (p, pacs_to_playground.get(&p.pac_id).unwrap()))
@@ -336,6 +334,23 @@ impl Playground {
             pacs_to_playground = self.tesselate(next_turn_to_explore, pacs_to_playground);
         }
         return pacs_to_playground;
+    }
+
+    pub fn clear_lines_of_sight(&mut self, my_pacs:Vec<&Pac>) {
+        for pac in my_pacs {
+            self.set_at(pac.position, Cell::Ground);
+            for direction in Point::directions() {
+                let mut position = pac.position;
+                loop {
+                    position = position.move_of(&direction);
+                    position = self.recompute_position_according_to_bounds(&position);
+                    if !self.can_have_pac_at_position(&position) {
+                        break;
+                    }
+                    self.set_at(position, Cell::Ground);
+                }
+            }
+        }
     }
 }
 
@@ -436,7 +451,7 @@ fn to_test(playground:&Playground, pacs:&Vec<Pac>, commands:&Vec<String>)->Strin
         let pacs = vec![{}];
 
         let now = Instant::now();
-        let effective_moves = at_turn.compute_pacs_moves(&pacs);
+        let effective_moves = at_turn.compute_pacs_moves(pacs.iter().map(|p| p).collect());
         let elapsed = now.elapsed();
         println!(\"Elapsed: {{:#?}}\", elapsed);
 
@@ -464,7 +479,7 @@ fn to_test(playground:&Playground, pacs:&Vec<Pac>, commands:&Vec<String>)->Strin
             } else {
                 b.to_string()
             })
-);
+    );
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////// Main  ///////////////////////////////////////////////
@@ -485,7 +500,9 @@ fn main() {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let row = input_line.trim_end().to_string(); // one line of the grid: space " " is floor, pound "#" is wall
-        playground.add_row(row);
+        // At startup, we replace each empty cell with a pill to make sure we know all potential pills
+        // But this has one impact, we have to replace the visible pills given at each turn by the eaten ones
+        playground.add_row(str::replace(&row, " ", "."));
     }
     eprintln!("Playground is \n{}", playground);
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -516,8 +533,14 @@ fn main() {
             let ability_cooldown = parse_input!(inputs[6], i32); // unused in wood leagues
             pacs.push(Pac {pac_id, mine,position: Point {col, row}, type_id, speed_turns_left, ability_cooldown});
         }
-        // Get a new playground from the standard one
-        let mut playground_at_turn = playground.clone();
+        let my_pacs:Vec<&Pac> = pacs.iter()
+            .filter(|p| p.mine)
+            // This contains only my pacs, which is cool, because it will allow us to tesselate the playground into
+            // as many exclusive fragments as they are pacs
+            .collect();
+        // Now clear lines of sight of each of my pacs. Turn info will recreate it
+        playground.clear_lines_of_sight(my_pacs.clone());
+
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let visible_pellet_count = parse_input!(input_line, i32); // all pellets in sight
@@ -528,13 +551,13 @@ fn main() {
             let x = parse_input!(inputs[0], usize);
             let y = parse_input!(inputs[1], usize);
             let score = parse_input!(inputs[2], i32); // amount of points this pellet is worth
-            playground_at_turn.set(y, x, Cell::Pill { score });
+            playground.set(y, x, Cell::Pill { score });
         }
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let moves = playground_at_turn.compute_pacs_moves(&pacs);
-        eprintln!("{}", to_test(&playground_at_turn, &pacs, &moves));
+        let moves = playground.compute_pacs_moves(my_pacs);
+        eprintln!("{}", to_test(&playground, &pacs, &moves));
 
         let commands = moves.iter()
             .fold(String::new(), |a, b| if a.len()>0 {
