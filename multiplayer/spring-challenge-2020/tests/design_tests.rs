@@ -12,7 +12,7 @@ fn can_correctl_clear_eaten_pills() {
 #..#
 ####");
     let pacs = vec![Pac { pac_id: 0, mine: true, position: Point { col: 1, row: 1 }, type_id: "NEUTRAL".to_owned(), speed_turns_left: 0, ability_cooldown: 0 }];
-    at_turn.clear_lines_of_sight(pacs.iter().map(|p| p).collect());
+    at_turn.clear_lines_of_sight(&pacs.iter().map(|p| p).collect());
     assert_that(&at_turn.to_string()).is_equal_to(&"####
 #  #
 # .#

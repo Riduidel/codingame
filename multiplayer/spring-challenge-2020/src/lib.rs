@@ -236,7 +236,7 @@ impl Playground {
                 pac:possible_pac.clone(), 
                 score, derived:vec![], 
                 best_score:0,
-                action: Action::Move { pac:possible_pac.clone(), destination:position.clone() }
+                action: Action::Move { pac:possible_pac, destination:position }
             });
         } else {
             return None;
@@ -273,16 +273,16 @@ impl Playground {
     ///
     /// Compute all pac moves in parallel.
     /// This implies that two pacs may end at the same position, and should be changed later
-    pub fn compute_pacs_moves(&self, my_pacs:Vec<&Pac>)->Vec<String> {
+    pub fn compute_pacs_moves(&self, my_pacs:&Vec<&Pac>)->Vec<String> {
         let mut pacs_to_playground:HashMap<i32, Playground> = HashMap::new();
         // We generate a string that will be used to generate empty workspaces
         // This workspace will be filled in the method itself
-        for pac in my_pacs.clone() {
+        for pac in my_pacs {
             let mut tesselated = Playground::new_filled_with(self, Cell::Wall);
             tesselated.set_at(pac.position, self.get_at(pac.position));
             pacs_to_playground.insert(pac.pac_id, tesselated);
         }
-        let pacs_to_playground = self.tesselate(my_pacs.clone(), pacs_to_playground);
+        let pacs_to_playground = self.tesselate(my_pacs, pacs_to_playground);
 //        for p in pacs_to_playground.keys() {
 //            eprintln!("For pac {} tesselation is\n{}", p, pacs_to_playground.get(p).unwrap());
 //        }
@@ -297,13 +297,13 @@ impl Playground {
     /// Tesselation is an intensive computation : we generate one playground for each pac, filled with walls
     /// And when the pac can access a spot, we copy the value of the spot in our local playground that we 
     /// will use later for path building. Obviously, if the cell is already reachable by any other pac, we can't reach it
-    fn tesselate(&self, to_explore:Vec<&Pac>, mut pacs_to_playground:HashMap<i32, Playground>)->HashMap<i32, Playground> {
+    fn tesselate(&self, to_explore:&Vec<&Pac>, mut pacs_to_playground:HashMap<i32, Playground>)->HashMap<i32, Playground> {
         // For each pac, we will iterate over possible directions built according to self playground
         // And for each direction, if all pac playgrounds contains wall, this position is good
         // otherwise this position is bad
         if &to_explore.len()>&0 {
             let mut next_turn:Vec<Pac> = vec![];
-            for pac in &to_explore {
+            for pac in to_explore {
                 for direction in Point::directions() {
                     let mut possible_pac:Pac = pac.move_of(&direction);
                     let position = self.recompute_position_according_to_bounds(&possible_pac.position);
@@ -331,12 +331,12 @@ impl Playground {
             for p in next_turn.iter() {
                 next_turn_to_explore.push(&p);
             }
-            pacs_to_playground = self.tesselate(next_turn_to_explore, pacs_to_playground);
+            pacs_to_playground = self.tesselate(&next_turn_to_explore, pacs_to_playground);
         }
         return pacs_to_playground;
     }
 
-    pub fn clear_lines_of_sight(&mut self, my_pacs:Vec<&Pac>) {
+    pub fn clear_lines_of_sight(&mut self, my_pacs:&Vec<&Pac>) {
         for pac in my_pacs {
             self.set_at(pac.position, Cell::Ground);
             for direction in Point::directions() {
@@ -425,9 +425,14 @@ pub struct Pac {
 
 impl Pac {
     fn move_of(&self, direction:&Point)->Pac {
-        let mut moved = self.clone();
-        moved.position = self.position.move_of(direction);
-        moved
+        Pac {
+            ability_cooldown: self.ability_cooldown,
+            mine: self.mine,
+            pac_id: self.pac_id,
+            position: self.position.move_of(direction),
+            speed_turns_left: self.speed_turns_left,
+            type_id: self.type_id.clone()
+        }
     }
 }
 
@@ -539,7 +544,7 @@ fn main() {
             // as many exclusive fragments as they are pacs
             .collect();
         // Now clear lines of sight of each of my pacs. Turn info will recreate it
-        playground.clear_lines_of_sight(my_pacs.clone());
+        playground.clear_lines_of_sight(&my_pacs);
 
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
@@ -556,7 +561,7 @@ fn main() {
 
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let moves = playground.compute_pacs_moves(my_pacs);
+        let moves = playground.compute_pacs_moves(&my_pacs);
         eprintln!("{}", to_test(&playground, &pacs, &moves));
 
         let commands = moves.iter()
