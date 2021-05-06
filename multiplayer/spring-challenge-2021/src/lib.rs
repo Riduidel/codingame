@@ -89,13 +89,23 @@ fn main() {
             let possible_move = input_line.trim_matches('\n').to_string();
         }
 
-        eprintln!("We know the trees {:#?}", &trees);
+        trees.sort_by_key(|t| -1*(t.size as i32));
+        eprintln!("{:#?}", &trees);
+
+        let mut my_trees = trees
+            .iter()
+            .filter(|t| t.mine);
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        match trees.iter()
-            .filter(|t| t.mine)
-            .find(|t| t.size>=3) {
-                Some(t) => println!("COMPLETE {}", t.index),
+        match my_trees
+            .next() {
+                Some(t) => {
+                    if t.size>=3 {
+                        println!("COMPLETE {}", t.index)
+                    } else {
+                        println!("GROW {}", t.index)
+                    }
+                },
                 None => println!("WAIT")
             }
 
