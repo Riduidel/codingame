@@ -8,6 +8,9 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Tree  /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug)]
 struct Tree {
     index:usize,
@@ -22,6 +25,102 @@ impl fmt::Display for Tree {
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Point  ////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Point {
+    pub row:i32,
+    pub col:i32
+}
+
+impl Point {
+    pub fn distance_to(&self, other:&Point)->i32 {
+        (self.row-other.row).abs() + (self.col-other.col).abs()
+    }
+
+    pub fn directions()->Vec<Point> {
+        return vec![
+            Point { row: 0, col: -1},
+            Point { row: -1, col: 0},
+            Point { row: -1, col: 1},
+            Point { row: 0, col: 1},
+            Point { row: 1, col: 0},
+            Point { row: 1, col: -1},
+        ]
+    }
+
+    pub fn move_of(&self, other:&Point)->Point {
+        return Point {
+            row: self.row+other.row,
+            col: self.col+other.col
+        }
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Playground  ///////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// we use as basis the axis storage defined in https://www.redblobgames.com/grids/hexagons/#map-storage
+pub struct AxialHexGround<Content:Clone> {
+    radius:usize,
+    /// In content, all elements are none, and will be replaced by Some when needed
+    /// This has the unfortunate consequence of forcing me to use matches all over the code
+    /// Please note that content is stored row first, then column
+    content:Vec<Vec<Option<Content>>>
+}
+
+impl<Content:Clone> AxialHexGround<Content> {
+    pub fn of_radius<NewContent:Clone>(radius:usize)->AxialHexGround<NewContent> {
+        let mut returned = AxialHexGround {
+            radius:radius,
+            content:vec![]
+        };
+        // This will be used to have the total number of vecs as radius is, well, a radius
+        let size=radius*2+1;
+        // Create and fill the vec
+        for i in 0..size {
+            returned.content.push(vec![None; size]);
+        }
+        // Return the generated hex ground
+        return returned;
+    }
+
+    /// Low level setter, which won't provide a particularly useful way to emulate the 3d part
+    /// values for r and q are
+    pub fn set(&mut self, r:i32, q:i32, content:Content) {
+        let row=(self.radius as i32+r) as usize;
+        let col=(self.radius as i32+q) as usize;
+        self.content[row][col]=Option::Some(content);
+    }
+
+    /// Low level getter, which won't provide a particularly useful way to emulate the 3d part
+    pub fn get(&self, r:i32, q:i32)->Option<&Content> {
+        let row=(self.radius as i32+r) as usize;
+        let col=(self.radius as i32+q) as usize;
+        self.content[row][col].as_ref()
+    }
+}
+
+/// Numbered hex ground allows both access per coordinate, but also access by cell index
+/// For that, obviously, we use delegation pattern
+struct IndexedHexGround<Content:Clone> {
+    index:Vec<Point>,
+    storageByCoordinates:AxialHexGround<Content>
+}
+
+impl<Content:Clone> IndexedHexGround<Content> {
+    pub fn of_radius<NewContent:Clone>(radius:usize)->IndexedHexGround<NewContent> {
+        let returned = IndexedHexGround {
+            index:vec![],
+            storageByCoordinates:AxialHexGround::<NewContent>::of_radius(radius)
+        };
+        // Now fill the index
+        // And then return the generated playground
+        return returned;
+    }
+}
 
 /**
  * Auto-generated code below aims at helping you parse
