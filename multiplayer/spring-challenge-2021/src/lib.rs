@@ -86,6 +86,13 @@ impl<Content:Clone> AxialHexGround<Content> {
         // Return the generated hex ground
         return returned;
     }
+    pub fn set_at(&mut self, position:Point, content:Content) {
+        self.set(position.row, position.col, content);
+    }
+
+    pub fn get_at(&self, position:Point)->Option<&Content> {
+        self.get(position.row, position.col)
+    }
 
     /// Low level setter, which won't provide a particularly useful way to emulate the 3d part
     /// values for r and q are
@@ -105,20 +112,75 @@ impl<Content:Clone> AxialHexGround<Content> {
 
 /// Numbered hex ground allows both access per coordinate, but also access by cell index
 /// For that, obviously, we use delegation pattern
-struct IndexedHexGround<Content:Clone> {
-    index:Vec<Point>,
-    storageByCoordinates:AxialHexGround<Content>
+pub struct IndexedHexGround<Content:Clone> {
+    pub index:Vec<Point>,
+    pub by_coordinates:AxialHexGround<Content>
 }
 
+fn index_up_to_radius(radius:usize)->Vec<Point> {
+    let mut returned = vec![];
+    // Distance is 0
+    returned.push(Point {   col: 0,   row: 0});
+    // Distance is 1
+    returned.push(Point {   col: 1,   row: 0});
+    returned.push(Point {   col: 1,   row: -1});
+    returned.push(Point {   col: 0,   row: -1});
+    returned.push(Point {   col: -1,   row: 0});
+    returned.push(Point {   col: -1,   row: 1});
+    returned.push(Point {   col: 0,   row: 1});
+    // Distance is 2
+    returned.push(Point {   col: 2,   row: 0});
+    returned.push(Point {   col: 2,   row: -1});
+    returned.push(Point {   col: 2,   row: -2});
+    returned.push(Point {   col: 1,   row: -2});
+    returned.push(Point {   col: 0,   row: -2});
+    returned.push(Point {   col: -1,   row: -1});
+    returned.push(Point {   col: -2,   row: 0});
+    returned.push(Point {   col: -2,   row: 1});
+    returned.push(Point {   col: -2,   row: 2});
+    returned.push(Point {   col: -1,   row: 2});
+    returned.push(Point {   col: 0,   row: 2});
+    returned.push(Point {   col: 1,   row: 1});
+    // Distance is 3
+    returned.push(Point {   col: 3,   row: 0});
+    returned.push(Point {   col: 3,   row: -1});
+    returned.push(Point {   col: 3,   row: -2});
+    returned.push(Point {   col: 3,   row: -3});
+    returned.push(Point {   col: 2,   row: -3});
+    returned.push(Point {   col: 1,   row: -3});
+    returned.push(Point {   col: -0,   row: -3});
+    returned.push(Point {   col: -1,   row: -2});
+    returned.push(Point {   col: -2,   row: -1});
+    returned.push(Point {   col: -3,   row: 0});
+    returned.push(Point {   col: -3,   row: 1});
+    returned.push(Point {   col: -3,   row: 2});
+    returned.push(Point {   col: -3,   row: 3});
+    returned.push(Point {   col: -2,   row: 3});
+    returned.push(Point {   col: -1,   row: 3});
+    returned.push(Point {   col: 0,   row: 3});
+    returned.push(Point {   col: 1,   row: 2});
+    returned.push(Point {   col: 2,   row: 1});
+    return returned;
+}
 impl<Content:Clone> IndexedHexGround<Content> {
     pub fn of_radius<NewContent:Clone>(radius:usize)->IndexedHexGround<NewContent> {
         let returned = IndexedHexGround {
-            index:vec![],
-            storageByCoordinates:AxialHexGround::<NewContent>::of_radius(radius)
+            index: index_up_to_radius(radius),
+            by_coordinates:AxialHexGround::<NewContent>::of_radius(radius)
         };
         // Now fill the index
         // And then return the generated playground
         return returned;
+    }
+
+    pub fn set(&mut self, index:usize, value:Content) {
+        let location = self.index[index];
+        self.by_coordinates.set_at(location, value);
+    }
+
+    pub fn get(&mut self, index:usize)->Option<&Content> {
+        let location = self.index[index];
+        self.by_coordinates.get_at(location)
     }
 }
 
