@@ -332,8 +332,43 @@ impl<Content:Clone+fmt::Debug> QuinableGround<Content> for VecGround<Content> {
 pub trait QuinableGround<Content> {
     fn quine(&self, content_type:&str)->String;
 }
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////// Test  /////////////////////////////////////////////////
+/////////////////////////////////////// Computer  ///////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+struct Computer<'lifetime> {
+    day:usize,
+    sun:usize,
+    ground:&'lifetime VecGround<Cell>,
+    trees:&'lifetime Vec<Tree>
+}
+
+impl<'lifetime> Computer<'lifetime> {
+    fn compute (&self)->Action {
+        
+        let mut my_trees:Vec<&Tree> = self.trees
+            .iter()
+            .filter(|t| t.mine)
+            .collect();
+        my_trees.sort_by_key(|t| -1*(t.size as i32));
+        // Write an action using println!("message...");
+        // To debug: eprintln!("Debug message...");
+        return match my_trees.iter()
+            .next() {
+                Some(t) => {
+                    if t.size>=3 {
+                        Action::COMPLETE {id: t.index }
+                    } else {
+                        Action::GROW {id: t.index }
+                    }
+                },
+                None => Action::WAIT
+            };
+        }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Main decorations  /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn to_test(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
@@ -361,33 +396,19 @@ fn to_test(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>,
     );
 }
 
-fn wood_compute_action(trees:&mut Vec<Tree>)->Action {
-    trees.sort_by_key(|t| -1*(t.size as i32));
-        
-    let mut my_trees = trees
-        .iter()
-        .filter(|t| t.mine);
-    // Write an action using println!("message...");
-    // To debug: eprintln!("Debug message...");
-    return match my_trees
-        .next() {
-            Some(t) => {
-                if t.size>=3 {
-                    Action::COMPLETE {id: t.index }
-                } else {
-                    Action::GROW {id: t.index }
-                }
-            },
-            None => Action::WAIT
-        };
-}
-
 /// day indicates the shadow direction
 /// sun gives the number of action points that can be used in the day
 /// ground is, well, the ground
 /// contains all trees, both mines and opponent ones
-pub fn compute_action(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&mut Vec<Tree>)->Action {
-    let action = wood_compute_action(&mut trees.clone());
+pub fn compute_action(day:i32, sun:i32, ground:&VecGround<Cell>, trees:&mut Vec<Tree>)->Action {
+//    let wood_action = wood_compute_action(&mut trees.clone());
+    let computer = Computer {
+        day: day as usize,
+        sun: sun as usize,
+        ground: ground,
+        trees:trees
+    };
+    let action = computer.compute();
     eprintln!("{}", to_test(day, sun, ground, &trees, &action));
     return action;
 }
