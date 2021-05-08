@@ -14,12 +14,12 @@ macro_rules! parse_input {
 #[derive(Debug, Clone, Copy)]
 pub struct Cell {
     // richness goes from 0 for unusable cell to 3 for the cells to force get
-    richness:i32
+    pub richness:usize
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Action  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,PartialEq)]
 pub enum Action {
     COMPLETE {
         id:usize
@@ -57,6 +57,12 @@ pub struct Tree {
 impl fmt::Display for Tree {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "i:{} s:{} m:{}", self.index, self.size, self.mine)
+    }
+}
+
+pub fn t(index:usize, size:usize, mine:bool, dormant:bool)->Tree {
+    Tree {
+        index:index, size:size, mine:mine, dormant:dormant
     }
 }
 
@@ -237,20 +243,100 @@ impl<Content:Clone> IndexedHexGround<Content> {
     }
 }
 
-impl<Content:Clone+fmt::Debug> IndexedHexGround<Content> {
-    pub fn quine(&self, contained_type:&str)->String {
+impl<Content:Clone+fmt::Debug> QuinableGround<Content> for IndexedHexGround<Content> {
+    fn quine(&self, contained_type:&str)->String {
         let hydrater:Vec<Option<&Content>> = self.index.iter()
             .map(|p| self.by_coordinates.get_at(p))
             .collect();
         return format!("IndexedHexGround::<{}>::parse(vec!{:?})", contained_type, hydrater);
     }
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// VecGround  ///////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+struct Geometry<Content> {
+    // -1 is used for elements that are on ground's edge
+    neighbours:[i32;6],
+    content:Option<Content>
+}
+pub struct VecGround<Content> {
+    storage:Vec<Geometry<Content>>
+}
+impl<Content> VecGround<Content> {
+    pub fn parse<NewContent:Clone>(cells:&mut Vec<Option<NewContent>>)->VecGround<NewContent> {
+        let mut returned:VecGround<NewContent> = VecGround {
+            storage: Vec::with_capacity(cells.len())
+        };
+        let len = cells.len();
+        if len!=37 {
+            panic!("We only know how to handle points for an hex ground of radius 3");
+        }
+        // Reconstitute geometry
+        let points:Vec<Point> = index_up_to_radius(3);
+        for (index, point) in points.iter().enumerate() {
+            // As a default, we always go outside
+            let mut neighbours:[i32;6] = [-1;6];
+            for (neighour_index, move_point) in Point::directions().iter().enumerate() {
+                let moved = point.move_of(move_point);
+                match points.iter().position(|p| p==&moved) {
+                    Some(found_at) => neighbours[neighour_index] = found_at as i32,
+                    _ => {}
+                }
+            }
+            // Now we have all of our neighbours, set geometry!
+            returned.set_geometry(index, neighbours);
+        }
+        // set content
+        for i in 0..len {
+            match cells.remove(0) {
+                Some(content) => returned.set_content(i, content),
+                _ => {}
+            }
+        }
+        return returned;
+    }
+    pub fn of_cells<NewContent:Clone>(cells:usize)->VecGround<NewContent> {
+        VecGround {
+            storage: Vec::with_capacity(cells)
+        }
+    }
 
+    pub fn set_geometry(&mut self, index:usize, geometry:[i32;6]) {
+        if index==self.storage.len() {
+            self.storage.push(Geometry {
+                neighbours:geometry,
+                content:None
+            });
+        } else {
+            panic!("can't set geometry at any other place than ground len()")
+        }
+    }
+
+    pub fn set_content(&mut self, index:usize, content:Content) {
+        self.storage[index].content = Some(content);
+    }
+}
+
+impl<Content:Clone+fmt::Debug> QuinableGround<Content> for VecGround<Content> {
+    fn quine(&self, contained_type:&str)->String {
+        let hydrater:Vec<Option<&Content>> = self.storage.iter()
+            .map(|geom| geom.content.as_ref())
+            .collect();
+        return format!("VecGround::<{}>::parse(vec!{:?})", contained_type, hydrater);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// QuinableGround  ///////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+pub trait QuinableGround<Content> {
+    fn quine(&self, content_type:&str)->String;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Test  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn to_test(day:i32, sun:i32, ground:&IndexedHexGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
+fn to_test(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
     let timestamp = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
         Err(_) => 0,
@@ -262,15 +348,15 @@ fn to_test(day:i32, sun:i32, ground:&IndexedHexGround<Cell>, trees:&Vec<Tree>, a
 
         let ground = {};
 
-        let trees = {:?};
+        let mut trees = vec![{}];
         let now = Instant::now();
-        assert_that(&compute_action(day, ground, trees)).is_not_equal_to(&{:?});
+        assert_that(&compute_action(day, sun, &ground, &mut trees)).is_not_equal_to(&Action::{:?});
     }}
     ", timestamp, 
         day,
         sun,
         ground.quine("Cell"),
-        trees, 
+        trees.iter().map(|t| format!("t({}, {}, {}, {})", t.index, t.size, t.mine, t.dormant)).collect::<Vec<String>>().join(", "), 
         action
     );
 }
@@ -300,9 +386,9 @@ fn wood_compute_action(trees:&mut Vec<Tree>)->Action {
 /// sun gives the number of action points that can be used in the day
 /// ground is, well, the ground
 /// contains all trees, both mines and opponent ones
-pub fn compute_action(day:i32, sun:i32, ground:&IndexedHexGround<Cell>, trees:&mut Vec<Tree>)->Action {
+pub fn compute_action(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&mut Vec<Tree>)->Action {
     let action = wood_compute_action(&mut trees.clone());
-    eprintln!("{}", to_test(day, sun, &ground, &trees, &action));
+    eprintln!("{}", to_test(day, sun, ground, &trees, &action));
     return action;
 }
 
@@ -315,21 +401,22 @@ fn main() {
     io::stdin().read_line(&mut input_line).unwrap();
     // number of cells of playground
     let number_of_cells = parse_input!(input_line, i32); // 37
-    let mut ground:IndexedHexGround<Cell> = IndexedHexGround::<Cell>::of_radius(3);
+    let mut ground:VecGround<Cell> = VecGround::<Cell>::of_cells(37);
     // content of each cell
     for i in 0..number_of_cells as usize {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let inputs = input_line.split(" ").collect::<Vec<_>>();
         let index = parse_input!(inputs[0], i32); // 0 is the center cell, the next cells spiral outwards
-        let richness = parse_input!(inputs[1], i32); // 0 if the cell is unusable, 1-3 for usable cells
+        let richness = parse_input!(inputs[1], usize); // 0 if the cell is unusable, 1-3 for usable cells
         let neigh_0 = parse_input!(inputs[2], i32); // the index of the neighbouring cell for each direction
         let neigh_1 = parse_input!(inputs[3], i32);
         let neigh_2 = parse_input!(inputs[4], i32);
         let neigh_3 = parse_input!(inputs[5], i32);
         let neigh_4 = parse_input!(inputs[6], i32);
         let neigh_5 = parse_input!(inputs[7], i32);
-        ground.set(index as usize, Cell {richness: richness});
+        ground.set_geometry(index as usize, [neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5]);
+        ground.set_content(index as usize, Cell {richness: richness});
     }
 
     // game loop
