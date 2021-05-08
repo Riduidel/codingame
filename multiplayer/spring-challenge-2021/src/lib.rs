@@ -9,10 +9,45 @@ macro_rules! parse_input {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Cell  /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, Copy)]
+pub struct Cell {
+    // richness goes from 0 for unusable cell to 3 for the cells to force get
+    richness:i32
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Action  /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug,Clone)]
+pub enum Action {
+    COMPLETE {
+        id:usize
+    },
+    GROW {
+        id:usize
+    },
+    SEED {
+        id:usize
+    },
+    WAIT
+}
+
+impl fmt::Display for Action {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Action::COMPLETE {id} => write!(f, "{} {}", "COMPLETE", id),
+            Action::GROW {id} => write!(f, "{} {}", "GROW", id),
+            Action::SEED {id} => write!(f, "{} {}", "SEED", id),
+            Action::WAIT => write!(f, "WAIT"),
+        }
+    }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Tree  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug)]
-struct Tree {
+#[derive(Debug,Clone)]
+pub struct Tree {
     index:usize,
     size:usize,
     mine:bool,
@@ -39,15 +74,16 @@ impl Point {
         (self.row-other.row).abs() + (self.col-other.col).abs()
     }
 
+    /// directions here are sorted according to days
     pub fn directions()->Vec<Point> {
         return vec![
-            Point { row: 0, col: -1},
-            Point { row: -1, col: 0},
-            Point { row: -1, col: 1},
             Point { row: 0, col: 1},
+            Point { row: -1, col: 1},
+            Point { row: -1, col: 0},
+            Point { row: 0, col: -1},
             Point { row: 1, col: 0},
             Point { row: 1, col: -1},
-        ]
+            ]
     }
 
     pub fn move_of(&self, other:&Point)->Point {
@@ -57,7 +93,6 @@ impl Point {
         }
     }
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// Playground  ///////////////////////////////////////////////
@@ -86,11 +121,11 @@ impl<Content:Clone> AxialHexGround<Content> {
         // Return the generated hex ground
         return returned;
     }
-    pub fn set_at(&mut self, position:Point, content:Content) {
+    pub fn set_at(&mut self, position:&Point, content:Content) {
         self.set(position.row, position.col, content);
     }
 
-    pub fn get_at(&self, position:Point)->Option<&Content> {
+    pub fn get_at(&self, position:&Point)->Option<&Content> {
         self.get(position.row, position.col)
     }
 
@@ -121,45 +156,48 @@ fn index_up_to_radius(radius:usize)->Vec<Point> {
     let mut returned = vec![];
     // Distance is 0
     returned.push(Point {   col: 0,   row: 0});
-    // Distance is 1
-    returned.push(Point {   col: 1,   row: 0});
-    returned.push(Point {   col: 1,   row: -1});
-    returned.push(Point {   col: 0,   row: -1});
-    returned.push(Point {   col: -1,   row: 0});
-    returned.push(Point {   col: -1,   row: 1});
-    returned.push(Point {   col: 0,   row: 1});
-    // Distance is 2
-    returned.push(Point {   col: 2,   row: 0});
-    returned.push(Point {   col: 2,   row: -1});
-    returned.push(Point {   col: 2,   row: -2});
-    returned.push(Point {   col: 1,   row: -2});
-    returned.push(Point {   col: 0,   row: -2});
-    returned.push(Point {   col: -1,   row: -1});
-    returned.push(Point {   col: -2,   row: 0});
-    returned.push(Point {   col: -2,   row: 1});
-    returned.push(Point {   col: -2,   row: 2});
-    returned.push(Point {   col: -1,   row: 2});
-    returned.push(Point {   col: 0,   row: 2});
-    returned.push(Point {   col: 1,   row: 1});
-    // Distance is 3
-    returned.push(Point {   col: 3,   row: 0});
-    returned.push(Point {   col: 3,   row: -1});
-    returned.push(Point {   col: 3,   row: -2});
-    returned.push(Point {   col: 3,   row: -3});
-    returned.push(Point {   col: 2,   row: -3});
-    returned.push(Point {   col: 1,   row: -3});
-    returned.push(Point {   col: -0,   row: -3});
-    returned.push(Point {   col: -1,   row: -2});
-    returned.push(Point {   col: -2,   row: -1});
-    returned.push(Point {   col: -3,   row: 0});
-    returned.push(Point {   col: -3,   row: 1});
-    returned.push(Point {   col: -3,   row: 2});
-    returned.push(Point {   col: -3,   row: 3});
-    returned.push(Point {   col: -2,   row: 3});
-    returned.push(Point {   col: -1,   row: 3});
-    returned.push(Point {   col: 0,   row: 3});
-    returned.push(Point {   col: 1,   row: 2});
-    returned.push(Point {   col: 2,   row: 1});
+    if radius>=1 {
+        returned.push(Point {   col: 1,   row: 0});
+        returned.push(Point {   col: 1,   row: -1});
+        returned.push(Point {   col: 0,   row: -1});
+        returned.push(Point {   col: -1,   row: 0});
+        returned.push(Point {   col: -1,   row: 1});
+        returned.push(Point {   col: 0,   row: 1});
+    }
+    if radius>=2 {
+        returned.push(Point {   col: 2,   row: 0});
+        returned.push(Point {   col: 2,   row: -1});
+        returned.push(Point {   col: 2,   row: -2});
+        returned.push(Point {   col: 1,   row: -2});
+        returned.push(Point {   col: 0,   row: -2});
+        returned.push(Point {   col: -1,   row: -1});
+        returned.push(Point {   col: -2,   row: 0});
+        returned.push(Point {   col: -2,   row: 1});
+        returned.push(Point {   col: -2,   row: 2});
+        returned.push(Point {   col: -1,   row: 2});
+        returned.push(Point {   col: 0,   row: 2});
+        returned.push(Point {   col: 1,   row: 1});
+    }
+    if radius>=3 {
+        returned.push(Point {   col: 3,   row: 0});
+        returned.push(Point {   col: 3,   row: -1});
+        returned.push(Point {   col: 3,   row: -2});
+        returned.push(Point {   col: 3,   row: -3});
+        returned.push(Point {   col: 2,   row: -3});
+        returned.push(Point {   col: 1,   row: -3});
+        returned.push(Point {   col: -0,   row: -3});
+        returned.push(Point {   col: -1,   row: -2});
+        returned.push(Point {   col: -2,   row: -1});
+        returned.push(Point {   col: -3,   row: 0});
+        returned.push(Point {   col: -3,   row: 1});
+        returned.push(Point {   col: -3,   row: 2});
+        returned.push(Point {   col: -3,   row: 3});
+        returned.push(Point {   col: -2,   row: 3});
+        returned.push(Point {   col: -1,   row: 3});
+        returned.push(Point {   col: 0,   row: 3});
+        returned.push(Point {   col: 1,   row: 2});
+        returned.push(Point {   col: 2,   row: 1});
+    }
     return returned;
 }
 impl<Content:Clone> IndexedHexGround<Content> {
@@ -173,15 +211,99 @@ impl<Content:Clone> IndexedHexGround<Content> {
         return returned;
     }
 
+    pub fn parse<NewContent:Clone+Copy>(values:Vec<Option<NewContent>>)->IndexedHexGround<NewContent> {
+        let radius = match values.len() {
+            1 => 0,
+            7 => 1,
+            19 => 2,
+            37 => 3,
+            _ => panic!("values array is of size {}, which is not supported", values.len())
+        };
+        let mut returned:IndexedHexGround<NewContent> = IndexedHexGround::<NewContent>::of_radius(radius);
+        for (position, element) in values.iter().enumerate() {
+            element.as_ref().map(|e| returned.set(position, *e));
+        }
+        return returned;
+    }
+
     pub fn set(&mut self, index:usize, value:Content) {
         let location = self.index[index];
-        self.by_coordinates.set_at(location, value);
+        self.by_coordinates.set_at(&location, value);
     }
 
     pub fn get(&mut self, index:usize)->Option<&Content> {
         let location = self.index[index];
-        self.by_coordinates.get_at(location)
+        self.by_coordinates.get_at(&location)
     }
+}
+
+impl<Content:Clone+fmt::Debug> IndexedHexGround<Content> {
+    pub fn quine(&self, contained_type:&str)->String {
+        let hydrater:Vec<Option<&Content>> = self.index.iter()
+            .map(|p| self.by_coordinates.get_at(p))
+            .collect();
+        return format!("IndexedHexGround::<{}>::parse(vec!{:?})", contained_type, hydrater);
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Test  /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+fn to_test(day:i32, sun:i32, ground:&IndexedHexGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
+    let timestamp = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        Ok(n) => n.as_secs(),
+        Err(_) => 0,
+    };
+    return format!("\t#[test]
+    fn test_actions_at_{}() {{
+        let day = {};
+        let sun = {};
+
+        let ground = {};
+
+        let trees = {:?};
+        let now = Instant::now();
+        assert_that(&compute_action(day, ground, trees)).is_not_equal_to(&{:?});
+    }}
+    ", timestamp, 
+        day,
+        sun,
+        ground.quine("Cell"),
+        trees, 
+        action
+    );
+}
+
+fn wood_compute_action(trees:&mut Vec<Tree>)->Action {
+    trees.sort_by_key(|t| -1*(t.size as i32));
+        
+    let mut my_trees = trees
+        .iter()
+        .filter(|t| t.mine);
+    // Write an action using println!("message...");
+    // To debug: eprintln!("Debug message...");
+    return match my_trees
+        .next() {
+            Some(t) => {
+                if t.size>=3 {
+                    Action::COMPLETE {id: t.index }
+                } else {
+                    Action::GROW {id: t.index }
+                }
+            },
+            None => Action::WAIT
+        };
+}
+
+/// day indicates the shadow direction
+/// sun gives the number of action points that can be used in the day
+/// ground is, well, the ground
+/// contains all trees, both mines and opponent ones
+pub fn compute_action(day:i32, sun:i32, ground:&IndexedHexGround<Cell>, trees:&mut Vec<Tree>)->Action {
+    let action = wood_compute_action(&mut trees.clone());
+    eprintln!("{}", to_test(day, sun, &ground, &trees, &action));
+    return action;
 }
 
 /**
@@ -193,6 +315,7 @@ fn main() {
     io::stdin().read_line(&mut input_line).unwrap();
     // number of cells of playground
     let number_of_cells = parse_input!(input_line, i32); // 37
+    let mut ground:IndexedHexGround<Cell> = IndexedHexGround::<Cell>::of_radius(3);
     // content of each cell
     for i in 0..number_of_cells as usize {
         let mut input_line = String::new();
@@ -206,6 +329,7 @@ fn main() {
         let neigh_3 = parse_input!(inputs[5], i32);
         let neigh_4 = parse_input!(inputs[6], i32);
         let neigh_5 = parse_input!(inputs[7], i32);
+        ground.set(index as usize, Cell {richness: richness});
     }
 
     // game loop
@@ -250,27 +374,9 @@ fn main() {
             let possible_move = input_line.trim_matches('\n').to_string();
         }
 
-        trees.sort_by_key(|t| -1*(t.size as i32));
-        eprintln!("{:#?}", &trees);
 
-        let mut my_trees = trees
-            .iter()
-            .filter(|t| t.mine);
-        // Write an action using println!("message...");
-        // To debug: eprintln!("Debug message...");
-        match my_trees
-            .next() {
-                Some(t) => {
-                    if t.size>=3 {
-                        println!("COMPLETE {}", t.index)
-                    } else {
-                        println!("GROW {}", t.index)
-                    }
-                },
-                None => println!("WAIT")
-            }
-
+        let action = compute_action(day, sun, &ground, &mut trees);
         // GROW cellIdx | SEED sourceIdx targetIdx | COMPLETE cellIdx | WAIT <message>
-        ;
+        println!("{}", action);
     }
 }

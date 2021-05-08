@@ -24,3 +24,22 @@ pub fn can_get_by_index_a_value_set_by_coordinates() {
     // Then
     assert_that(&playground.get(2).unwrap()).is_equal_to(&13);
 }
+
+#[test]
+pub fn can_dehydrate() {
+    // Given
+    let mut playground:IndexedHexGround<i32> = IndexedHexGround::<i32>::of_radius(1);
+    playground.by_coordinates.set(-1, 1, 13);
+    // When
+    assert_that(&playground.quine("i32")).is_equal_to(&"IndexedHexGround::<i32>::parse(vec![None, None, Some(13), None, None, None, None])".to_string());
+    // Then
+}
+
+#[test]
+pub fn can_rehydrate() {
+    // Given
+    let mut playground:IndexedHexGround<i32> = IndexedHexGround::<i32>::parse(vec![None, None, Some(13), None, None, None, None]);
+    // Then
+    assert_that(&playground.get(1)).is_equal_to(None);
+    assert_that(&playground.get(2).unwrap()).is_equal_to(&13);
+}
