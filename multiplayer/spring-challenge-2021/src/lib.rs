@@ -432,7 +432,7 @@ impl<'lifetime> Computer<'lifetime> {
             .collect();
 
         let mut prioritized_actions:Vec<(&Action, &usize, i32)> = costed_actions.iter()
-            .filter(|(_, cost)| cost<&self.sun)
+            .filter(|(_, cost)| cost<=&self.sun)
             .map(|(action, cost)| (action, cost, self.prioritize(*action)))
             .collect();
         
