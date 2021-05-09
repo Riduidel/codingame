@@ -1,4 +1,5 @@
 use std::io;
+use std::rc::Rc;
 use std::vec::Vec;
 use std::collections::*;
 use std::fmt;
@@ -19,7 +20,7 @@ pub struct Cell {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Action  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug,Clone,PartialEq)]
+#[derive(Debug,Clone,Copy,PartialEq)]
 pub enum Action {
     COMPLETE {
         id:usize
@@ -28,7 +29,8 @@ pub enum Action {
         id:usize
     },
     SEED {
-        id:usize
+        id:usize,
+        position:usize
     },
     WAIT
 }
@@ -38,7 +40,7 @@ impl fmt::Display for Action {
         match self {
             Action::COMPLETE {id} => write!(f, "{} {}", "COMPLETE", id),
             Action::GROW {id} => write!(f, "{} {}", "GROW", id),
-            Action::SEED {id} => write!(f, "{} {}", "SEED", id),
+            Action::SEED {id, position} => write!(f, "{} {} {}", "SEED", id, position),
             Action::WAIT => write!(f, "WAIT"),
         }
     }
@@ -57,6 +59,12 @@ pub struct Tree {
 impl fmt::Display for Tree {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "i:{} s:{} m:{}", self.index, self.size, self.mine)
+    }
+}
+
+impl PartialEq for Tree {
+    fn eq(&self, other: &Self) -> bool {
+        self.index == other.index
     }
 }
 
@@ -254,18 +262,15 @@ impl<Content:Clone+fmt::Debug> QuinableGround<Content> for IndexedHexGround<Cont
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////// VecGround  ///////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-struct Geometry<Content> {
-    // -1 is used for elements that are on ground's edge
-    neighbours:[i32;6],
-    content:Option<Content>
-}
 pub struct VecGround<Content> {
-    storage:Vec<Geometry<Content>>
+    geometry:Rc<Vec<[i32;6]>>,
+    storage:Vec<Option<Content>>
 }
 impl<Content> VecGround<Content> {
     pub fn parse<NewContent:Clone>(cells:&mut Vec<Option<NewContent>>)->VecGround<NewContent> {
         let mut returned:VecGround<NewContent> = VecGround {
-            storage: Vec::with_capacity(cells.len())
+            geometry: Rc::new(Vec::with_capacity(cells.len())),
+            storage: vec![None; cells.len()]
         };
         let len = cells.len();
         if len!=37 {
@@ -297,32 +302,44 @@ impl<Content> VecGround<Content> {
     }
     pub fn of_cells<NewContent:Clone>(cells:usize)->VecGround<NewContent> {
         VecGround {
+            geometry: Rc::new(Vec::with_capacity(cells)),
             storage: Vec::with_capacity(cells)
         }
     }
 
+    pub fn new_from_geometry<NewContent:Clone>(&self)->VecGround<NewContent> {
+        VecGround {
+            geometry: self.geometry.clone(),
+            storage: vec![None; self.storage.len()]
+        }
+    }
+
     pub fn set_geometry(&mut self, index:usize, geometry:[i32;6]) {
-        if index==self.storage.len() {
-            self.storage.push(Geometry {
-                neighbours:geometry,
-                content:None
-            });
+        let playground_geometry = Rc::get_mut(&mut self.geometry).unwrap();
+        if index==playground_geometry.len() {
+            playground_geometry.push(geometry);
         } else {
             panic!("can't set geometry at any other place than ground len()")
         }
     }
 
     pub fn set_content(&mut self, index:usize, content:Content) {
-        self.storage[index].content = Some(content);
+        if index==self.storage.len() {
+            self.storage.push(Some(content));
+        } else if index<self.storage.len() {
+            self.storage[index] = Some(content);
+        } else {
+            panic!("can't set content for index {} when content has len {}", index, self.storage.len());
+        }
     }
 }
 
 impl<Content:Clone+fmt::Debug> QuinableGround<Content> for VecGround<Content> {
     fn quine(&self, contained_type:&str)->String {
         let hydrater:Vec<Option<&Content>> = self.storage.iter()
-            .map(|geom| geom.content.as_ref())
+            .map(|content| content.as_ref())
             .collect();
-        return format!("VecGround::<{}>::parse(vec!{:?})", contained_type, hydrater);
+        return format!("VecGround::<{}>::parse(&mut vec!{:?})", contained_type, hydrater);
     }
 }
 
@@ -337,59 +354,211 @@ pub trait QuinableGround<Content> {
 /////////////////////////////////////// Computer  ///////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 struct Computer<'lifetime> {
-    day:usize,
+    max_days:i32,
+    day:i32,
+    nutrients:i32,
     sun:usize,
     ground:&'lifetime VecGround<Cell>,
-    trees:&'lifetime Vec<Tree>
+    trees:&'lifetime Vec<Tree>,
+    all_trees_positions:Vec<usize>,
+    my_trees:BTreeMap<usize, &'lifetime Tree>,
+    my_trees_counts:[usize;4],
+    shadows:Vec<VecGround<&'lifetime Tree>>
+}
+fn compute_shadow_at<'lifetime>(day:usize, ground:&VecGround<Cell>, trees:&'lifetime Vec<Tree>)->VecGround<&'lifetime Tree> {
+    // Obtained ground is empty, so we have to comute shadows on this day
+    let mut returned:VecGround<&Tree> = ground.new_from_geometry();
+    for tree in trees {
+        // We simply put the tree itself in its shadows locations
+        let mut index = tree.index;
+        for _ in 0..tree.size {
+            let neighbours = returned.geometry[index];
+            let next = neighbours[day%6];
+            if next<0 {
+                break;
+            } else {
+                index = next as usize;
+                returned.storage[index]=Some(tree);
+            }
+        }
+    }
+    return returned;
+}
+
+fn compute_next_shadows<'lifetime>(day:usize, ground:&VecGround<Cell>, trees:&'lifetime Vec<Tree>)->Vec<VecGround<&'lifetime Tree>> {
+    let mut returned = vec![];
+    // teah, we only have to evaluate shadows for the 6 next days
+    for i in 0..6 {
+        returned.push(compute_shadow_at(day+i, ground, trees));
+    }
+    return returned;
 }
 
 impl<'lifetime> Computer<'lifetime> {
-    fn compute (&self)->Action {
-        
-        let mut my_trees:Vec<&Tree> = self.trees
-            .iter()
+    fn from<'creator>(day:i32, sun:usize, nutrients:i32, ground:&'creator VecGround<Cell>, trees:&'creator Vec<Tree>)->Computer<'creator> {
+        let my_trees_vec:Vec<&Tree> = trees.iter()
             .filter(|t| t.mine)
             .collect();
-        my_trees.sort_by_key(|t| -1*(t.size as i32));
+        let mut my_trees_map:BTreeMap<usize, &Tree> = BTreeMap::new();
+        for t in my_trees_vec {
+            my_trees_map.insert(t.index, t);
+        }
+        let counts = trees.iter().fold([0, 0, 0, 0], |mut counts, tree| {
+            counts[tree.size] = counts[tree.size]+1;
+            counts
+        });
+        Computer {
+            max_days: 24,
+            day:day,
+            nutrients:nutrients,
+            sun:sun,
+            ground:ground,
+            trees:trees,
+            all_trees_positions:trees.iter()
+                .map(|t| t.index)
+                .collect(),
+            my_trees:my_trees_map,
+            my_trees_counts:counts,
+            shadows:compute_next_shadows(day as usize, ground, trees)
+        }
+    }
+    fn compute (&self)->(Action, String) {
+
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        return match my_trees.iter()
+        let costed_actions:Vec<(Action, usize)> = self.my_trees.values()
+            .flat_map(|tree| self.all_actions_of(tree))
+            .map(|action| (action, self.cost(action)))
+            .collect();
+
+        let mut prioritized_actions:Vec<(&Action, &usize, i32)> = costed_actions.iter()
+            .filter(|(_, cost)| cost<&self.sun)
+            .map(|(action, cost)| (action, cost, self.prioritize(*action)))
+            .collect();
+        
+        prioritized_actions.sort_by_key(|(action, cost, priority)| -priority);
+
+        // Now it is time to compute cost of each action
+        return match prioritized_actions.iter()
+            .filter(|(_, _, priority)| priority>&0)
             .next() {
-                Some(t) => {
-                    if t.size>=3 {
-                        Action::COMPLETE {id: t.index }
-                    } else {
-                        Action::GROW {id: t.index }
-                    }
-                },
-                None => Action::WAIT
+                Some((action, cost, priority)) => (**action, format!("costs {}, priority {}", cost, priority)),
+                None => (Action::WAIT, format!("{} actions not even worth it", prioritized_actions.len()))
             };
+    }
+
+    fn cost(&self, action:Action)->usize {
+        match action {
+            Action::COMPLETE {id} => 4,
+            Action::GROW{id} => {
+                let size = self.my_trees.get(&id).unwrap().size;
+                let tax = [1, 3, 7];
+                tax[size]+self.my_trees_counts[size+1]
+            },
+            Action::SEED{id, position} => self.my_trees_counts[0],
+            Action::WAIT => 0
         }
+    }
+    fn prioritize(&self, action:Action)->i32 {
+        let returned = match action {
+            Action::COMPLETE {id} => {
+                let richness = self.ground.storage[id].unwrap().richness as i32;
+                if (self.day as i32)>self.max_days-2 {
+                    (richness-1)*2+self.nutrients
+                } else {
+                    -1
+                }
+            },
+            Action::GROW{id} => {
+                let richness = self.ground.storage[id].unwrap().richness as i32;
+                let t = self.my_trees[&id];
+                let next_size = (t.size as i32 +1);
+                let possible_gain = if self.max_days-self.day>(3-t.size as i32) {
+                    /*next_size**/richness
+                } else {
+                    -1
+                };
+                match self.shadows[1].storage[id] { 
+                    Some(other) => if other.size<t.size {
+                        possible_gain
+                    } else {
+                        -1
+                    },
+                    None => possible_gain
+                }
+            },
+            Action::SEED{id, position} => {
+                let richness = self.ground.storage[position].unwrap().richness as i32;
+                richness * if self.shadows[1].storage[position].is_some() { 
+                    -1 
+                } else { 
+                    if self.max_days-self.day>3 {
+                        1
+                    } else {
+                        -1
+                    }
+                }
+            }, 
+            Action::WAIT => -1
+        };
+        return returned;
+    }
+
+    fn all_actions_of(&self, tree:&Tree)->Vec<Action> {
+        let mut returned = vec![];
+        // Now add all the seed actions
+        returned.extend(self.all_seeds_of(tree, tree.index, 0));
+        if tree.size==3 {
+            returned.push(Action::COMPLETE {id:tree.index});
+        } else {
+            returned.push(Action::GROW { id:tree.index});
+        }
+        return returned;
+    }
+    fn all_seeds_of(&self, tree:&Tree, starting:usize, deepness:usize)->Vec<Action> {
+        let mut returned = vec![];
+        if deepness<tree.size {
+            // Now navigate all position neighbours
+            for future in self.ground.geometry[starting].iter() {
+                if future>=&0 {
+                    let pos = *future as usize;
+                    if !self.all_trees_positions.contains(&pos) && self.ground.storage[pos].unwrap().richness>0 {
+                        returned.push(Action::SEED{id:tree.index, position:pos});
+                    }
+                    returned.extend(self.all_seeds_of(tree, pos, deepness+1));
+                }
+            }
+        }
+        return returned;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// Main decorations  /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-fn to_test(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
+fn to_test(day:i32, sun:i32, nutrients:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>, action:&Action)->String {
     let timestamp = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
         Err(_) => 0,
     };
-    return format!("\t#[test]
+    return format!("#[test]
     fn test_actions_at_{}() {{
         let day = {};
         let sun = {};
+        let nutrients = {};
 
         let ground = {};
 
         let mut trees = vec![{}];
         let now = Instant::now();
-        assert_that(&compute_action(day, sun, &ground, &mut trees)).is_not_equal_to(&Action::{:?});
+        let (action, message) = compute_action(day, sun, nutrients, &ground, &mut trees);
+        assert_that(&action).is_not_equal_to(&Action::{:?});
     }}
     ", timestamp, 
         day,
         sun,
+        nutrients, 
         ground.quine("Cell"),
         trees.iter().map(|t| format!("t({}, {}, {}, {})", t.index, t.size, t.mine, t.dormant)).collect::<Vec<String>>().join(", "), 
         action
@@ -400,17 +569,12 @@ fn to_test(day:i32, sun:i32, ground:&dyn QuinableGround<Cell>, trees:&Vec<Tree>,
 /// sun gives the number of action points that can be used in the day
 /// ground is, well, the ground
 /// contains all trees, both mines and opponent ones
-pub fn compute_action(day:i32, sun:i32, ground:&VecGround<Cell>, trees:&mut Vec<Tree>)->Action {
+pub fn compute_action<'a>(day:i32, sun:i32, nutrients:i32, ground:&'a VecGround<Cell>, trees:&'a mut Vec<Tree>)->(Action, String) {
 //    let wood_action = wood_compute_action(&mut trees.clone());
-    let computer = Computer {
-        day: day as usize,
-        sun: sun as usize,
-        ground: ground,
-        trees:trees
-    };
-    let action = computer.compute();
-    eprintln!("{}", to_test(day, sun, ground, &trees, &action));
-    return action;
+    let computer = Computer::from(day, sun as usize, nutrients, ground, trees);
+    let (action, message) = computer.compute();
+    eprintln!("{}", to_test(day, sun, nutrients, ground, &trees, &action));
+    return (action, message);
 }
 
 /**
@@ -483,8 +647,8 @@ fn main() {
         }
 
 
-        let action = compute_action(day, sun, &ground, &mut trees);
+        let (action, message) = compute_action(day, sun, nutrients, &ground, &mut trees);
         // GROW cellIdx | SEED sourceIdx targetIdx | COMPLETE cellIdx | WAIT <message>
-        println!("{}", action);
+        println!("{} {}", action, message);
     }
 }
