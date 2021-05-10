@@ -403,7 +403,7 @@ impl<'lifetime> Computer<'lifetime> {
         for t in my_trees_vec {
             my_trees_map.insert(t.index, t);
         }
-        let counts = trees.iter().fold([0, 0, 0, 0], |mut counts, tree| {
+        let counts = my_trees_map.values().fold([0, 0, 0, 0], |mut counts, &tree| {
             counts[tree.size] = counts[tree.size]+1;
             counts
         });
@@ -423,10 +423,9 @@ impl<'lifetime> Computer<'lifetime> {
         }
     }
     fn compute (&self)->(Action, String) {
-
-        // Write an action using println!("message...");
-        // To debug: eprintln!("Debug message...");
+        // Only consider actions of active trees, please!!!
         let costed_actions:Vec<(Action, usize)> = self.my_trees.values()
+            .filter(|tree| !tree.dormant)
             .flat_map(|tree| self.all_actions_of(tree))
             .map(|action| (action, self.cost(action)))
             .collect();
@@ -463,10 +462,11 @@ impl<'lifetime> Computer<'lifetime> {
         let returned = match action {
             Action::COMPLETE {id} => {
                 let richness = self.ground.storage[id].unwrap().richness as i32;
-                if (self.day as i32)>self.max_days-2 {
-                    (richness-1)*2+self.nutrients
-                } else {
+                // Always keep one tree of size 3 at least
+                if self.my_trees_counts[3]<=1 && self.day<self.max_days-1{
                     -1
+                } else {
+                    ((richness-1)*2+self.nutrients)
                 }
             },
             Action::GROW{id} => {
@@ -474,7 +474,7 @@ impl<'lifetime> Computer<'lifetime> {
                 let t = self.my_trees[&id];
                 let next_size = (t.size as i32 +1);
                 let possible_gain = if self.max_days-self.day>(3-t.size as i32) {
-                    /*next_size**/richness
+                    next_size*richness
                 } else {
                     -1
                 };
@@ -635,7 +635,7 @@ fn main() {
             let size = parse_input!(inputs[1], i32); // size of this tree: 0-3
             let is_mine = parse_input!(inputs[2], i32); // 1 if this is your tree
             let is_dormant = parse_input!(inputs[3], i32); // 1 if this tree is dormant
-            trees.push(Tree {index: cell_index as usize, size: size as usize, mine: is_mine==1, dormant: false});
+            trees.push(Tree {index: cell_index as usize, size: size as usize, mine: is_mine==1, dormant: is_dormant==1});
         }
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
