@@ -463,9 +463,10 @@ impl<'lifetime> Computer<'lifetime> {
             Action::COMPLETE {id} => {
                 let richness = self.ground.storage[id].unwrap().richness as i32;
                 // Always keep one tree of size 3 at least
-                if self.my_trees_counts[3]<=1 && self.day<self.max_days-1{
+                if self.my_trees_counts[3]<=2 && self.day<self.max_days-1{
                     -1
                 } else {
+                    // max value is 24
                     ((richness-1)*2+self.nutrients)
                 }
             },
@@ -473,35 +474,35 @@ impl<'lifetime> Computer<'lifetime> {
                 let richness = self.ground.storage[id].unwrap().richness as i32;
                 let t = self.my_trees[&id];
                 let next_size = (t.size as i32 +1);
-                let possible_gain = if self.max_days-self.day>(3-t.size as i32) {
-                    next_size*richness
+                if self.max_days-self.day>(3-t.size as i32) {
+                    // max value is 27
+                    next_size*3*self.compute_shadow_percentage(id)
                 } else {
                     -1
-                };
-                match self.shadows[1].storage[id] { 
-                    Some(other) => if other.size<t.size {
-                        possible_gain
-                    } else {
-                        -1
-                    },
-                    None => possible_gain
                 }
             },
             Action::SEED{id, position} => {
                 let richness = self.ground.storage[position].unwrap().richness as i32;
-                richness * if self.shadows[1].storage[position].is_some() { 
-                    -1 
-                } else { 
-                    if self.max_days-self.day>3 {
-                        1
-                    } else {
-                        -1
-                    }
+                if self.max_days-self.day>3 {
+                    // seems like we have the time to put that seed. But will it flourish ?
+                    // To know that, let's evaluate how much shadow it will receive
+                    // max value is 18
+                    richness*self.compute_shadow_percentage(position)
+                } else {
+                    -1
                 }
             }, 
             Action::WAIT => -1
         };
         return returned;
+    }
+
+    fn compute_shadow_percentage(&self, position:usize)->i32 {
+        let mut sunny_days = 0;
+        for i in 0..6 {
+            sunny_days+= if self.shadows[i].storage[position].is_none() { 1 } else { 0 };
+        }
+        return sunny_days;
     }
 
     fn all_actions_of(&self, tree:&Tree)->Vec<Action> {
