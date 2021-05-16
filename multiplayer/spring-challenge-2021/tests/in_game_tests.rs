@@ -42,4 +42,38 @@ fn test_actions_at_1620571180() {
     let now = Instant::now();
     assert_that(&compute_action(day, sun, &ground, &mut trees)).is_not_equal_to(&Action::WAIT);
 }
+#[test]
+fn test_actions_at_1620762300() {
+    let day = 0;
+    let sun = 2;
+    let nutrients = 20;
+    let ground = VecGround::<Cell>::parse(&mut vec![Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 })]);
+    let mut trees = vec![t(20, 1, true, false), t(23, 1, true, false), t(29, 1, false, false), t(32, 1, false, false)];
+    let now = Instant::now();
+    let (action, message) = compute_action(day, sun, nutrients, &ground, &mut trees);
+    assert_that(&action).is_not_equal_to(&Action::SEED { id: 20, position: 8 });
+}
+
+#[test]
+fn test_actions_at_1620762300_1() {
+    let day = 0;
+    let sun = 2;
+    let nutrients = 20;
+    let ground = VecGround::<Cell>::parse(&mut vec![Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 })]);
+    let mut trees = vec![t(20, 1, true, false), t(23, 1, true, false), t(29, 1, false, false), t(32, 1, false, false)];
+    let now = Instant::now();
+    let (action, message) = compute_action(day, sun, nutrients, &ground, &mut trees);
+    assert_that(&action).is_not_equal_to(&Action::SEED { id: 20, position: 8 });
+}
 */
+#[test]
+    fn test_actions_at_1620848390() {
+        let day = 14;
+        let sun = 6;
+        let nutrients = 14;
+        let ground = VecGround::<Cell>::parse(&mut vec![Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 3 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 0 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 2 }), Some(Cell { richness: 0 }), Some(Cell { richness: 2 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 0 }), Some(Cell { richness: 0 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 0 }), Some(Cell { richness: 0 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 0 }), Some(Cell { richness: 0 }), Some(Cell { richness: 1 }), Some(Cell { richness: 1 }), Some(Cell { richness: 0 }), Some(Cell { richness: 0 })]);
+        let mut trees = vec![t(1, 3, false, false), t(3, 0, true, false), t(5, 0, false, false), t(7, 0, true, false), t(10, 3, false, false), t(12, 1, true, false), t(13, 3, false, false), t(14, 1, true, false), t(18, 0, true, false), t(19, 2, false, false), t(21, 1, false, false), t(25, 0, false, false), t(28, 3, true, false), t(30, 1, false, false), t(33, 2, false, false)];
+        let now = Instant::now();
+        let (action, message) = compute_action(day, sun, nutrients, &ground, &mut trees);
+        assert_that(&action).is_not_equal_to(&Action::COMPLETE { id: 28 });
+    }

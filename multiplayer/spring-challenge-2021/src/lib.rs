@@ -9,6 +9,8 @@ macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
 
+const COEFFICIENTS:[i32;6] = [6, 5, 4, 3, 2, 1];
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// Cell  /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -363,6 +365,7 @@ struct Computer<'lifetime> {
     all_trees_positions:Vec<usize>,
     my_trees:BTreeMap<usize, &'lifetime Tree>,
     my_trees_counts:[usize;4],
+    enemy_trees_counts:[usize;4],
     shadows:Vec<VecGround<&'lifetime Tree>>
 }
 fn compute_shadow_at<'lifetime>(day:usize, ground:&VecGround<Cell>, trees:&'lifetime Vec<Tree>)->VecGround<&'lifetime Tree> {
@@ -407,6 +410,12 @@ impl<'lifetime> Computer<'lifetime> {
             counts[tree.size] = counts[tree.size]+1;
             counts
         });
+        let other_counts = trees.iter()
+            .filter(|t| !t.mine)
+            .fold([0, 0, 0, 0], |mut counts, tree| {
+            counts[tree.size] = counts[tree.size]+1;
+            counts
+        });
         Computer {
             max_days: 24,
             day:day,
@@ -419,6 +428,7 @@ impl<'lifetime> Computer<'lifetime> {
                 .collect(),
             my_trees:my_trees_map,
             my_trees_counts:counts,
+            enemy_trees_counts:other_counts,
             shadows:compute_next_shadows(day as usize, ground, trees)
         }
     }
@@ -435,7 +445,8 @@ impl<'lifetime> Computer<'lifetime> {
             .map(|(action, cost)| (action, cost, self.prioritize(*action)))
             .collect();
         
-        prioritized_actions.sort_by_key(|(action, cost, priority)| -priority);
+        prioritized_actions.sort_by(|(_, _, priority1),(_, _, priority2)| 
+            priority2.partial_cmp(priority1).unwrap_or(std::cmp::Ordering::Equal));
 
         // Now it is time to compute cost of each action
         return match prioritized_actions.iter()
@@ -461,10 +472,18 @@ impl<'lifetime> Computer<'lifetime> {
     fn prioritize(&self, action:Action)->i32 {
         let returned = match action {
             Action::COMPLETE {id} => {
+                // TODO complete first trees that will be the most in the shadows
+                // TODO ensure the trees are haversted at the good time : not too fast,
+                // but soon enough to not leave anyone on round at game end
                 let richness = self.ground.storage[id].unwrap().richness as i32;
+                let next_days_of_sun = self.count_days_of_sun_at(self.day, id);
                 // Always keep one tree of size 3 at least
-                if self.my_trees_counts[3]<=2 && self.day<self.max_days-1{
-                    -1
+                if self.day<self.max_days-1{
+                    if self.my_trees_counts[3]>self.enemy_trees_counts[3] {
+                        (6-next_days_of_sun)*(richness-1)
+                    } else {
+                        -1
+                    }
                 } else {
                     // max value is 24
                     ((richness-1)*2+self.nutrients)
@@ -474,20 +493,35 @@ impl<'lifetime> Computer<'lifetime> {
                 let richness = self.ground.storage[id].unwrap().richness as i32;
                 let t = self.my_trees[&id];
                 let next_size = (t.size as i32 +1);
+                // if the tree with that id can still give fruits
                 if self.max_days-self.day>(3-t.size as i32) {
-                    // max value is 27
-                    next_size*3*self.compute_shadow_percentage(id)
+                    let next_days_of_sun = self.count_days_of_sun_at(self.day, id);
+                    let mut returned = next_days_of_sun*richness;
+                    // Favor growth when there are no bigger trees
+                    // and we can sunlight
+                    if self.my_trees_counts[t.size+1]<self.my_trees_counts[t.size] {
+                        returned*=2;
+                    }
+                    // Can we grow faster than shadow?
+                    // maximum default score is 3*6*3+1
+                    returned
                 } else {
                     -1
                 }
             },
             Action::SEED{id, position} => {
+                // TODO do not seed just beside another owned tree, because there is already one day with shadow
+                // unless the seeding tree is 3 in size and the shadow comes in 6 turns
                 let richness = self.ground.storage[position].unwrap().richness as i32;
-                if self.max_days-self.day>3 {
-                    // seems like we have the time to put that seed. But will it flourish ?
-                    // To know that, let's evaluate how much shadow it will receive
-                    // max value is 18
-                    richness*self.compute_shadow_percentage(position)
+                // A 1-sized tree will put seed somewhere where shadow will come, one day or another
+                if self.my_trees[&id].size<2 {
+                    -1
+                } else if self.max_days-self.day>3 && self.day>0 {
+                    let next_days_of_sun = self.count_days_of_sun_at(self.day, position);
+                    // maximum default score is 3*6
+                    let default_seed_score = richness*(next_days_of_sun-1);
+                    // Now an illumination : the shadow we cast is the shadow we receive in 3 turns!
+                    default_seed_score
                 } else {
                     -1
                 }
@@ -497,12 +531,42 @@ impl<'lifetime> Computer<'lifetime> {
         return returned;
     }
 
-    fn compute_shadow_percentage(&self, position:usize)->i32 {
-        let mut sunny_days = 0;
-        for i in 0..6 {
-            sunny_days+= if self.shadows[i].storage[position].is_none() { 1 } else { 0 };
+    fn count_days_of_sun_at(&self, day:i32, position:usize)->i32 {
+        let next_turn_shines = self.compute_shadow_future_at(day as usize, position);
+        return next_turn_shines.iter().take_while(|s| **s).count() as i32;
+    }
+
+    fn count_my_neighbours(&self, position:usize)->i32 {
+        self.ground.geometry[position].iter().fold(0, |acc, id| if id>=&0 && self.my_trees.contains_key(&(*id as usize)) { 1 } else { 0 })
+    }
+
+    fn compute_sunnyness(&self, position:usize)->i32 {
+        let next_turn_shines = self.compute_shadow_future_at(0, position);
+        let sunnnyness = next_turn_shines.iter().zip(COEFFICIENTS.iter()).fold(0, |acc, (sunlight, coeff)| {
+            acc + if *sunlight { coeff } else { &0 }
+        });
+        return sunnnyness;
+    }
+
+    fn compute_shadow_future_at(&self, day:usize, position:usize)->[bool;6] {
+        let mut returned = [false, false, false, false, false, false];
+        let size =  if self.my_trees.contains_key(&position) {
+            self.my_trees[&position].size
+        } else {
+            0
+        };
+        for i in day..day+6 {
+            match &self.shadows[i%6].storage[position] {
+                Some(shadower) => {
+                    returned[i-day] = shadower.size<size;
+                },
+                None => {
+                    returned[i-day] = true;
+                }
+            }
         }
-        return sunny_days;
+        // We want to have value up to 6
+        return returned;
     }
 
     fn all_actions_of(&self, tree:&Tree)->Vec<Action> {
