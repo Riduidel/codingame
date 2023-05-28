@@ -32,12 +32,14 @@ impl fmt::Display for Action {
 
 // See https://stackoverflow.com/a/42382144/15619
 #[repr(i32)]
+#[derive(Debug)]
 pub enum CellContent {
     EMPTY = 0,
     EGG,
     CRYSTAL
 }
 
+#[derive(Debug)]
 pub struct Cell {
     cell_index:usize,
     cell_content:CellContent,
@@ -56,6 +58,7 @@ impl Cell {
     }
 }
 
+#[derive(Debug)]
 pub struct Player {
     /**
      * Indices of cells where player has bases
@@ -63,8 +66,29 @@ pub struct Player {
     bases:Vec<usize>
 }
 
+impl Player {
+    pub fn parse()->Player {
+        let mut input_line = String::new();
+        io::stdin().read_line(&mut input_line).unwrap();
+        let number_of_bases = parse_input!(input_line, i32);
+        let mut my_bases:Vec<usize> = Vec::with_capacity(number_of_bases as usize);
+        let mut inputs = String::new();
+        io::stdin().read_line(&mut inputs).unwrap();
+        for i in inputs.split_whitespace() {
+            let my_base_index = parse_input!(i, usize);
+            my_bases.push(my_base_index);
+        }
+        Player {
+            bases: my_bases
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Playground {
-    cells:Vec<Cell>
+    cells:Vec<Cell>,
+    my_player: Player,
+    opponent: Player
 }
 
 impl Playground {
@@ -95,8 +119,12 @@ impl Playground {
                 neighbours: vec!(neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5)
             });
         }
+        let my = Player::parse();
+        let opponent = Player::parse();
         Playground {
-            cells: cells
+            cells: cells,
+            my_player: my,
+            opponent: opponent
         }
     
     }
@@ -107,44 +135,28 @@ impl Playground {
  * the standard input according to the problem statement.
  **/
 fn main() {
+    let TURN_DURATION:chrono::Duration = chrono::Duration::milliseconds(100);
     let mut playground = Playground::parse_initial_playground();
-    let mut input_line = String::new();
-    io::stdin().read_line(&mut input_line).unwrap();
-    let number_of_bases = parse_input!(input_line, i32);
-    let mut my_bases:Vec<usize> = Vec::with_capacity(number_of_bases as usize);
-    let mut inputs = String::new();
-    io::stdin().read_line(&mut inputs).unwrap();
-    for i in inputs.split_whitespace() {
-        let my_base_index = parse_input!(i, usize);
-        my_bases.push(my_base_index);
-    }
-    let mut enemy_bases:Vec<usize> = Vec::with_capacity(number_of_bases as usize);
-    let mut inputs = String::new();
-    io::stdin().read_line(&mut inputs).unwrap();
-    for i in inputs.split_whitespace() {
-        let opp_base_index = parse_input!(i, usize);
-        enemy_bases.push(opp_base_index);
-    }
-    let my_player = Player {
-        bases: my_bases
-    };
-    let enemy = Player {
-        bases: enemy_bases
-    };
-
     // game loop
     loop {
+        eprintln!("parsing {} cells", playground.cells.len());
+        let turn_start = chrono::offset::Utc::now();
         for cell_index in 0..playground.cells.len() as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
+//            eprintln!("parsing cell {} input line \"{}\"", cell_index, input_line);
             let inputs = input_line.split(" ").collect::<Vec<_>>();
             let resources = parse_input!(inputs[0], i32); // the current amount of eggs/crystals on this cell
             let my_ants = parse_input!(inputs[1], i32); // the amount of your ants on this cell
             let opp_ants = parse_input!(inputs[2], i32); // the amount of opponent ants on this cell
             playground.cells.get_mut(cell_index).unwrap()
                 .update(resources, my_ants, opp_ants);
-
+            eprintln!("parsed cell {}", cell_index);
+            let read_duration = (chrono::offset::Utc::now()-turn_start);
+            eprintln!("{:?} ms {:?} μs {:?} ns", 
+                read_duration.num_milliseconds(), read_duration.num_microseconds(), read_duration.num_nanoseconds());
         }
+        eprintln!("parsed current state");
 
         // Find all cells having resources
         let targets:Vec<&Cell> = playground.cells
@@ -155,7 +167,7 @@ fn main() {
         let targets_count = targets.len();
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let actions:Vec<Action> = my_player.bases
+        let actions:Vec<Action> = playground.my_player.bases
             .iter()
             .flat_map(|base_index| {
                 let base_cell = &playground.cells[*base_index];
