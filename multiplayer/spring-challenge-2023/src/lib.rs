@@ -1,11 +1,18 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::cmp::Ordering;
 use std::io;
 use std::fmt;
+use std::ops::Add;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+use std::collections::BTreeMap;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
 }
-
 /** Possible actions */
+#[derive(Debug, PartialEq)]
 pub enum Action {
     /**
      * Creates a beacon on the given cell index with the given strenght
@@ -17,6 +24,12 @@ pub enum Action {
     LINE {start_index:usize, end_index:usize, strenght:i32},
     WAIT,
     MESSAGE {text:String}
+}
+
+impl Action {
+    fn to_test(&self)->String {
+        format!("Action::{:?}", self)
+    }
 }
 
 impl fmt::Display for Action {
@@ -32,14 +45,52 @@ impl fmt::Display for Action {
 
 // See https://stackoverflow.com/a/42382144/15619
 #[repr(i32)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum CellContent {
     EMPTY = 0,
     EGG,
     CRYSTAL
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
+pub struct Point {
+    row:i32,
+    col:i32
+}
+
+impl Point {
+    const DIRECTIONS: [Self; 6] = [
+        // EAST
+        Point { row: 0, col: 1},
+        // NORTHEAST
+        Point { row: -1, col: 1},
+        // NORTHWEST
+        Point { row: -1, col: -1},
+        // WEST
+        Point { row: -1, col: -1},
+        // SOUTHWEST
+        Point { row: 1, col: -1},
+        // SOUTHWEST
+        Point { row: 1, col: 1},
+    ];
+
+    fn to_test(&self)->String {
+        format!("({}, {})", self.row, self.col)
+    }
+}
+
+impl Add for Point {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            row: self.row + other.row,
+            col: self.col + other.col,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct Cell {
     cell_index:usize,
     cell_content:CellContent,
@@ -56,6 +107,50 @@ impl Cell {
         self.my_ants = my_ants;
         self.opponent_ants = opponent_ants;
     }
+
+    fn to_test(&self)->String {
+        format!(
+            "({}, CellContent::{:?}, {}, {}, {}, {}, {:?})",
+            self.cell_index,
+            self.cell_content,
+            self.initial_resources,
+            self.resources,
+            self.my_ants,
+            self.opponent_ants,
+            self.neighbours
+        )
+    }
+
+    fn compute_topology(&self, cells:&Vec<Cell>) -> Vec<Vec<usize>>{
+        let mut paths:BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+        // Now navigate through connected elements
+        let mut evaluated = vec![self.cell_index];
+        paths.insert(self.cell_index, vec![]);
+        while !evaluated.is_empty() {
+            let current_turn = evaluated.clone();
+            evaluated.clear();
+            for index in current_turn {
+                let cell = cells.get(index).unwrap();
+                let current_path = paths.get(&index).unwrap();
+                let mut next_path = current_path.clone();
+                next_path.push(index);
+                for neigh in cell.neighbours.clone() {
+                    if neigh>=0 {
+                        if !paths.contains_key(&(neigh as usize)) {
+                            evaluated.push(neigh as usize);
+                            paths.insert(neigh as usize, next_path.clone());
+                        }
+                    }
+                }
+            }
+        }
+        // Now convert that BTreeMap to a Vec!
+        let mut returned:Vec<Vec<usize>> = vec![];
+        for index in 0..cells.len() {
+            returned.push(paths.get(&index).unwrap().clone());
+        }
+        return returned;
+    }
 }
 
 #[derive(Debug)]
@@ -63,35 +158,50 @@ pub struct Player {
     /**
      * Indices of cells where player has bases
      */
-    bases:Vec<usize>
+    pub bases:Vec<usize>
 }
 
 impl Player {
     pub fn parse()->Player {
-        let mut input_line = String::new();
-        io::stdin().read_line(&mut input_line).unwrap();
-        let number_of_bases = parse_input!(input_line, i32);
-        let mut my_bases:Vec<usize> = Vec::with_capacity(number_of_bases as usize);
         let mut inputs = String::new();
         io::stdin().read_line(&mut inputs).unwrap();
-        for i in inputs.split_whitespace() {
-            let my_base_index = parse_input!(i, usize);
-            my_bases.push(my_base_index);
-        }
+        let my_bases:Vec<usize> = inputs.split_whitespace()
+            .into_iter()
+            .map(|i| parse_input!(i, usize))
+            .collect();
+        
         Player {
             bases: my_bases
         }
+    }
+
+    fn to_test(&self)->String {
+        format!("Player {{ bases: vec!{:?} }}", self.bases)
     }
 }
 
 #[derive(Debug)]
 pub struct Playground {
-    cells:Vec<Cell>,
-    my_player: Player,
-    opponent: Player
+    pub cells:Vec<Cell>,
+    pub my_player: Player,
+    pub opponent: Player,
+    pub topology: Vec<Vec<Vec<usize>>>
 }
 
 impl Playground {
+
+    /** 
+     * Compute topological informations (like distances and positions)
+    */
+    fn compute_topology(cells:&Vec<Cell>) -> Vec<Vec<Vec<usize>>> {
+        let mut topology:Vec<Vec<Vec<usize>>> = vec![];
+        for index in 0..cells.len() {
+            let cell = cells.get(index).unwrap();
+            topology.push(cell.compute_topology(&cells));
+        }
+        return topology;
+    }
+
     fn parse_initial_playground()->Playground {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
@@ -109,6 +219,7 @@ impl Playground {
             let neigh_3 = parse_input!(inputs[5], i32);
             let neigh_4 = parse_input!(inputs[6], i32);
             let neigh_5 = parse_input!(inputs[7], i32);
+            let neighbours = vec!(neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5);
             cells.push(Cell {
                 cell_index:i,
                 cell_content: unsafe { ::std::mem::transmute(cell_type) },
@@ -116,50 +227,54 @@ impl Playground {
                 resources: 0,
                 my_ants: 0,
                 opponent_ants: 0,
-                neighbours: vec!(neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5)
+                neighbours: neighbours
             });
         }
+        let mut input_line = String::new();
+        io::stdin().read_line(&mut input_line).unwrap();
+        let _number_of_bases = parse_input!(input_line, i32);
         let my = Player::parse();
         let opponent = Player::parse();
-        Playground {
+        let mut returned = Playground {
+            topology: Playground::compute_topology(&cells),
             cells: cells,
             my_player: my,
-            opponent: opponent
-        }
+            opponent: opponent,
+        };
+        return returned;
     
     }
-}
 
-/**
- * Auto-generated code below aims at helping you parse
- * the standard input according to the problem statement.
- **/
-fn main() {
-    let TURN_DURATION:chrono::Duration = chrono::Duration::milliseconds(100);
-    let mut playground = Playground::parse_initial_playground();
-    // game loop
-    loop {
-        eprintln!("parsing {} cells", playground.cells.len());
-        let turn_start = chrono::offset::Utc::now();
-        for cell_index in 0..playground.cells.len() as usize {
+    pub fn parse_turn(&mut self) {
+//        let turn_start = chrono::offset::Utc::now();
+        for cell_index in 0..self.cells.len() as usize {
             let mut input_line = String::new();
-            io::stdin().read_line(&mut input_line).unwrap();
-//            eprintln!("parsing cell {} input line \"{}\"", cell_index, input_line);
-            let inputs = input_line.split(" ").collect::<Vec<_>>();
-            let resources = parse_input!(inputs[0], i32); // the current amount of eggs/crystals on this cell
-            let my_ants = parse_input!(inputs[1], i32); // the amount of your ants on this cell
-            let opp_ants = parse_input!(inputs[2], i32); // the amount of opponent ants on this cell
-            playground.cells.get_mut(cell_index).unwrap()
-                .update(resources, my_ants, opp_ants);
-            eprintln!("parsed cell {}", cell_index);
-            let read_duration = (chrono::offset::Utc::now()-turn_start);
-            eprintln!("{:?} ms {:?} μs {:?} ns", 
-                read_duration.num_milliseconds(), read_duration.num_microseconds(), read_duration.num_nanoseconds());
+            match io::stdin().read_line(&mut input_line) {
+                Ok(_) => {
+                    let inputs = input_line.split(" ").collect::<Vec<_>>();
+                    let mut cell = self.cells.get_mut(cell_index);
+                    match cell {
+                        Some(c) => {
+                            c.update(
+                                parse_input!(inputs[0], i32), 
+                                parse_input!(inputs[1], i32), 
+                                parse_input!(inputs[2], i32));
+                        },
+                        None => {
+                            eprintln!("No cell found at {}", cell_index);
+                        }
+                    }
+                },
+                Err(error) => {
+                    eprintln!("Unable to read line {} due to {}", cell_index, error);
+                }
+            }
         }
-        eprintln!("parsed current state");
+    }
 
+    pub fn compute_actions(&self)->Vec<Action> {
         // Find all cells having resources
-        let targets:Vec<&Cell> = playground.cells
+        let targets:Vec<&Cell> = self.cells
             .iter()
             .filter(|cell| cell.resources>0)
             .collect();
@@ -167,10 +282,10 @@ fn main() {
         let targets_count = targets.len();
         // Write an action using println!("message...");
         // To debug: eprintln!("Debug message...");
-        let actions:Vec<Action> = playground.my_player.bases
+        let actions:Vec<Action> = self.my_player.bases
             .iter()
             .flat_map(|base_index| {
-                let base_cell = &playground.cells[*base_index];
+                let base_cell = &self.cells[*base_index];
                 let actions:Vec<Action> = targets.iter()
                     .map(|cell| {
                         Action::LINE { start_index: base_index.clone(), end_index: cell.cell_index.clone(), strenght: 1}
@@ -179,12 +294,108 @@ fn main() {
                 actions
             })
             .collect();
+        return actions;
+    }
+
+    fn to_test(&self, current:Vec<Action>)->String {
+        let start = SystemTime::now();
+        let since_the_epoch = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let timestamp = since_the_epoch.as_millis();
+        return format!("
+        #[test]
+        pub fn turn_at_{}() {{
+            let playground = Playground::init(
+                vec![{}],
+                {},
+                {}
+            );
+            playground.draw(\"in_game_at_{}.pkchr\");
+            let computed = playground.compute_actions();
+            let current = vec![{}];
+            assert_that(&computed).is_not_equal_to(&current);
+
+        }}", timestamp,
+        self.cells.iter()
+            .map(|c| c.to_test())
+            .collect::<Vec<String>>()
+            .join(", "),
+        self.my_player.to_test(),
+        self.opponent.to_test(),
+        timestamp,
+        current.iter()
+            .map(|action| action.to_test())
+            .collect::<Vec<String>>()
+            .join(", "))
+    }
+
+    pub fn init(cells:Vec<(usize, CellContent, i32, i32, i32, i32, [i32; 6])>,
+        my_player:Player,
+        opponent:Player)->Playground {
+        let parsed_cells:Vec<Cell> = cells.iter()
+        .map(|cell| Cell {
+            cell_index: cell.0,
+            cell_content: cell.1,
+            initial_resources: cell.2,
+            resources: cell.3,
+            my_ants: cell.4,
+            opponent_ants: cell.5,
+            neighbours: cell.6.to_vec(),
+        })
+        .collect();
+        let mut returned = Playground {
+            topology: Playground::compute_topology(&parsed_cells),
+            cells: parsed_cells,
+            my_player: my_player,
+            opponent: opponent,
+        };
+        return returned;
+    }
+
+    fn to_pikchr(&self)->String {
+        format!("TODO")
+    }
+
+    /**
+     * Draw current state to timestamp
+     */
+    pub fn draw(&self, filename:&str) {
+        let path = Path::new(&filename);
+        let display = path.display();
+    
+        // Open a file in write-only mode, returns `io::Result<File>`
+        let mut file = match File::create(&path) {
+            Err(why) => panic!("couldn't create {}: {}", display, why),
+            Ok(file) => file,
+        };
+    
+        match file.write_all(self.to_pikchr().as_bytes()) {
+            Err(why) => panic!("couldn't write to {}: {}", display, why),
+            Ok(_) => println!("successfully wrote to {}", display),
+        }
+    }
+}
+
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+fn main() {
+//    let TURN_DURATION:chrono::Duration = chrono::Duration::milliseconds(100);
+    let mut playground = Playground::parse_initial_playground();
+    // game loop
+    loop {
+        playground.parse_turn();
+
+        let actions = playground.compute_actions();
         let text = actions
             .iter()
             .map(|a| format!("{}", a))
             .collect::<Vec<String>>()
             .join("; ");
+
         println!("{}", text);
-        
+        eprintln!("{}", playground.to_test(actions));
     }
 }
