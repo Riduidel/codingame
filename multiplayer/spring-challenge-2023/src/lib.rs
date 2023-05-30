@@ -125,20 +125,20 @@ impl Cell {
         let mut paths:BTreeMap<usize, Vec<usize>> = BTreeMap::new();
         // Now navigate through connected elements
         let mut evaluated = vec![self.cell_index];
-        paths.insert(self.cell_index, vec![]);
+        paths.insert(self.cell_index, vec![self.cell_index]);
         while !evaluated.is_empty() {
             let current_turn = evaluated.clone();
             evaluated.clear();
             for index in current_turn {
                 let cell = cells.get(index).unwrap();
-                let current_path = paths.get(&index).unwrap();
-                let mut next_path = current_path.clone();
-                next_path.push(index);
+                let current_path = paths.get(&index).unwrap().clone();
                 for neigh in cell.neighbours.clone() {
                     if neigh>=0 {
                         if !paths.contains_key(&(neigh as usize)) {
+                            let mut next_path = current_path.clone();
+                            next_path.push(neigh as usize);
                             evaluated.push(neigh as usize);
-                            paths.insert(neigh as usize, next_path.clone());
+                            paths.insert(neigh as usize, next_path);
                         }
                     }
                 }
@@ -177,6 +177,10 @@ impl Player {
 
     fn to_test(&self)->String {
         format!("Player {{ bases: vec!{:?} }}", self.bases)
+    }
+
+    pub fn best_path_to<'a>(&'a self, playground:&'a Playground, cell:&Cell)->&Vec<usize> {
+        return playground.best_path_bewteen(&self.bases, cell);
     }
 }
 
@@ -272,29 +276,84 @@ impl Playground {
         }
     }
 
+    pub fn best_path_bewteen(&self, possible_sources:&Vec<usize>, target:&Cell)->&Vec<usize> {
+        possible_sources.iter()
+            .map(|index| self.topology.get(*index).unwrap())
+            .map(|vec_of_distances| vec_of_distances.get(target.cell_index).unwrap())
+            .min_by(|a, b| a.len().cmp(&b.len()))
+            .unwrap()
+
+    }
+
+    fn get_occupied_cells(&self)->Vec<usize> {
+        self.cells.iter()
+            .filter(|c| c.my_ants>0)
+            .map(|c| c.cell_index)
+            .collect()
+    }
+
     pub fn compute_actions(&self)->Vec<Action> {
         // Find all cells having resources
-        let targets:Vec<&Cell> = self.cells
+        let mut targets:Vec<&Cell> = self.cells
             .iter()
             .filter(|cell| cell.resources>0)
             .collect();
-        // Count the number of targets
-        let targets_count = targets.len();
-        // Write an action using println!("message...");
-        // To debug: eprintln!("Debug message...");
-        let actions:Vec<Action> = self.my_player.bases
-            .iter()
-            .flat_map(|base_index| {
-                let base_cell = &self.cells[*base_index];
-                let actions:Vec<Action> = targets.iter()
-                    .map(|cell| {
-                        Action::LINE { start_index: base_index.clone(), end_index: cell.cell_index.clone(), strenght: 1}
-                    })
-                    .collect();
-                actions
-            })
+
+        targets.sort_by(|t1, t2| {
+                let min_distance_to_my_base_for_t1 = self.my_player.best_path_to(&self, t1);
+                let min_distance_to_my_base_for_t2 = self.my_player.best_path_to(&self, t2);
+                min_distance_to_my_base_for_t1.len().cmp(&min_distance_to_my_base_for_t2.len())
+            });
+        let occupied_cells = self.get_occupied_cells();
+        // Now we know our targets, try to maximize the number of reached targets
+        // by creating shortest possible paths with at least one ant on each cell
+        // For now we don't take care of current ant position (but it will be a good add-on)
+        let mut ants:i32 = self.cells.iter()
+            .map(|c| c.my_ants)
+            .sum();
+        let mut beacon_map:BTreeMap<usize, usize> = BTreeMap::new();
+        let mut register_beacon_path = |elements:Vec<usize>| {
+            elements.iter()
+                .for_each(|cell_index| {
+                    let value = match beacon_map.get(cell_index) {
+                        Some(value) => value,
+                        None => &0
+                    };
+                    beacon_map.insert(*cell_index, *value+1);
+                })
+        };
+        // Pop the targets as long as we have remaining ants
+        while ants>=0 && !targets.is_empty(){
+            let best_target = targets.remove(0);
+            let best_path = self.best_path_bewteen(&occupied_cells, &best_target);
+            // Now build combined path from base to best path then best path to target
+            let mut full_path:Vec<usize> = vec![];
+            // Add path to best cell
+            if best_path.len()==0 {
+                // That target already has ants on it
+                // So the path is the direct path to the nearest base
+                full_path.extend_from_slice(self.my_player.best_path_to(self, best_target));
+            } else {
+                let best_path_start = best_path.get(0).unwrap();
+                let path_to_base = self.my_player.best_path_to(self, self.cells.get(*best_path_start).unwrap());
+                full_path.extend_from_slice(path_to_base);
+                // Add path from best cell to target
+                full_path.extend_from_slice(best_path);
+                // Add target
+                full_path.push(best_target.cell_index);
+            }
+            // Now remove ants
+            ants = ants - full_path.len() as i32;
+            // Register path
+            register_beacon_path(full_path);
+//            if best_target.my_ants==0 {
+//                break;
+//            }
+        }
+
+        return beacon_map.iter()
+            .map(|(k, v)| Action::BEACON { index: *k, strenght: (*v as i32) })
             .collect();
-        return actions;
     }
 
     fn to_test(&self, current:Vec<Action>)->String {

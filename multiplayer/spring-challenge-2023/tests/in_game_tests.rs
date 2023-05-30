@@ -1,0 +1,43 @@
+use std::time::Instant;
+use spring_challenge_2023::*;
+extern crate spectral;
+use spectral::prelude::*;
+
+#[test]
+pub fn turn_at_1685373139654() {
+    let playground = Playground::init(
+        vec![(0, CellContent::CRYSTAL, 46, 46, 0, 0, [1, 3, -1, 2, 4, -1]), (1, CellContent::CRYSTAL, 16, 16, 0, 0, [5, 7, 3, 0, -1, 16]), (2, CellContent::CRYSTAL, 16, 16, 0, 0, [0, -1, 15, 6, 8, 4]), (3, CellContent::EMPTY, 0, 0, 0, 0, [7, 9, 11, -1, 0, 1]), (4, CellContent::EMPTY, 0, 0, 0, 0, [-1, 0, 2, 8, 10, 12]), (5, CellContent::CRYSTAL, 59, 59, 0, 0, [17, 19, 7, 1, 16, 24]), (6, CellContent::CRYSTAL, 59, 59, 0, 0, [2, 15, 23, 18, 20, 8]), (7, CellContent::CRYSTAL, 45, 45, 0, 0, [19, 21, 9, 3, 1, 5]), (8, CellContent::CRYSTAL, 45, 45, 0, 0, [4, 2, 6, 20, 22, 10]), (9, CellContent::EMPTY, 0, 0, 0, 0, [21, -1, -1, 11, 3, 7]), (10, CellContent::EMPTY, 0, 0, 0, 0, [12, 4, 8, 22, -1, -1]), (11, CellContent::EMPTY, 0, 0, 0, 0, [9, -1, -1, 13, -1, 3]), (12, CellContent::EMPTY, 0, 0, 0, 0, [14, -1, 4, 10, -1, -1]), (13, CellContent::EMPTY, 0, 0, 0, 0, [11, -1, -1, -1, 15, -1]), (14, CellContent::EMPTY, 0, 0, 0, 0, [-1, 16, -1, 12, -1, -1]), (15, CellContent::EMPTY, 0, 0, 0, 0, [-1, 13, -1, 23, 6, 2]), (16, CellContent::EMPTY, 0, 0, 0, 0, [24, 5, 1, -1, 14, -1]), (17, CellContent::EMPTY, 0, 0, 0, 0, [25, -1, 19, 5, 24, 32]), (18, CellContent::EMPTY, 0, 0, 0, 0, [6, 23, 31, 26, -1, 20]), (19, CellContent::EMPTY, 0, 0, 10, 0, [-1, 27, 21, 7, 5, 17]), (20, CellContent::EMPTY, 0, 0, 0, 10, [8, 6, 18, -1, 28, 22]), (21, CellContent::CRYSTAL, 14, 14, 0, 0, [27, -1, -1, 9, 7, 19]), (22, CellContent::CRYSTAL, 14, 14, 0, 0, [10, 8, 20, 28, -1, -1]), (23, CellContent::EGG, 12, 12, 0, 0, [15, -1, 29, 31, 18, 6]), (24, CellContent::EGG, 12, 12, 0, 0, [32, 17, 5, 16, -1, 30]), (25, CellContent::EGG, 15, 15, 0, 0, [-1, -1, -1, 17, 32, -1]), (26, CellContent::EGG, 15, 15, 0, 0, [18, 31, -1, -1, -1, -1]), (27, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, 21, 19, -1]), (28, CellContent::EMPTY, 0, 0, 0, 0, [22, 20, -1, -1, -1, -1]), (29, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, -1, 31, 23]), (30, CellContent::EMPTY, 0, 0, 0, 0, [-1, 32, 24, -1, -1, -1]), (31, CellContent::EMPTY, 0, 0, 0, 0, [23, 29, -1, -1, 26, 18]), (32, CellContent::EMPTY, 0, 0, 0, 0, [-1, 25, 17, 24, 30, -1])],
+        Player { bases: vec![19] },
+        Player { bases: vec![20] }
+    );
+    playground.draw("in_game_at_1685373139654.pkchr");
+    let computed = playground.compute_actions();
+    let current = vec![Action::LINE { start_index: 19, end_index: 0, strenght: 1 }, Action::LINE { start_index: 19, end_index: 1, strenght: 1 }, Action::LINE { start_index: 19, end_index: 2, strenght: 1 }, Action::LINE { start_index: 19, end_index: 5, strenght: 1 }, Action::LINE { start_index: 19, end_index: 6, strenght: 1 }, Action::LINE { start_index: 19, end_index: 7, strenght: 1 }, Action::LINE { start_index: 19, end_index: 8, strenght: 1 }, Action::LINE { start_index: 19, end_index: 21, strenght: 1 }, Action::LINE { start_index: 19, end_index: 22, strenght: 1 }, Action::LINE { start_index: 19, end_index: 23, strenght: 1 }, Action::LINE { start_index: 19, end_index: 24, strenght: 1 }, Action::LINE { start_index: 19, end_index: 25, strenght: 1 }, Action::LINE { start_index: 19, end_index: 26, strenght: 1 }];
+    assert_that(&computed).is_not_equal_to(&current);
+}
+
+#[test]
+pub fn turn_at_1685460850307() {
+    let playground = Playground::init(
+        vec![(0, CellContent::CRYSTAL, 58, 58, 0, 0, [1, -1, 3, 2, -1, 4]), (1, CellContent::CRYSTAL, 5, 5, 0, 0, [5, -1, -1, 0, 4, 12]), (2, CellContent::CRYSTAL, 5, 5, 0, 0, [0, 3, 11, 6, -1, -1]), (3, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, 9, 11, 2, 0]), (4, CellContent::EMPTY, 0, 0, 0, 0, [12, 1, 0, -1, -1, 10]), (5, CellContent::EGG, 11, 11, 0, 0, [13, -1, -1, 1, 12, 18]), (6, CellContent::EGG, 11, 11, 0, 0, [2, 11, 17, 14, -1, -1]), (7, CellContent::CRYSTAL, 51, 51, 0, 0, [15, -1, -1, -1, -1, -1]), (8, CellContent::CRYSTAL, 51, 51, 0, 0, [-1, -1, -1, 16, -1, -1]), (9, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, -1, 11, 3]), (10, CellContent::EMPTY, 0, 0, 0, 0, [-1, 12, 4, -1, -1, -1]), (11, CellContent::CRYSTAL, 18, 18, 0, 0, [3, 9, -1, 17, 6, 2]), (12, CellContent::CRYSTAL, 18, 18, 0, 0, [18, 5, 1, 4, 10, -1]), (13, CellContent::EMPTY, 0, 0, 0, 0, [19, 21, -1, 5, 18, 26]), (14, CellContent::EMPTY, 0, 0, 0, 0, [6, 17, 25, 20, 22, -1]), (15, CellContent::EMPTY, 0, 0, 0, 0, [23, -1, -1, 7, -1, -1]), (16, CellContent::EMPTY, 0, 0, 0, 0, [8, -1, -1, 24, -1, -1]), (17, CellContent::EGG, 26, 26, 0, 0, [11, -1, -1, 25, 14, 6]), (18, CellContent::EGG, 26, 26, 0, 0, [26, 13, 5, 12, -1, -1]), (19, CellContent::EMPTY, 0, 0, 0, 0, [27, -1, 21, 13, 26, 34]), (20, CellContent::EMPTY, 0, 0, 0, 0, [14, 25, 33, 28, -1, 22]), (21, CellContent::EMPTY, 0, 0, 0, 0, [-1, 29, 23, -1, 13, 19]), (22, CellContent::EMPTY, 0, 0, 0, 0, [-1, 14, 20, -1, 30, 24]), (23, CellContent::EMPTY, 0, 0, 0, 0, [29, -1, -1, 15, -1, 21]), (24, CellContent::EMPTY, 0, 0, 0, 0, [16, -1, 22, 30, -1, -1]), (25, CellContent::EMPTY, 0, 0, 0, 0, [17, -1, 31, 33, 20, 14]), (26, CellContent::EMPTY, 0, 0, 0, 0, [34, 19, 13, 18, -1, 32]), (27, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, 19, 34, -1]), (28, CellContent::EMPTY, 0, 0, 0, 0, [20, 33, -1, -1, -1, -1]), (29, CellContent::EMPTY, 0, 0, 0, 10, [-1, -1, -1, 23, 21, -1]), (30, CellContent::EMPTY, 0, 0, 10, 0, [24, 22, -1, -1, -1, -1]), (31, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, -1, 33, 25]), (32, CellContent::EMPTY, 0, 0, 0, 0, [-1, 34, 26, -1, -1, -1]), (33, CellContent::EMPTY, 0, 0, 0, 0, [25, 31, -1, -1, 28, 20]), (34, CellContent::EMPTY, 0, 0, 0, 0, [-1, 27, 19, 26, 32, -1])],
+        Player { bases: vec![30] },
+        Player { bases: vec![29] }
+    );
+    playground.draw("in_game_at_1685460850307.pkchr");
+    let computed = playground.compute_actions();
+    let current = vec![Action::LINE { start_index: 30, end_index: 6, strenght: 1 }, Action::LINE { start_index: 30, end_index: 17, strenght: 1 }, Action::LINE { start_index: 30, end_index: 2, strenght: 1 }, Action::LINE { start_index: 30, end_index: 11, strenght: 1 }];
+    assert_that(&computed).is_not_equal_to(&current);
+}
+
+#[test]
+pub fn turn_at_1685464570502() {
+    let playground = Playground::init(
+        vec![(0, CellContent::EMPTY, 0, 0, 0, 0, [1, -1, 3, 2, -1, 4]), (1, CellContent::CRYSTAL, 54, 54, 0, 0, [5, 7, -1, 0, 4, 14]), (2, CellContent::CRYSTAL, 54, 54, 0, 0, [0, 3, 13, 6, 8, -1]), (3, CellContent::EMPTY, 0, 0, 0, 0, [-1, 11, -1, 13, 2, 0]), (4, CellContent::EMPTY, 0, 0, 0, 0, [14, 1, 0, -1, 12, -1]), (5, CellContent::CRYSTAL, 41, 36, 0, 24, [15, -1, 7, 1, 14, 22]), (6, CellContent::CRYSTAL, 41, 41, 5, 0, [2, 13, 21, 16, -1, 8]), (7, CellContent::EMPTY, 0, 0, 0, 0, [-1, 17, 9, -1, 1, 5]), (8, CellContent::EMPTY, 0, 0, 0, 0, [-1, 2, 6, -1, 18, 10]), (9, CellContent::EMPTY, 0, 0, 0, 0, [17, -1, -1, 11, -1, 7]), (10, CellContent::EMPTY, 0, 0, 0, 0, [12, -1, 8, 18, -1, -1]), (11, CellContent::EMPTY, 0, 0, 0, 0, [9, -1, -1, -1, 3, -1]), (12, CellContent::EMPTY, 0, 0, 0, 0, [-1, 4, -1, 10, -1, -1]), (13, CellContent::EMPTY, 0, 0, 0, 0, [3, -1, 19, 21, 6, 2]), (14, CellContent::EMPTY, 0, 0, 0, 0, [22, 5, 1, 4, -1, 20]), (15, CellContent::EGG, 13, 13, 0, 0, [23, 25, -1, 5, 22, -1]), (16, CellContent::EGG, 13, 13, 0, 0, [6, 21, -1, 24, 26, -1]), (17, CellContent::EMPTY, 0, 0, 0, 0, [27, -1, -1, 9, 7, -1]), (18, CellContent::EMPTY, 0, 0, 0, 0, [10, 8, -1, 28, -1, -1]), (19, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, 29, 21, 13]), (20, CellContent::EMPTY, 0, 0, 0, 0, [30, 22, 14, -1, -1, -1]), (21, CellContent::EMPTY, 0, 0, 29, 0, [13, 19, 29, -1, 16, 6]), (22, CellContent::EMPTY, 0, 0, 0, 5, [-1, 15, 5, 14, 20, 30]), (23, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, 25, 15, -1, -1]), (24, CellContent::EMPTY, 0, 0, 0, 0, [16, -1, -1, -1, -1, 26]), (25, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, 27, -1, 15, 23]), (26, CellContent::EMPTY, 0, 0, 0, 0, [-1, 16, 24, -1, -1, 28]), (27, CellContent::EMPTY, 0, 0, 0, 0, [-1, -1, -1, 17, -1, 25]), (28, CellContent::EMPTY, 0, 0, 0, 0, [18, -1, 26, -1, -1, -1]), (29, CellContent::EMPTY, 0, 0, 0, 0, [19, -1, -1, -1, -1, 21]), (30, CellContent::EMPTY, 0, 0, 0, 5, [-1, -1, 22, 20, -1, -1])],
+        Player { bases: vec![29] },
+        Player { bases: vec![30] }
+    );
+    playground.draw("in_game_at_1685464570502.pkchr");
+    let computed = playground.compute_actions();
+    let current = vec![Action::MESSAGE { text: "Seems like path to 6 is empty".to_string() }, Action::LINE { start_index: 6, end_index: 16, strenght: 2 }];
+    assert_that(&computed).is_not_equal_to(&current);
+}
