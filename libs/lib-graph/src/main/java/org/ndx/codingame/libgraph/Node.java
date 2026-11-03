@@ -26,6 +26,10 @@ public abstract class Node<NodeType extends Node<?>> {
 		return (NodeType) this;
 	}
 
+	public void setUntypedProperty(GraphProperty<?> key, Object value) {
+		properties.put(key, value);
+	}
+
 	public <Type> Type getProperty(final GraphProperty<Type> key) {
 		return (Type) properties.get(key);
 	}

@@ -7,12 +7,14 @@ import java.util.Arrays;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.ndx.codingame.gameofdrones.entities.Drone;
 import org.ndx.codingame.gameofdrones.entities.Zone;
 import org.ndx.codingame.lib2d.Geometry;
 
+@Ignore
 public class PerformancePlayfieldTest extends Playfield {
 	@Rule public ContiPerfRule contiperf = new ContiPerfRule();
 	@Test

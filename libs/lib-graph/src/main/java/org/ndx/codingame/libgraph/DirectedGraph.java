@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class DirectedGraph implements Graph {
+import org.ndx.codingame.gaming.tounittest.ConstructableInUnitTest;
+
+public class DirectedGraph implements Graph, ConstructableInUnitTest {
 	private final Map<Integer, Vertex> vertices = new TreeMap<>();
 	private final Collection<Edge> edges = new ArrayList<>();
 
@@ -92,5 +94,55 @@ public class DirectedGraph implements Graph {
 			edges().stream().forEach(e -> visitor.visit(e));
 		}
 		return visitor.endVisit(this);
+	}
+	@Override
+	public StringBuilder toUnitTestConstructor(String multilinePrefix) {
+
+		StringBuilder returned = new StringBuilder("new ").append(getClass().getSimpleName()).append("(")
+					;
+		returned.append(")");
+		returned.append("\n").append(multilinePrefix);
+		for (Vertex vertex : vertices.values()) {
+			returned.append(".v(");
+			returned.append(vertex.id);
+			returned.append(propertiesToUnitTest((Map<GraphProperty<?>, Object>) vertex.getProperties()));
+		}
+		returned.append("\n").append(multilinePrefix);
+		for (Edge edge : edges) {
+			returned.append(".e(");
+			returned.append(edge.source.id).append(", ")
+				.append(edge.destination.id);
+			returned.append(propertiesToUnitTest((Map<GraphProperty<?>, Object>) edge.getProperties()));
+		}
+		return returned;
+	}
+	
+	public DirectedGraph v(int id, Map.Entry<GraphProperty<?>, ?>...entries) {
+		Vertex v = getOrCreateVertex(id);
+		for (Map.Entry<GraphProperty<?>, ?> entry : entries) {
+			v.setUntypedProperty(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
+	
+	public DirectedGraph e(int sourceId, int destinationId, Map.Entry<GraphProperty<?>, ?>...entries) {
+		Edge e = getOrCreateEdgeBetween(sourceId, destinationId);
+		for (Map.Entry<GraphProperty<?>, ?> entry : entries) {
+			e.setUntypedProperty(entry.getKey(), entry.getValue());
+		}
+		return this;
+	}
+	
+	public StringBuilder propertiesToUnitTest(Map<GraphProperty<?>, Object> properties) {
+		StringBuilder returned = new StringBuilder();
+		for(Map.Entry<GraphProperty<?>, Object> e : properties.entrySet()) {
+			returned.append(", ").append("p(\"").append(e.getKey().name).append("\", ");
+			if(e.getValue() instanceof ConstructableInUnitTest) {
+				returned.append(((ConstructableInUnitTest) e.getValue()).toUnitTestConstructor(""));
+			} else {
+				returned.append(e.getValue().toString());
+			}
+		}
+		return returned;
 	}
 }
